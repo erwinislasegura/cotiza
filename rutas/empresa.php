@@ -32,6 +32,11 @@ $enrutador->agregar('GET', '/app/productos/ver/{id}', [ProductosControlador::cla
 $enrutador->agregar('GET', '/app/productos/editar/{id}', [ProductosControlador::class, 'editar'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/productos/editar/{id}', [ProductosControlador::class, 'actualizar'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/productos/eliminar/{id}', [ProductosControlador::class, 'eliminar'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/productos/carga-masiva', [ProductosControlador::class, 'cargaMasiva'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/productos/carga-masiva/productos', [ProductosControlador::class, 'importarProductosMasivo'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/productos/carga-masiva/categorias', [ProductosControlador::class, 'importarCategoriasMasivo'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/productos/carga-masiva/plantilla/productos', [ProductosControlador::class, 'descargarPlantillaProductosExcel'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/productos/carga-masiva/plantilla/categorias', [ProductosControlador::class, 'descargarPlantillaCategoriasExcel'], $mwEmpresa);
 
 $enrutador->agregar('GET', '/app/cotizaciones', [CotizacionesControlador::class, 'index'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/cotizaciones/crear', [CotizacionesControlador::class, 'crear'], $mwEmpresa);

@@ -53,6 +53,180 @@ class ProductosControlador extends Controlador
         $this->redirigir($this->obtenerRutaRetorno('/app/productos'));
     }
 
+    public function cargaMasiva(): void
+    {
+        $this->vista('empresa/productos/carga_masiva', [], 'empresa');
+    }
+
+    public function importarProductosMasivo(): void
+    {
+        validar_csrf();
+
+        if (!isset($_FILES['archivo_productos']) || (int) ($_FILES['archivo_productos']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            flash('danger', 'Debes subir un archivo CSV válido para productos.');
+            $this->redirigir('/app/productos/carga-masiva');
+        }
+
+        $filas = $this->leerArchivoCsv((string) $_FILES['archivo_productos']['tmp_name']);
+        if ($filas === []) {
+            flash('danger', 'El archivo no tiene datos para importar.');
+            $this->redirigir('/app/productos/carga-masiva');
+        }
+
+        $empresaId = empresa_actual_id();
+        $gestion = new GestionComercial();
+        $modeloProducto = new Producto();
+
+        $categorias = $gestion->listarTablaEmpresa('categorias_productos', $empresaId, '', 2000);
+        $categoriasPorNombre = [];
+        foreach ($categorias as $categoria) {
+            $categoriasPorNombre[mb_strtolower(trim((string) ($categoria['nombre'] ?? '')))] = (int) $categoria['id'];
+        }
+
+        $creados = 0;
+        $omitidos = 0;
+
+        foreach ($filas as $fila) {
+            $codigo = trim((string) ($fila['codigo'] ?? ''));
+            $nombre = trim((string) ($fila['nombre'] ?? ''));
+
+            if ($codigo === '' || $nombre === '') {
+                $omitidos++;
+                continue;
+            }
+
+            $categoriaId = null;
+            $nombreCategoria = trim((string) ($fila['categoria'] ?? ''));
+            if ($nombreCategoria !== '') {
+                $llaveCategoria = mb_strtolower($nombreCategoria);
+                if (!isset($categoriasPorNombre[$llaveCategoria])) {
+                    $nuevaCategoriaId = $gestion->crear('categorias_productos', [
+                        'empresa_id' => $empresaId,
+                        'nombre' => $nombreCategoria,
+                        'descripcion' => 'Creada por carga masiva de productos',
+                        'estado' => 'activo',
+                        'fecha_creacion' => date('Y-m-d H:i:s'),
+                    ]);
+                    $categoriasPorNombre[$llaveCategoria] = $nuevaCategoriaId;
+                }
+                $categoriaId = $categoriasPorNombre[$llaveCategoria];
+            }
+
+            $modeloProducto->crear([
+                'empresa_id' => $empresaId,
+                'categoria_id' => $categoriaId,
+                'tipo' => $this->normalizarTipo((string) ($fila['tipo'] ?? 'producto')),
+                'codigo' => $codigo,
+                'sku' => trim((string) ($fila['sku'] ?? '')),
+                'codigo_barras' => trim((string) ($fila['codigo_barras'] ?? '')),
+                'nombre' => $nombre,
+                'descripcion' => trim((string) ($fila['descripcion'] ?? '')),
+                'unidad' => trim((string) ($fila['unidad'] ?? 'unidad')),
+                'precio' => (float) ($fila['precio'] ?? 0),
+                'costo' => (float) ($fila['costo'] ?? 0),
+                'impuesto' => (float) ($fila['impuesto'] ?? 0),
+                'descuento_maximo' => (float) ($fila['descuento_maximo'] ?? 0),
+                'stock_minimo' => (float) ($fila['stock_minimo'] ?? 0),
+                'stock_aviso' => (float) ($fila['stock_aviso'] ?? 0),
+                'estado' => $this->normalizarEstado((string) ($fila['estado'] ?? 'activo')),
+            ]);
+            $creados++;
+        }
+
+        flash('success', "Carga finalizada: {$creados} productos creados. Omitidos: {$omitidos}.");
+        $this->redirigir('/app/productos/carga-masiva');
+    }
+
+    public function importarCategoriasMasivo(): void
+    {
+        validar_csrf();
+
+        if (!isset($_FILES['archivo_categorias']) || (int) ($_FILES['archivo_categorias']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            flash('danger', 'Debes subir un archivo CSV válido para categorías.');
+            $this->redirigir('/app/productos/carga-masiva');
+        }
+
+        $filas = $this->leerArchivoCsv((string) $_FILES['archivo_categorias']['tmp_name']);
+        if ($filas === []) {
+            flash('danger', 'El archivo de categorías no tiene datos para importar.');
+            $this->redirigir('/app/productos/carga-masiva');
+        }
+
+        $empresaId = empresa_actual_id();
+        $gestion = new GestionComercial();
+        $existentes = $gestion->listarTablaEmpresa('categorias_productos', $empresaId, '', 5000);
+        $nombreExistente = [];
+        foreach ($existentes as $categoria) {
+            $nombreExistente[mb_strtolower(trim((string) ($categoria['nombre'] ?? '')))] = true;
+        }
+
+        $creadas = 0;
+        $omitidas = 0;
+
+        foreach ($filas as $fila) {
+            $nombre = trim((string) ($fila['nombre'] ?? ''));
+            if ($nombre === '') {
+                $omitidas++;
+                continue;
+            }
+
+            $llave = mb_strtolower($nombre);
+            if (isset($nombreExistente[$llave])) {
+                $omitidas++;
+                continue;
+            }
+
+            $gestion->crear('categorias_productos', [
+                'empresa_id' => $empresaId,
+                'nombre' => $nombre,
+                'descripcion' => trim((string) ($fila['descripcion'] ?? '')),
+                'estado' => $this->normalizarEstado((string) ($fila['estado'] ?? 'activo')),
+                'fecha_creacion' => date('Y-m-d H:i:s'),
+            ]);
+            $nombreExistente[$llave] = true;
+            $creadas++;
+        }
+
+        flash('success', "Carga de categorías finalizada: {$creadas} creadas. Omitidas: {$omitidas}.");
+        $this->redirigir('/app/productos/carga-masiva');
+    }
+
+    public function descargarPlantillaProductosExcel(): void
+    {
+        $nombreArchivo = 'plantilla_carga_masiva_productos.xls';
+        header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $nombreArchivo . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        echo "\xEF\xBB\xBF";
+        echo '<html><head><meta charset="UTF-8"></head><body>';
+        echo '<table border="1" cellspacing="0" cellpadding="4" style="' . ExcelExpoFormato::TABLA_ESTILO . '">';
+        echo '<tr style="' . ExcelExpoFormato::ENCABEZADO_ESTILO . '"><th>tipo</th><th>categoria</th><th>codigo</th><th>sku</th><th>codigo_barras</th><th>nombre</th><th>descripcion</th><th>unidad</th><th>precio</th><th>costo</th><th>impuesto</th><th>descuento_maximo</th><th>stock_minimo</th><th>stock_aviso</th><th>estado</th></tr>';
+        echo '<tr><td>producto</td><td>Bebidas</td><td>P-001</td><td>SKU-001</td><td>7701234567890</td><td>Agua 600ml</td><td>Botella de agua sin gas</td><td>unidad</td><td>2.50</td><td>1.10</td><td>19</td><td>10</td><td>30</td><td>40</td><td>activo</td></tr>';
+        echo '<tr><td>servicio</td><td>Soporte</td><td>S-001</td><td>SRV-001</td><td></td><td>Mantenimiento mensual</td><td>Servicio técnico preventivo</td><td>servicio</td><td>120.00</td><td>0</td><td>19</td><td>0</td><td>0</td><td>0</td><td>activo</td></tr>';
+        echo '</table></body></html>';
+        exit;
+    }
+
+    public function descargarPlantillaCategoriasExcel(): void
+    {
+        $nombreArchivo = 'plantilla_carga_masiva_categorias.xls';
+        header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $nombreArchivo . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        echo "\xEF\xBB\xBF";
+        echo '<html><head><meta charset="UTF-8"></head><body>';
+        echo '<table border="1" cellspacing="0" cellpadding="4" style="' . ExcelExpoFormato::TABLA_ESTILO . '">';
+        echo '<tr style="' . ExcelExpoFormato::ENCABEZADO_ESTILO . '"><th>nombre</th><th>descripcion</th><th>estado</th></tr>';
+        echo '<tr><td>Bebidas</td><td>Productos para consumo líquido</td><td>activo</td></tr>';
+        echo '<tr><td>Insumos</td><td>Materiales de operación</td><td>activo</td></tr>';
+        echo '</table></body></html>';
+        exit;
+    }
+
     public function exportarExcel(): void
     {
         $buscar = trim($_GET['q'] ?? '');
@@ -122,6 +296,70 @@ class ProductosControlador extends Controlador
         echo '</table></body></html>';
 
         exit;
+    }
+
+    private function leerArchivoCsv(string $rutaArchivo): array
+    {
+        if (!is_file($rutaArchivo)) {
+            return [];
+        }
+
+        $filas = [];
+        $handle = fopen($rutaArchivo, 'rb');
+        if ($handle === false) {
+            return [];
+        }
+
+        $encabezados = [];
+        while (($fila = fgetcsv($handle, 0, ',')) !== false) {
+            if ($encabezados === []) {
+                $encabezados = array_map(fn($valor) => $this->normalizarEncabezado((string) $valor), $fila);
+                continue;
+            }
+
+            if (count(array_filter($fila, fn($valor) => trim((string) $valor) !== '')) === 0) {
+                continue;
+            }
+
+            $registro = [];
+            foreach ($encabezados as $indice => $encabezado) {
+                if ($encabezado === '') {
+                    continue;
+                }
+                $registro[$encabezado] = isset($fila[$indice]) ? trim((string) $fila[$indice]) : '';
+            }
+            $filas[] = $registro;
+        }
+
+        fclose($handle);
+
+        return $filas;
+    }
+
+    private function normalizarEncabezado(string $encabezado): string
+    {
+        $normalizado = mb_strtolower(trim($encabezado));
+        $normalizado = str_replace(['á', 'é', 'í', 'ó', 'ú', 'ñ', ' '], ['a', 'e', 'i', 'o', 'u', 'n', '_'], $normalizado);
+
+        $mapa = [
+            'codigo_de_barras' => 'codigo_barras',
+            'cod_barras' => 'codigo_barras',
+            'stock_min' => 'stock_minimo',
+            'stock_alerta' => 'stock_aviso',
+            'descuento_max' => 'descuento_maximo',
+        ];
+
+        return $mapa[$normalizado] ?? $normalizado;
+    }
+
+    private function normalizarTipo(string $tipo): string
+    {
+        return mb_strtolower(trim($tipo)) === 'servicio' ? 'servicio' : 'producto';
+    }
+
+    private function normalizarEstado(string $estado): string
+    {
+        return mb_strtolower(trim($estado)) === 'inactivo' ? 'inactivo' : 'activo';
     }
 
     private function escapeExcelHtml(mixed $valor): string
