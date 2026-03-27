@@ -1,0 +1,1 @@
+<header class="topbar border-bottom bg-white px-3 py-2 d-flex justify-content-between align-items-center"><strong class="small"><?= e(usuario_actual()['nombre'] ?? 'Invitado') ?></strong><form method="POST" action="<?= e(url('/cerrar-sesion')) ?>" class="m-0"><?= csrf_campo() ?><button class="btn btn-sm btn-outline-secondary">Salir</button></form></header>

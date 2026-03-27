@@ -1,0 +1,14 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Si el hosting apunta a la raíz del proyecto, redirige assets a /public
+  RewriteRule ^assets/(.*)$ public/assets/$1 [L]
+
+  # Front controller
+  RewriteRule ^$ public/index.php [L]
+
+  # Rutas amigables
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ public/index.php [QSA,L]
+</IfModule>
