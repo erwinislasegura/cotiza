@@ -19,6 +19,7 @@ Plataforma SaaS multiempresa para gestión comercial de cotizaciones, diseñada 
 - Superadministrador: `superadmin@cotizapro.com` / `Demo1234*`
 - Administrador empresa demo: `admin@andina.com` / `Demo1234*`
 - Usuario empresa demo: `usuario@andina.com` / `Demo1234*`
+- Usuario QA demo: `qa@andina.com` / `Demo1234*`
 
 ## Estructura
 - `aplicacion/`: núcleo MVC, controladores, modelos, vistas, servicios, middlewares y ayudantes.
@@ -49,3 +50,8 @@ Plataforma SaaS multiempresa para gestión comercial de cotizaciones, diseñada 
 - **Si no puedes cambiar DocumentRoot** (hosting compartido), usa el `index.php` y `.htaccess` de la raíz del proyecto incluidos en este repositorio; estos redirigen automáticamente al front controller de `/public`.
 - La normalización de rutas soporta despliegues en subcarpetas (ejemplo: `/cotiza`).
 
+
+
+## Script de actualización de accesos
+Si necesitas regenerar/normalizar usuarios de acceso (superadmin, admin y QA), ejecuta:
+- `base_datos/esquema/actualizar_usuarios_acceso.sql`

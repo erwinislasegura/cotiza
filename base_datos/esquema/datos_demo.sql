@@ -10,6 +10,7 @@ INSERT INTO usuarios (empresa_id, rol_id, nombre, correo, password, estado) VALU
 (NULL, 1, 'Super Admin', 'superadmin@cotizapro.com', '$2y$10$l2Li4fKGe.f4z2xkqf0B7e0hOn4z3vQgpWhorQi95pSl5f4BbLxvK', 'activo'),
 (2, 2, 'Laura Mejía', 'admin@andina.com', '$2y$10$l2Li4fKGe.f4z2xkqf0B7e0hOn4z3vQgpWhorQi95pSl5f4BbLxvK', 'activo'),
 (2, 3, 'Analista Andina', 'usuario@andina.com', '$2y$10$l2Li4fKGe.f4z2xkqf0B7e0hOn4z3vQgpWhorQi95pSl5f4BbLxvK', 'activo'),
+(2, 3, 'QA Andina', 'qa@andina.com', '$2y$10$l2Li4fKGe.f4z2xkqf0B7e0hOn4z3vQgpWhorQi95pSl5f4BbLxvK', 'activo'),
 (3, 2, 'Carlos Reyes', 'admin@pacifico.com', '$2y$10$l2Li4fKGe.f4z2xkqf0B7e0hOn4z3vQgpWhorQi95pSl5f4BbLxvK', 'activo');
 
 INSERT INTO suscripciones (id, empresa_id, plan_id, estado, fecha_inicio, fecha_vencimiento, renovacion_automatica, observaciones)
