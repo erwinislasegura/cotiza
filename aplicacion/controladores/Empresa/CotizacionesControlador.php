@@ -354,43 +354,6 @@ class CotizacionesControlador extends Controlador
         $this->redirigir($rutaSalir);
     }
 
-    private function aplicarPrecioListaLinea(
-        ServicioPreciosLista $servicioPrecios,
-        int $empresaId,
-        ?int $productoId,
-        ?int $clienteId,
-        ?string $canalVenta,
-        float $precio,
-        string $descuentoTipo,
-        float $descuentoValor
-    ): array {
-        if ($productoId === null) {
-            return [$precio, $descuentoTipo, $descuentoValor];
-        }
-
-        $precioCalculado = $servicioPrecios->calcularPrecioProducto($empresaId, $productoId, $clienteId, $canalVenta, date('Y-m-d'));
-        if (!$precioCalculado) {
-            return [$precio, $descuentoTipo, $descuentoValor];
-        }
-
-        $precioIngresado = $precio > 0;
-
-        $usaDescuentoLista = ($precioCalculado['ajuste_tipo'] ?? '') === 'descuento' && (float) ($precioCalculado['ajuste_porcentaje'] ?? 0) > 0;
-        if ($usaDescuentoLista && !$precioIngresado) {
-            $precio = (float) $precioCalculado['precio_base'];
-        }
-        if ($usaDescuentoLista && $descuentoValor <= 0) {
-            $descuentoTipo = 'porcentaje';
-            $descuentoValor = (float) $precioCalculado['ajuste_porcentaje'];
-        }
-
-        if (!$usaDescuentoLista && !$precioIngresado) {
-            $precio = (float) $precioCalculado['precio_final'];
-        }
-
-        return [$precio, $descuentoTipo, $descuentoValor];
-    }
-
     public function eliminar(int $id): void
     {
         validar_csrf();

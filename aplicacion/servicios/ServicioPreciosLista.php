@@ -58,6 +58,10 @@ class ServicioPreciosLista
 
     public function resolverListaPrecio(int $empresaId, ?int $clienteId = null, ?string $canal = null, ?string $fecha = null, ?int $listaPrecioId = null): ?array
     {
+        if (!$this->tablaExiste('listas_precios')) {
+            return null;
+        }
+
         $fechaRef = $fecha ?: date('Y-m-d');
 
         if ($listaPrecioId !== null && $listaPrecioId > 0) {
