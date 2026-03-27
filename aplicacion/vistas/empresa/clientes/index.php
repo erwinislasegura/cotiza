@@ -87,13 +87,16 @@
       <strong>Listado de clientes</strong>
       <div class="small text-muted">Registros encontrados: <?= count($clientes) ?></div>
     </div>
-    <form method="GET" class="d-flex gap-2">
-      <input class="form-control form-control-sm" name="q" value="<?= e($buscar) ?>" placeholder="Buscar por nombre, fiscal, correo...">
-      <button class="btn btn-outline-secondary btn-sm">Buscar</button>
-      <?php if ($buscar !== ''): ?>
-        <a class="btn btn-outline-dark btn-sm" href="<?= e(url('/app/clientes')) ?>">Limpiar</a>
-      <?php endif; ?>
-    </form>
+    <div class="d-flex gap-2">
+      <a href="<?= e(url('/app/clientes/exportar/excel?q=' . urlencode($buscar))) ?>" class="btn btn-success btn-sm">Exportar Excel tabulado</a>
+      <form method="GET" class="d-flex gap-2">
+        <input class="form-control form-control-sm" name="q" value="<?= e($buscar) ?>" placeholder="Buscar por nombre, fiscal, correo...">
+        <button class="btn btn-outline-secondary btn-sm">Buscar</button>
+        <?php if ($buscar !== ''): ?>
+          <a class="btn btn-outline-dark btn-sm" href="<?= e(url('/app/clientes')) ?>">Limpiar</a>
+        <?php endif; ?>
+      </form>
+    </div>
   </div>
 
   <div class="table-responsive" style="overflow: visible;">
