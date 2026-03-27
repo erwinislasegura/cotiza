@@ -7,6 +7,7 @@ use Aplicacion\Modelos\Cotizacion;
 use Aplicacion\Modelos\Cliente;
 use Aplicacion\Modelos\Producto;
 use Aplicacion\Modelos\Empresa;
+use Aplicacion\Modelos\GestionComercial;
 use Aplicacion\Servicios\ServicioPlan;
 use Aplicacion\Servicios\ServicioPreciosLista;
 
@@ -30,8 +31,9 @@ class CotizacionesControlador extends Controlador
         $empresaId = empresa_actual_id();
         $clientes = (new Cliente())->listar($empresaId);
         $productos = (new Producto())->listar($empresaId);
+        $listasPrecios = (new GestionComercial())->listarListasPreciosActivas($empresaId);
         $siguienteNumero = (new Cotizacion())->siguienteNumero($empresaId);
-        $this->vista('empresa/cotizaciones/formulario', compact('clientes', 'productos', 'siguienteNumero'), 'empresa');
+        $this->vista('empresa/cotizaciones/formulario', compact('clientes', 'productos', 'siguienteNumero', 'listasPrecios'), 'empresa');
     }
 
     public function guardar(): void
@@ -52,6 +54,7 @@ class CotizacionesControlador extends Controlador
         $descuentoValoresLinea = $_POST['descuento_item'] ?? [];
         $canalVenta = trim((string) ($_POST['canal_venta'] ?? ''));
         $clienteIdSeleccionado = (int) ($_POST['cliente_id'] ?? 0) ?: null;
+        $listaPrecioId = (int) ($_POST['lista_precio_id'] ?? 0) ?: null;
         $servicioPrecios = new ServicioPreciosLista();
 
         $items = [];
@@ -79,6 +82,7 @@ class CotizacionesControlador extends Controlador
                 $productoId,
                 $clienteIdSeleccionado,
                 $canalVenta !== '' ? $canalVenta : null,
+                $listaPrecioId,
                 $precio,
                 $descuentoTipo,
                 $descuentoValor
@@ -128,7 +132,7 @@ class CotizacionesControlador extends Controlador
         $numero = $modelo->siguienteNumero($empresaId);
         $consecutivo = (int) preg_replace('/^.*-/', '', $numero);
 
-        $modelo->crearConItems([
+        $cotizacionId = $modelo->crearConItems([
             'empresa_id' => $empresaId,
             'cliente_id' => (int) $_POST['cliente_id'],
             'usuario_id' => (int) $usuario['id'],
@@ -148,7 +152,7 @@ class CotizacionesControlador extends Controlador
         ], $items);
 
         flash('success', 'Cotización creada y numerada correctamente.');
-        $this->redirigir('/app/cotizaciones');
+        $this->redirigirSegunAccion($_POST['accion'] ?? 'guardar_salir', '/app/cotizaciones/editar/' . $cotizacionId, '/app/cotizaciones');
     }
 
     public function ver(int $id): void
@@ -171,7 +175,17 @@ class CotizacionesControlador extends Controlador
         }
 
         $empresa = (new Empresa())->buscar($empresaId);
-        $this->vista('empresa/cotizaciones/imprimir', compact('cotizacion', 'empresa'), 'empresa');
+        $listaPrecioId = (int) ($_GET['lista_precio_id'] ?? 0) ?: null;
+        $servicioPrecios = new ServicioPreciosLista();
+        $listaAplicada = $servicioPrecios->resolverListaPrecio(
+            $empresaId,
+            (int) ($cotizacion['cliente_id'] ?? 0) ?: null,
+            null,
+            date('Y-m-d'),
+            $listaPrecioId
+        );
+        $listasPrecios = (new GestionComercial())->listarListasPreciosActivas($empresaId);
+        $this->vista('empresa/cotizaciones/imprimir', compact('cotizacion', 'empresa', 'listaAplicada', 'listasPrecios'), 'impresion');
     }
 
     public function editar(int $id): void
@@ -184,7 +198,9 @@ class CotizacionesControlador extends Controlador
         }
         $clientes = (new Cliente())->listar($empresaId);
         $productos = (new Producto())->listar($empresaId);
-        $this->vista('empresa/cotizaciones/editar', compact('cotizacion', 'clientes', 'productos'), 'empresa');
+        $listasPrecios = (new GestionComercial())->listarListasPreciosActivas($empresaId);
+        $listaPrecioSeleccionada = (new ServicioPreciosLista())->resolverListaPrecio($empresaId, (int) $cotizacion['cliente_id'], null, date('Y-m-d'));
+        $this->vista('empresa/cotizaciones/editar', compact('cotizacion', 'clientes', 'productos', 'listasPrecios', 'listaPrecioSeleccionada'), 'empresa');
     }
 
     public function actualizar(int $id): void
@@ -200,6 +216,7 @@ class CotizacionesControlador extends Controlador
         $descuentoValoresLinea = $_POST['descuento_item'] ?? [];
         $canalVenta = trim((string) ($_POST['canal_venta'] ?? ''));
         $clienteIdSeleccionado = (int) ($_POST['cliente_id'] ?? 0) ?: null;
+        $listaPrecioId = (int) ($_POST['lista_precio_id'] ?? 0) ?: null;
         $servicioPrecios = new ServicioPreciosLista();
 
         $items = [];
@@ -227,6 +244,7 @@ class CotizacionesControlador extends Controlador
                 $productoId,
                 $clienteIdSeleccionado,
                 $canalVenta !== '' ? $canalVenta : null,
+                $listaPrecioId,
                 $precio,
                 $descuentoTipo,
                 $descuentoValor
@@ -287,7 +305,53 @@ class CotizacionesControlador extends Controlador
             'fecha_vencimiento' => $_POST['fecha_vencimiento'] ?? date('Y-m-d'),
         ], $items);
         flash('success', 'Cotización actualizada correctamente.');
-        $this->redirigir('/app/cotizaciones');
+        $this->redirigirSegunAccion($_POST['accion'] ?? 'guardar_salir', '/app/cotizaciones/editar/' . $id, '/app/cotizaciones');
+    }
+
+    private function aplicarPrecioListaLinea(
+        ServicioPreciosLista $servicioPrecios,
+        int $empresaId,
+        ?int $productoId,
+        ?int $clienteId,
+        ?string $canalVenta,
+        ?int $listaPrecioId,
+        float $precio,
+        string $descuentoTipo,
+        float $descuentoValor
+    ): array {
+        if ($productoId === null) {
+            return [$precio, $descuentoTipo, $descuentoValor];
+        }
+
+        $precioCalculado = $servicioPrecios->calcularPrecioProducto($empresaId, $productoId, $clienteId, $canalVenta, date('Y-m-d'), $listaPrecioId);
+        if (!$precioCalculado) {
+            return [$precio, $descuentoTipo, $descuentoValor];
+        }
+
+        $precioIngresado = $precio > 0;
+
+        $usaDescuentoLista = ($precioCalculado['ajuste_tipo'] ?? '') === 'descuento' && (float) ($precioCalculado['ajuste_porcentaje'] ?? 0) > 0;
+        if ($usaDescuentoLista && !$precioIngresado) {
+            $precio = (float) $precioCalculado['precio_base'];
+        }
+        if ($usaDescuentoLista && $descuentoValor <= 0) {
+            $descuentoTipo = 'porcentaje';
+            $descuentoValor = (float) $precioCalculado['ajuste_porcentaje'];
+        }
+
+        if (!$usaDescuentoLista && !$precioIngresado) {
+            $precio = (float) $precioCalculado['precio_final'];
+        }
+
+        return [$precio, $descuentoTipo, $descuentoValor];
+    }
+
+    private function redirigirSegunAccion(string $accion, string $rutaMantener, string $rutaSalir): void
+    {
+        if ($accion === 'guardar') {
+            $this->redirigir($rutaMantener);
+        }
+        $this->redirigir($rutaSalir);
     }
 
     private function aplicarPrecioListaLinea(

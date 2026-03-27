@@ -18,6 +18,15 @@ $clienteNombre = trim((string) (($cotizacion['cliente_razon_social'] ?? '') !== 
 <div class="no-print mb-3 d-flex gap-2">
     <button class="btn btn-dark btn-sm" type="button" onclick="window.print()">Imprimir</button>
     <a class="btn btn-outline-secondary btn-sm" href="<?= e(url('/app/cotizaciones/ver/' . $cotizacion['id'])) ?>">Volver</a>
+    <form method="GET" class="d-flex gap-2 align-items-center" action="<?= e(url('/app/cotizaciones/imprimir/' . $cotizacion['id'])) ?>">
+        <select class="form-select form-select-sm" name="lista_precio_id">
+            <option value="">Lista automática por cliente</option>
+            <?php foreach (($listasPrecios ?? []) as $lista): ?>
+                <option value="<?= (int) $lista['id'] ?>" <?= (int) (($listaAplicada['id'] ?? 0)) === (int) $lista['id'] ? 'selected' : '' ?>><?= e($lista['nombre']) ?></option>
+            <?php endforeach; ?>
+        </select>
+        <button type="submit" class="btn btn-outline-primary btn-sm">Aplicar lista</button>
+    </form>
 </div>
 
 <div class="cotizacion-print">
@@ -34,6 +43,7 @@ $clienteNombre = trim((string) (($cotizacion['cliente_razon_social'] ?? '') !== 
             <div class="small text-muted">Emisión: <?= e($cotizacion['fecha_emision']) ?></div>
             <div class="small text-muted">Vence: <?= e($cotizacion['fecha_vencimiento']) ?></div>
             <div class="small text-muted">Estado: <?= e($cotizacion['estado']) ?></div>
+            <div class="small text-muted">Lista aplicada: <strong><?= e($listaAplicada['nombre'] ?? 'Sin lista activa') ?></strong></div>
         </div>
     </div>
 

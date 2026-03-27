@@ -50,6 +50,15 @@ $puedeGuardar = $hayClientes && $hayProductos;
                     <option value="ecommerce">E-commerce</option>
                 </select>
             </div>
+            <div class="col-md-4">
+                <label class="small">Lista de precios aplicada</label>
+                <select class="form-select" name="lista_precio_id" id="lista_precio_id">
+                    <option value="">Automática por cliente/canal</option>
+                    <?php foreach (($listasPrecios ?? []) as $lista): ?>
+                        <option value="<?= (int) $lista['id'] ?>"><?= e($lista['nombre']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
 
             <div class="col-md-3">
                 <label class="small">Fecha emisión</label>
@@ -133,7 +142,8 @@ $puedeGuardar = $hayClientes && $hayProductos;
     <?php endif; ?>
 
     <div>
-        <button class="btn btn-primary btn-sm"<?= $puedeGuardar ? '' : ' disabled' ?>>Guardar cotización</button>
+        <button class="btn btn-primary btn-sm" name="accion" value="guardar"<?= $puedeGuardar ? '' : ' disabled' ?>>Guardar sin salir</button>
+        <button class="btn btn-success btn-sm" name="accion" value="guardar_salir"<?= $puedeGuardar ? '' : ' disabled' ?>>Guardar y salir</button>
         <button class="btn btn-outline-success btn-sm" type="button" onclick="window.location.href='mailto:?subject=' + encodeURIComponent('Cotización <?= e($siguienteNumero) ?>')">Enviar por correo</button>
         <button class="btn btn-outline-dark btn-sm" type="button" onclick="alert('Guarda la cotización para imprimir el formato comercial.')">Imprimir formato</button>
         <a href="<?= e(url('/app/cotizaciones')) ?>" class="btn btn-outline-secondary btn-sm">Cancelar</a>
@@ -246,6 +256,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
         const selectProducto = fila.querySelector('.js-producto');
         const clienteId = document.querySelector('[name="cliente_id"]')?.value || '';
         const canal = document.getElementById('canal_venta')?.value || '';
+        const listaPrecioId = document.getElementById('lista_precio_id')?.value || '';
 
         if (!selectProducto || !selectProducto.value || !clienteId) {
             return;
@@ -255,7 +266,8 @@ $puedeGuardar = $hayClientes && $hayProductos;
             const params = new URLSearchParams({
                 producto_id: selectProducto.value,
                 cliente_id: clienteId,
-                canal: canal
+                canal: canal,
+                lista_precio_id: listaPrecioId
             });
             const resp = await fetch('<?= e(url('/app/listas-precios/precio-producto')) ?>?' + params.toString(), {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -347,7 +359,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
         const selectProducto = fila.querySelector('.js-producto');
         if (selectProducto) {
             selectProducto.addEventListener('change', async () => {
-                await autocompletarPrecioDesdeLista(fila);
+                await autocompletarPrecioDesdeLista(fila, true);
                 recalcular();
             });
         }
@@ -364,6 +376,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
     document.getElementById('descuento_total').addEventListener('input', recalcular);
     document.querySelector('[name="cliente_id"]')?.addEventListener('change', () => { cuerpo.querySelectorAll('tr').forEach((fila) => autocompletarPrecioDesdeLista(fila, true)); recalcular(); });
     document.getElementById('canal_venta')?.addEventListener('change', () => { cuerpo.querySelectorAll('tr').forEach((fila) => autocompletarPrecioDesdeLista(fila, true)); recalcular(); });
+    document.getElementById('lista_precio_id')?.addEventListener('change', () => { cuerpo.querySelectorAll('tr').forEach((fila) => autocompletarPrecioDesdeLista(fila, true)); recalcular(); });
     recalcular();
 })();
 </script>

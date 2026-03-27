@@ -5,6 +5,7 @@ $puedeGuardar = $hayClientes;
 $itemsExistentes = $cotizacion['items'] ?? [];
 $descuentoTipoTotal = $cotizacion['descuento_tipo'] ?? 'valor';
 $descuentoTotalValor = $cotizacion['descuento_valor'] ?? $cotizacion['descuento'] ?? 0;
+$listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
 ?>
 <h1 class="h4 mb-3">Editar cotización</h1>
 
@@ -47,6 +48,15 @@ $descuentoTotalValor = $cotizacion['descuento_valor'] ?? $cotizacion['descuento'
                     <option value="local">Local</option>
                     <option value="delivery">Delivery</option>
                     <option value="ecommerce">E-commerce</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="small">Lista de precios aplicada</label>
+                <select class="form-select" name="lista_precio_id" id="lista_precio_id">
+                    <option value="">Automática por cliente/canal</option>
+                    <?php foreach (($listasPrecios ?? []) as $lista): ?>
+                        <option value="<?= (int) $lista['id'] ?>" <?= $listaPrecioIdSeleccionada === (int) $lista['id'] ? 'selected' : '' ?>><?= e($lista['nombre']) ?></option>
+                    <?php endforeach; ?>
                 </select>
             </div>
 
@@ -163,7 +173,8 @@ $descuentoTotalValor = $cotizacion['descuento_valor'] ?? $cotizacion['descuento'
     <?php endif; ?>
 
     <div>
-        <button class="btn btn-primary btn-sm"<?= $puedeGuardar ? '' : ' disabled' ?>>Guardar cambios</button>
+        <button class="btn btn-primary btn-sm" name="accion" value="guardar"<?= $puedeGuardar ? '' : ' disabled' ?>>Guardar sin salir</button>
+        <button class="btn btn-success btn-sm" name="accion" value="guardar_salir"<?= $puedeGuardar ? '' : ' disabled' ?>>Guardar y salir</button>
         <a class="btn btn-outline-dark btn-sm" target="_blank" href="<?= e(url('/app/cotizaciones/imprimir/' . $cotizacion['id'])) ?>">Imprimir formato</a>
         <a href="<?= e(url('/app/cotizaciones')) ?>" class="btn btn-outline-secondary btn-sm">Cancelar</a>
     </div>
@@ -216,9 +227,10 @@ $descuentoTotalValor = $cotizacion['descuento_valor'] ?? $cotizacion['descuento'
         const selectProducto = fila.querySelector('.js-producto');
         const clienteId = document.querySelector('[name="cliente_id"]')?.value || '';
         const canal = document.getElementById('canal_venta')?.value || '';
+        const listaPrecioId = document.getElementById('lista_precio_id')?.value || '';
         if (!selectProducto || !selectProducto.value || !clienteId) { return; }
         try {
-            const params = new URLSearchParams({ producto_id: selectProducto.value, cliente_id: clienteId, canal: canal });
+            const params = new URLSearchParams({ producto_id: selectProducto.value, cliente_id: clienteId, canal: canal, lista_precio_id: listaPrecioId });
             const resp = await fetch('<?= e(url('/app/listas-precios/precio-producto')) ?>?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
             const data = await resp.json();
             if (data.ok && data.data && typeof data.data.precio_final !== 'undefined') {
@@ -251,7 +263,7 @@ $descuentoTotalValor = $cotizacion['descuento_valor'] ?? $cotizacion['descuento'
         const selectProducto = fila.querySelector('.js-producto');
         if (selectProducto) {
             selectProducto.addEventListener('change', async () => {
-                await autocompletarPrecioDesdeLista(fila);
+                await autocompletarPrecioDesdeLista(fila, true);
                 recalcular();
             });
         }
@@ -291,6 +303,7 @@ $descuentoTotalValor = $cotizacion['descuento_valor'] ?? $cotizacion['descuento'
     document.getElementById('descuento_total').addEventListener('input', recalcular);
     document.querySelector('[name="cliente_id"]')?.addEventListener('change', () => { cuerpo.querySelectorAll('tr').forEach((fila) => autocompletarPrecioDesdeLista(fila, true)); recalcular(); });
     document.getElementById('canal_venta')?.addEventListener('change', () => { cuerpo.querySelectorAll('tr').forEach((fila) => autocompletarPrecioDesdeLista(fila, true)); recalcular(); });
+    document.getElementById('lista_precio_id')?.addEventListener('change', () => { cuerpo.querySelectorAll('tr').forEach((fila) => autocompletarPrecioDesdeLista(fila, true)); recalcular(); });
     recalcular();
 })();
 </script>
