@@ -66,22 +66,24 @@
 (() => {
     if (typeof Chart === 'undefined') return;
 
+    const esMovil = window.innerWidth < 768;
+
     const comparativo = document.getElementById('graficoComparativoCaracteristicas');
     if (comparativo) {
         new Chart(comparativo, {
-            type: 'bar',
+            type: 'radar',
             data: {
-                labels: ['Cotizaciones/semana', 'Tiempo respuesta (h)', 'Seguimiento efectivo (%)'],
+                labels: ['Velocidad de cotización', 'Control comercial', 'Seguimiento', 'Productividad', 'Calidad de propuesta'],
                 datasets: [
-                    { label: 'Sin sistema', data: [21, 30, 37], backgroundColor: '#97a6ba', borderRadius: 6 },
-                    { label: 'Con CotizaPro', data: [58, 6, 88], backgroundColor: '#1f6feb', borderRadius: 6 }
+                    { label: 'Sin sistema', data: [38, 35, 31, 40, 42], backgroundColor: 'rgba(143,160,181,.2)', borderColor: '#8fa0b5', pointBackgroundColor: '#8fa0b5' },
+                    { label: 'Con CotizaPro', data: [86, 89, 88, 91, 87], backgroundColor: 'rgba(13,110,253,.18)', borderColor: '#0d6efd', pointBackgroundColor: '#0d6efd' }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } },
-                scales: { y: { beginAtZero: true, grid: { color: '#edf1f7' } } }
+                plugins: { legend: { position: esMovil ? 'top' : 'bottom', labels: { boxWidth: 10, font: { size: esMovil ? 10 : 12 } } } },
+                scales: { r: { suggestedMin: 0, suggestedMax: 100, ticks: { stepSize: 20, backdropColor: 'transparent', font: { size: esMovil ? 9 : 11 } }, grid: { color: '#e7edf6' }, pointLabels: { font: { size: esMovil ? 9 : 11 } } } }
             }
         });
     }
@@ -89,25 +91,21 @@
     const ganancias = document.getElementById('graficoGananciasCaracteristicas');
     if (ganancias) {
         new Chart(ganancias, {
-            type: 'line',
+            type: 'bar',
             data: {
                 labels: ['T1', 'T2', 'T3', 'T4'],
                 datasets: [{
                     label: 'Crecimiento acumulado de ingresos (%)',
                     data: [9, 21, 34, 48],
-                    fill: true,
-                    tension: 0.35,
-                    borderColor: '#0d6efd',
-                    backgroundColor: 'rgba(13,110,253,.15)',
-                    pointBackgroundColor: '#0d6efd',
-                    pointRadius: 4
+                    backgroundColor: ['#bfd7ff', '#8fbbff', '#4a95ff', '#0d6efd'],
+                    borderRadius: 8
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } },
-                scales: { y: { beginAtZero: true, ticks: { callback: (v) => v + '%' }, grid: { color: '#edf1f7' } } }
+                plugins: { legend: { position: esMovil ? 'top' : 'bottom', labels: { boxWidth: 10, font: { size: esMovil ? 10 : 12 } } } },
+                scales: { y: { beginAtZero: true, ticks: { callback: (v) => v + '%', font: { size: esMovil ? 10 : 12 } }, grid: { color: '#edf1f7' } }, x: { ticks: { font: { size: esMovil ? 10 : 12 } } } }
             }
         });
     }
@@ -124,8 +122,8 @@
             <div class="col-md-6 col-lg-4"><div class="card h-100"><div class="card-body"><h3 class="h6">Cotizaciones</h3><p class="mb-0 text-secondary">Genera cotizaciones rápido con cálculos automáticos y presentación profesional. Beneficio: respuestas más ágiles y mejor imagen frente al cliente.</p></div></div></div>
             <div class="col-md-6 col-lg-4"><div class="card h-100"><div class="card-body"><h3 class="h6">Seguimiento</h3><p class="mb-0 text-secondary">Controla estados y avance de cada oportunidad para priorizar acciones comerciales. Beneficio: mayor visibilidad de qué cotizaciones están por cerrar.</p></div></div></div>
             <div class="col-md-6 col-lg-4"><div class="card h-100"><div class="card-body"><h3 class="h6">Vendedores</h3><p class="mb-0 text-secondary">Asigna cuentas y monitorea gestión por usuario para coordinar mejor al equipo. Beneficio: control de desempeño y trabajo comercial más ordenado.</p></div></div></div>
-            <div class="col-md-6 col-lg-4"><div class="card h-100"><div class="card-body"><h3 class="h6">Inventario</h3><p class="mb-0 text-secondary">Mantén control de stock para cotizar con información actualizada. Beneficio: menos errores por disponibilidad y mayor confianza del cliente.</p></div></div></div>
-            <div class="col-md-6 col-lg-4"><div class="card h-100"><div class="card-body"><h3 class="h6">Órdenes de compra</h3><p class="mb-0 text-secondary">Gestiona el flujo comercial posterior a la cotización para dar continuidad al proceso. Beneficio: operación más clara entre ventas y ejecución.</p></div></div></div>
+            <div class="col-md-6 col-lg-4"><div class="card h-100"><div class="card-body"><h3 class="h6 d-flex align-items-center gap-2">Inventario <span class="badge text-bg-warning">Pronto</span></h3><p class="mb-0 text-secondary">Mantén control de stock para cotizar con información actualizada. Beneficio: menos errores por disponibilidad y mayor confianza del cliente.</p></div></div></div>
+            <div class="col-md-6 col-lg-4"><div class="card h-100"><div class="card-body"><h3 class="h6 d-flex align-items-center gap-2">Órdenes de compra <span class="badge text-bg-warning">Pronto</span></h3><p class="mb-0 text-secondary">Gestiona el flujo comercial posterior a la cotización para dar continuidad al proceso. Beneficio: operación más clara entre ventas y ejecución.</p></div></div></div>
             <div class="col-md-6 col-lg-4"><div class="card h-100"><div class="card-body"><h3 class="h6">Reportes</h3><p class="mb-0 text-secondary">Consulta análisis básicos para evaluar avances y apoyar decisiones comerciales. Beneficio: mejor lectura de resultados y ajustes oportunos.</p></div></div></div>
         </div>
     </div>

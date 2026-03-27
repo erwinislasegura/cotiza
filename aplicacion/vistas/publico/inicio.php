@@ -73,6 +73,8 @@
 (() => {
     if (typeof Chart === 'undefined') return;
 
+    const esMovil = window.innerWidth < 768;
+
     const comparativo = document.getElementById('graficoComparativoInicio');
     if (comparativo) {
         new Chart(comparativo, {
@@ -80,15 +82,16 @@
             data: {
                 labels: ['Tiempo por cotización (min)', 'Errores en cotizaciones (%)', 'Cierres mensuales'],
                 datasets: [
-                    { label: 'Sin sistema', data: [52, 18, 12], backgroundColor: '#97a6ba', borderRadius: 6 },
-                    { label: 'Con CotizaPro', data: [14, 3, 29], backgroundColor: '#1f6feb', borderRadius: 6 }
+                    { label: 'Sin sistema', data: [52, 18, 12], backgroundColor: '#8fa0b5', borderRadius: 8 },
+                    { label: 'Con CotizaPro', data: [14, 3, 29], backgroundColor: '#0d6efd', borderRadius: 8 }
                 ]
             },
             options: {
+                indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } },
-                scales: { y: { beginAtZero: true, grid: { color: '#edf1f7' } } }
+                plugins: { legend: { position: esMovil ? 'top' : 'bottom', labels: { boxWidth: 10, font: { size: esMovil ? 10 : 12 } } } },
+                scales: { x: { beginAtZero: true, grid: { color: '#edf1f7' }, ticks: { font: { size: esMovil ? 10 : 12 } } }, y: { ticks: { font: { size: esMovil ? 10 : 12 } } } }
             }
         });
     }
@@ -107,14 +110,14 @@
                     borderColor: '#0d6efd',
                     backgroundColor: 'rgba(13,110,253,.15)',
                     pointBackgroundColor: '#0d6efd',
-                    pointRadius: 4
+                    pointRadius: esMovil ? 3 : 4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } },
-                scales: { y: { beginAtZero: true, ticks: { callback: (v) => v + '%' }, grid: { color: '#edf1f7' } } }
+                plugins: { legend: { position: esMovil ? 'top' : 'bottom', labels: { boxWidth: 10, font: { size: esMovil ? 10 : 12 } } } },
+                scales: { y: { beginAtZero: true, ticks: { callback: (v) => v + '%', font: { size: esMovil ? 10 : 12 } }, grid: { color: '#edf1f7' } }, x: { ticks: { font: { size: esMovil ? 10 : 12 } } } }
             }
         });
     }

@@ -55,3 +55,6 @@ textarea.form-control{height:auto;min-height:68px}
 .public-page .trend-item:last-child{border-bottom:0}
 .public-page .chart-card .card-body{height:260px}
 .public-page .chart-card canvas{width:100% !important;height:100% !important}
+@media (max-width: 767.98px){
+  .public-page .chart-card .card-body{height:220px}
+}
