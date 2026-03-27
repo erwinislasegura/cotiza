@@ -47,3 +47,5 @@ Plataforma SaaS multiempresa para gestión comercial de cotizaciones, diseñada 
 ## Configuración de DocumentRoot
 - **Recomendado**: apuntar el virtual host a `/public`.
 - **Si no puedes cambiar DocumentRoot** (hosting compartido), usa el `index.php` y `.htaccess` de la raíz del proyecto incluidos en este repositorio; estos redirigen automáticamente al front controller de `/public`.
+- La normalización de rutas soporta despliegues en subcarpetas (ejemplo: `/cotiza`).
+
