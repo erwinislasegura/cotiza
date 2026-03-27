@@ -70,6 +70,7 @@ $enrutador->agregar('GET', '/app/vendedores/editar/{id}', fn($id) => (new Gestio
 $enrutador->agregar('POST', '/app/vendedores/editar/{id}', fn($id) => (new GestionComercialControlador())->actualizarRegistro('vendedores', (int) $id), $mwEmpresa);
 $enrutador->agregar('POST', '/app/vendedores/eliminar/{id}', fn($id) => (new GestionComercialControlador())->eliminarRegistro('vendedores', (int) $id), $mwEmpresa);
 $enrutador->agregar('GET', '/app/categorias', fn() => (new GestionComercialControlador())->moduloBase('categorias'), $mwEmpresa);
+$enrutador->agregar('GET', '/app/categorias/exportar/excel', [GestionComercialControlador::class, 'exportarCategoriasExcel'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/categorias', fn() => (new GestionComercialControlador())->guardarModuloBase('categorias'), $mwEmpresa);
 $enrutador->agregar('GET', '/app/categorias/ver/{id}', fn($id) => (new GestionComercialControlador())->verRegistro('categorias', (int) $id), $mwEmpresa);
 $enrutador->agregar('GET', '/app/categorias/editar/{id}', fn($id) => (new GestionComercialControlador())->editarRegistro('categorias', (int) $id), $mwEmpresa);
