@@ -4,6 +4,7 @@ namespace Aplicacion\Controladores\Publico;
 
 use Aplicacion\Nucleo\Controlador;
 use Aplicacion\Modelos\Plan;
+use Aplicacion\Servicios\ServicioCorreo;
 
 class PublicoControlador extends Controlador
 {
@@ -27,6 +28,30 @@ class PublicoControlador extends Controlador
     public function contacto(): void
     {
         $this->vista('publico/contacto', [], 'publico');
+    }
+
+    public function enviarContacto(): void
+    {
+        validar_csrf();
+
+        $nombre = trim($_POST['nombre'] ?? '');
+        $correo = filter_var($_POST['correo'] ?? '', FILTER_VALIDATE_EMAIL);
+        $mensaje = trim($_POST['mensaje'] ?? '');
+
+        if ($nombre === '' || !$correo || $mensaje === '') {
+            flash('danger', 'Completa todos los campos del formulario de contacto.');
+            $this->redirigir('/contacto');
+        }
+
+        (new ServicioCorreo())->enviar(
+            'ventas@cotizapro.local',
+            'Nuevo lead desde landing',
+            'landing_contacto',
+            ['nombre' => $nombre, 'correo' => $correo, 'mensaje' => $mensaje]
+        );
+
+        flash('success', 'Gracias por escribirnos. Te contactaremos pronto.');
+        $this->redirigir('/contacto');
     }
 
     public function contratar(string $planSlug): void

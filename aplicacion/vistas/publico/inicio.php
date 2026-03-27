@@ -1,10 +1,102 @@
-<section class="hero py-5 bg-white border-bottom"><div class="container"><div class="row align-items-center g-4"><div class="col-lg-7"><span class="badge bg-info-subtle text-info-emphasis mb-2">SaaS de cotizaciones multiempresa</span><h1 class="display-6 fw-bold">Cotiza más rápido, vende con orden y proyecta una imagen profesional</h1><p class="lead text-secondary">Centraliza clientes, productos y cotizaciones en una sola plataforma comercial para equipos B2B.</p><div class="d-flex gap-2"><a href="/planes" class="btn btn-primary btn-sm">Ver planes</a><a href="/registro" class="btn btn-outline-primary btn-sm">Crear cuenta</a></div></div><div class="col-lg-5"><div class="card card-soft"><div class="card-body"><h6>Resultados que obtienen nuestros clientes</h6><ul class="small mb-0"><li>Cotizaciones en minutos</li><li>Seguimiento por estado y vencimiento</li><li>Control por empresa y roles</li><li>Menos errores y más cierres</li></ul></div></div></div></div></div></section>
-<section class="py-5"><div class="container"><h2 class="h4 mb-3">Beneficios operativos para tu negocio</h2><div class="row g-3 small"><div class="col-md-4"><div class="card h-100"><div class="card-body"><strong>Ahorro de tiempo</strong><p>Automatiza numeración y cálculos de impuestos por cotización.</p></div></div></div><div class="col-md-4"><div class="card h-100"><div class="card-body"><strong>Orden comercial</strong><p>Administra clientes, productos y estado de cada oportunidad.</p></div></div></div><div class="col-md-4"><div class="card h-100"><div class="card-body"><strong>Escala multiempresa</strong><p>Aísla datos por empresa con control total del superadministrador.</p></div></div></div></div></div></section>
-<section class="py-5 bg-white border-top border-bottom"><div class="container"><h2 class="h4">Cómo funciona</h2><div class="row g-3 small"><div class="col-md-3"><div class="card"><div class="card-body">1. Elige plan</div></div></div><div class="col-md-3"><div class="card"><div class="card-body">2. Registra tu empresa</div></div></div><div class="col-md-3"><div class="card"><div class="card-body">3. Crea cotizaciones</div></div></div><div class="col-md-3"><div class="card"><div class="card-body">4. Envía y da seguimiento</div></div></div></div></div></section>
-<section class="py-5"><div class="container"><div class="d-flex justify-content-between align-items-center mb-3"><h2 class="h4">Planes y precios</h2><a href="/planes" class="btn btn-outline-primary btn-sm">Comparar planes</a></div><div class="row g-3">
-<?php foreach ($planes as $plan): ?>
-<div class="col-md-4"><div class="card h-100 border-2" style="border-color: <?= e($plan['color_visual']) ?> !important;"><div class="card-body"><h5><?= e($plan['nombre']) ?></h5><p class="small text-secondary"><?= e($plan['resumen_comercial']) ?></p><div class="h4">$<?= number_format((float)$plan['precio_mensual'], 2) ?><small class="fs-6">/mes</small></div><a class="btn btn-primary btn-sm w-100" href="/contratar/<?= e($plan['slug']) ?>">Contratar plan</a></div></div></div>
-<?php endforeach; ?>
-</div></div></section>
-<section class="py-5 bg-white"><div class="container"><h2 class="h4">Preguntas frecuentes</h2><div class="accordion" id="faq"><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button" data-bs-toggle="collapse" data-bs-target="#f1">¿Puedo cambiar de plan?</button></h2><div id="f1" class="accordion-collapse collapse show"><div class="accordion-body">Sí, desde el panel de superadministrador sin perder integridad de datos.</div></div></div><div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#f2">¿Incluye PDF y envío por correo?</button></h2><div id="f2" class="accordion-collapse collapse"><div class="accordion-body">Depende de las funcionalidades habilitadas para tu plan.</div></div></div></div></div></section>
-<section class="py-5"><div class="container text-center"><h2 class="h4">¿Listo para profesionalizar tus cotizaciones?</h2><a href="/registro" class="btn btn-primary btn-sm">Comenzar ahora</a></div></section>
+<section class="hero py-5 bg-white border-bottom">
+    <div class="container">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+                <span class="badge bg-info-subtle text-info-emphasis mb-2">SaaS de cotizaciones multiempresa</span>
+                <h1 class="display-6 fw-bold">Cotiza más rápido, vende con orden y proyecta una imagen profesional</h1>
+                <p class="lead text-secondary">Centraliza clientes, productos y cotizaciones en una sola plataforma comercial para equipos B2B.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="/planes" class="btn btn-primary btn-sm">Ver planes</a>
+                    <a href="/registro" class="btn btn-outline-primary btn-sm">Crear cuenta</a>
+                    <a href="/contacto" class="btn btn-outline-secondary btn-sm">Solicitar información</a>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="card card-soft">
+                    <div class="card-body">
+                        <h6>Resultados que obtienen nuestros clientes</h6>
+                        <ul class="small mb-0">
+                            <li>Cotizaciones en minutos</li>
+                            <li>Seguimiento por estado y vencimiento</li>
+                            <li>Control por empresa y roles</li>
+                            <li>Menos errores y más cierres</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <h2 class="h4 mb-3">Beneficios operativos para tu negocio</h2>
+        <div class="row g-3 small">
+            <div class="col-md-4"><div class="card h-100"><div class="card-body"><strong>Ahorro de tiempo</strong><p>Automatiza numeración y cálculos de impuestos por cotización.</p></div></div></div>
+            <div class="col-md-4"><div class="card h-100"><div class="card-body"><strong>Orden comercial</strong><p>Administra clientes, productos y estado de cada oportunidad.</p></div></div></div>
+            <div class="col-md-4"><div class="card h-100"><div class="card-body"><strong>Escala multiempresa</strong><p>Aísla datos por empresa con control total del superadministrador.</p></div></div></div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-white border-top border-bottom">
+    <div class="container">
+        <h2 class="h4">Cómo funciona</h2>
+        <div class="row g-3 small">
+            <div class="col-md-3"><div class="card"><div class="card-body">1. Elige plan</div></div></div>
+            <div class="col-md-3"><div class="card"><div class="card-body">2. Registra tu empresa</div></div></div>
+            <div class="col-md-3"><div class="card"><div class="card-body">3. Crea cotizaciones</div></div></div>
+            <div class="col-md-3"><div class="card"><div class="card-body">4. Envía y da seguimiento</div></div></div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h4">Planes y precios</h2>
+            <a href="/planes" class="btn btn-outline-primary btn-sm">Comparar planes</a>
+        </div>
+        <div class="row g-3">
+            <?php foreach ($planes as $plan): ?>
+                <div class="col-md-4">
+                    <div class="card h-100 border-2" style="border-color: <?= e($plan['color_visual']) ?> !important;">
+                        <div class="card-body">
+                            <h5><?= e($plan['nombre']) ?></h5>
+                            <p class="small text-secondary"><?= e($plan['resumen_comercial']) ?></p>
+                            <div class="h4">$<?= number_format((float)$plan['precio_mensual'], 2) ?><small class="fs-6">/mes</small></div>
+                            <a class="btn btn-primary btn-sm w-100" href="/contratar/<?= e($plan['slug']) ?>">Contratar plan</a>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-white">
+    <div class="container">
+        <h2 class="h4">Preguntas frecuentes</h2>
+        <div class="accordion" id="faq">
+            <div class="accordion-item">
+                <h2 class="accordion-header"><button class="accordion-button" data-bs-toggle="collapse" data-bs-target="#f1">¿Puedo cambiar de plan?</button></h2>
+                <div id="f1" class="accordion-collapse collapse show"><div class="accordion-body">Sí, desde el panel de superadministrador sin perder integridad de datos.</div></div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#f2">¿Incluye PDF y envío por correo?</button></h2>
+                <div id="f2" class="accordion-collapse collapse"><div class="accordion-body">Depende de las funcionalidades habilitadas para tu plan.</div></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container text-center">
+        <h2 class="h4">¿Listo para profesionalizar tus cotizaciones?</h2>
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+            <a href="/registro" class="btn btn-primary btn-sm">Comenzar ahora</a>
+            <a href="/iniciar-sesion" class="btn btn-outline-primary btn-sm">Iniciar sesión</a>
+            <a href="/contacto" class="btn btn-outline-secondary btn-sm">Solicitar información</a>
+        </div>
+    </div>
+</section>
