@@ -14,6 +14,7 @@ $mwEmpresa = [AutenticadoMiddleware::class, EmpresaMiddleware::class];
 
 $enrutador->agregar('GET', '/app/panel', [GestionComercialControlador::class, 'inicio'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/clientes', [ClientesControlador::class, 'index'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/clientes/exportar/excel', [ClientesControlador::class, 'exportarExcel'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/clientes', [ClientesControlador::class, 'guardar'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/clientes/crear', [ClientesControlador::class, 'crear'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/clientes/crear', [ClientesControlador::class, 'guardar'], $mwEmpresa);
