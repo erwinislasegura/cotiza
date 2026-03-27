@@ -44,7 +44,18 @@ class ProductosControlador extends Controlador
             'estado' => $_POST['estado'] ?? 'activo',
         ]);
         flash('success', 'Producto creado correctamente.');
-        $this->redirigir('/app/productos');
+        $this->redirigir($this->obtenerRutaRetorno('/app/productos'));
+    }
+
+
+    private function obtenerRutaRetorno(string $rutaPredeterminada): string
+    {
+        $ruta = trim($_POST['redirect_to'] ?? '');
+        if ($ruta !== '' && str_starts_with($ruta, '/app/')) {
+            return $ruta;
+        }
+
+        return $rutaPredeterminada;
     }
 
     public function ver(int $id): void

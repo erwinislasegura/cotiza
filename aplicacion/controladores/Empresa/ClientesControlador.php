@@ -46,7 +46,18 @@ class ClientesControlador extends Controlador
         ]);
 
         flash('success', 'Cliente creado correctamente.');
-        $this->redirigir('/app/clientes');
+        $this->redirigir($this->obtenerRutaRetorno('/app/clientes'));
+    }
+
+
+    private function obtenerRutaRetorno(string $rutaPredeterminada): string
+    {
+        $ruta = trim($_POST['redirect_to'] ?? '');
+        if ($ruta !== '' && str_starts_with($ruta, '/app/')) {
+            return $ruta;
+        }
+
+        return $rutaPredeterminada;
     }
 
     public function ver(int $id): void
