@@ -29,7 +29,7 @@ class Producto extends Modelo
 
     public function crear(array $data): int
     {
-        $sql = 'INSERT INTO productos (empresa_id,categoria_id,codigo,nombre,descripcion,unidad,precio,impuesto,estado,fecha_creacion) VALUES (:empresa_id,:categoria_id,:codigo,:nombre,:descripcion,:unidad,:precio,:impuesto,:estado,NOW())';
+        $sql = 'INSERT INTO productos (empresa_id,categoria_id,tipo,codigo,nombre,descripcion,unidad,precio,costo,impuesto,descuento_maximo,estado,fecha_creacion) VALUES (:empresa_id,:categoria_id,:tipo,:codigo,:nombre,:descripcion,:unidad,:precio,:costo,:impuesto,:descuento_maximo,:estado,NOW())';
         $this->db->prepare($sql)->execute($data);
         return (int) $this->db->lastInsertId();
     }

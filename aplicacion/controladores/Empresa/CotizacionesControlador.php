@@ -12,8 +12,15 @@ class CotizacionesControlador extends Controlador
 {
     public function index(): void
     {
+        $buscar = trim($_GET['q'] ?? '');
         $cotizaciones = (new Cotizacion())->listar(empresa_actual_id());
-        $this->vista('empresa/cotizaciones/index', compact('cotizaciones'), 'empresa');
+        if ($buscar !== '') {
+            $cotizaciones = array_values(array_filter($cotizaciones, static function (array $cotizacion) use ($buscar): bool {
+                return str_contains(strtolower($cotizacion['numero']), strtolower($buscar))
+                    || str_contains(strtolower($cotizacion['cliente']), strtolower($buscar));
+            }));
+        }
+        $this->vista('empresa/cotizaciones/index', compact('cotizaciones', 'buscar'), 'empresa');
     }
 
     public function crear(): void
@@ -38,6 +45,8 @@ class CotizacionesControlador extends Controlador
         $precio = (float) $_POST['precio_unitario'];
         $impuestoPorcentaje = (float) $_POST['impuesto_item'];
         $subtotal = $cantidad * $precio;
+        $descuento = (float) ($_POST['descuento'] ?? 0);
+        $subtotal = max(0, $subtotal - $descuento);
         $impuesto = $subtotal * ($impuestoPorcentaje / 100);
         $total = $subtotal + $impuesto;
 
@@ -52,7 +61,7 @@ class CotizacionesControlador extends Controlador
             'consecutivo' => $consecutivo,
             'estado' => $_POST['estado'] ?? 'borrador',
             'subtotal' => $subtotal,
-            'descuento' => 0,
+            'descuento' => $descuento,
             'impuesto' => $impuesto,
             'total' => $total,
             'observaciones' => trim($_POST['observaciones'] ?? ''),

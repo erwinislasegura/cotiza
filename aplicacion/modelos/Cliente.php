@@ -11,7 +11,7 @@ class Cliente extends Modelo
         $sql = 'SELECT * FROM clientes WHERE empresa_id=:empresa_id AND fecha_eliminacion IS NULL';
         $params = ['empresa_id' => $empresaId];
         if ($buscar !== '') {
-            $sql .= ' AND (nombre LIKE :buscar OR correo LIKE :buscar)';
+            $sql .= ' AND (nombre LIKE :buscar OR correo LIKE :buscar OR razon_social LIKE :buscar OR nombre_comercial LIKE :buscar OR identificador_fiscal LIKE :buscar)';
             $params['buscar'] = "%{$buscar}%";
         }
         $sql .= ' ORDER BY id DESC';
@@ -29,7 +29,7 @@ class Cliente extends Modelo
 
     public function crear(array $data): int
     {
-        $sql = 'INSERT INTO clientes (empresa_id, nombre, correo, telefono, direccion, notas, estado, fecha_creacion) VALUES (:empresa_id,:nombre,:correo,:telefono,:direccion,:notas,:estado,NOW())';
+        $sql = 'INSERT INTO clientes (empresa_id, nombre, razon_social, nombre_comercial, identificador_fiscal, giro, correo, telefono, direccion, ciudad, vendedor_id, notas, estado, fecha_creacion) VALUES (:empresa_id,:nombre,:razon_social,:nombre_comercial,:identificador_fiscal,:giro,:correo,:telefono,:direccion,:ciudad,:vendedor_id,:notas,:estado,NOW())';
         $this->db->prepare($sql)->execute($data);
         return (int) $this->db->lastInsertId();
     }

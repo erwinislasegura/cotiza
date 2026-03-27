@@ -28,4 +28,9 @@ class Usuario extends Modelo
         $stmt->execute($data);
         return (int) $this->db->lastInsertId();
     }
+
+    public function listarRolesEmpresa(): array
+    {
+        return $this->db->query("SELECT id, nombre FROM roles WHERE codigo IN ('admin_empresa','vendedor','visor') ORDER BY nombre")->fetchAll();
+    }
 }

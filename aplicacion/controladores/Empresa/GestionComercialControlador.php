@@ -1,0 +1,202 @@
+<?php
+
+namespace Aplicacion\Controladores\Empresa;
+
+use Aplicacion\Nucleo\Controlador;
+use Aplicacion\Modelos\GestionComercial;
+use Aplicacion\Modelos\Cliente;
+use Aplicacion\Modelos\Cotizacion;
+
+class GestionComercialControlador extends Controlador
+{
+    private GestionComercial $modelo;
+
+    public function __construct()
+    {
+        $this->modelo = new GestionComercial();
+    }
+
+    public function inicio(): void
+    {
+        $empresaId = empresa_actual_id();
+        $resumen = $this->modelo->estadisticasInicio($empresaId);
+        $cotizaciones = (new Cotizacion())->listar($empresaId);
+        $this->vista('empresa/panel', compact('resumen', 'cotizaciones'), 'empresa');
+    }
+
+    public function contactos(): void
+    {
+        $empresaId = empresa_actual_id();
+        $buscar = trim($_GET['q'] ?? '');
+        $clientes = (new Cliente())->listar($empresaId);
+        $contactos = $this->modelo->listarTablaEmpresa('contactos_cliente', $empresaId, $buscar, 30);
+        $this->vista('empresa/contactos/index', compact('contactos', 'clientes', 'buscar'), 'empresa');
+    }
+
+    public function guardarContacto(): void
+    {
+        validar_csrf();
+        $this->modelo->crear('contactos_cliente', [
+            'empresa_id' => empresa_actual_id(),
+            'cliente_id' => (int) ($_POST['cliente_id'] ?? 0),
+            'nombre' => trim($_POST['nombre'] ?? ''),
+            'cargo' => trim($_POST['cargo'] ?? ''),
+            'correo' => trim($_POST['correo'] ?? ''),
+            'telefono' => trim($_POST['telefono'] ?? ''),
+            'celular' => trim($_POST['celular'] ?? ''),
+            'es_principal' => isset($_POST['es_principal']) ? 1 : 0,
+            'observaciones' => trim($_POST['observaciones'] ?? ''),
+            'fecha_creacion' => date('Y-m-d H:i:s'),
+        ]);
+        flash('success', 'Contacto guardado correctamente.');
+        $this->redirigir('/app/contactos');
+    }
+
+    public function moduloBase(string $modulo): void
+    {
+        $mapeo = [
+            'vendedores' => ['tabla' => 'vendedores', 'vista' => 'empresa/modulos/vendedores', 'titulo' => 'Vendedores'],
+            'categorias' => ['tabla' => 'categorias_productos', 'vista' => 'empresa/modulos/categorias', 'titulo' => 'Categorías'],
+            'listas-precios' => ['tabla' => 'listas_precios', 'vista' => 'empresa/modulos/listas_precios', 'titulo' => 'Listas de precios'],
+            'seguimiento' => ['tabla' => 'seguimientos_comerciales', 'vista' => 'empresa/modulos/seguimiento', 'titulo' => 'Seguimiento comercial'],
+            'aprobaciones' => ['tabla' => 'aprobaciones_cotizacion', 'vista' => 'empresa/modulos/aprobaciones', 'titulo' => 'Aprobaciones'],
+            'documentos' => ['tabla' => 'documentos_plantillas', 'vista' => 'empresa/modulos/documentos', 'titulo' => 'Documentos y plantillas'],
+            'notificaciones' => ['tabla' => 'notificaciones_empresa', 'vista' => 'empresa/modulos/notificaciones', 'titulo' => 'Notificaciones'],
+            'historial' => ['tabla' => 'historial_actividad', 'vista' => 'empresa/modulos/historial', 'titulo' => 'Historial de actividad'],
+        ];
+
+        if (!isset($mapeo[$modulo])) {
+            http_response_code(404);
+            echo 'Módulo no encontrado';
+            return;
+        }
+
+        $buscar = trim($_GET['q'] ?? '');
+        $empresaId = empresa_actual_id();
+        $def = $mapeo[$modulo];
+        $registros = $this->modelo->listarTablaEmpresa($def['tabla'], $empresaId, $buscar, 40);
+        $clientes = (new Cliente())->listar($empresaId);
+        $cotizaciones = (new Cotizacion())->listar($empresaId);
+        $titulo = $def['titulo'];
+        $this->vista($def['vista'], compact('registros', 'buscar', 'clientes', 'cotizaciones', 'titulo'), 'empresa');
+    }
+
+    public function guardarModuloBase(string $modulo): void
+    {
+        validar_csrf();
+        $empresaId = empresa_actual_id();
+
+        if ($modulo === 'vendedores') {
+            $this->modelo->crear('vendedores', [
+                'empresa_id' => $empresaId,
+                'nombre' => trim($_POST['nombre'] ?? ''),
+                'correo' => trim($_POST['correo'] ?? ''),
+                'telefono' => trim($_POST['telefono'] ?? ''),
+                'comision' => (float) ($_POST['comision'] ?? 0),
+                'estado' => $_POST['estado'] ?? 'activo',
+                'fecha_creacion' => date('Y-m-d H:i:s'),
+            ]);
+        }
+
+        if ($modulo === 'categorias') {
+            $this->modelo->crear('categorias_productos', [
+                'empresa_id' => $empresaId,
+                'nombre' => trim($_POST['nombre'] ?? ''),
+                'descripcion' => trim($_POST['descripcion'] ?? ''),
+                'estado' => $_POST['estado'] ?? 'activo',
+                'fecha_creacion' => date('Y-m-d H:i:s'),
+            ]);
+        }
+
+        if ($modulo === 'listas-precios') {
+            $this->modelo->crear('listas_precios', [
+                'empresa_id' => $empresaId,
+                'nombre' => trim($_POST['nombre'] ?? ''),
+                'vigencia_desde' => $_POST['vigencia_desde'] ?: null,
+                'vigencia_hasta' => $_POST['vigencia_hasta'] ?: null,
+                'tipo_lista' => trim($_POST['tipo_lista'] ?? 'general'),
+                'estado' => $_POST['estado'] ?? 'activo',
+                'reglas_base' => trim($_POST['reglas_base'] ?? ''),
+                'fecha_creacion' => date('Y-m-d H:i:s'),
+            ]);
+        }
+
+        if ($modulo === 'seguimiento') {
+            $this->modelo->crear('seguimientos_comerciales', [
+                'empresa_id' => $empresaId,
+                'cotizacion_id' => (int) ($_POST['cotizacion_id'] ?? 0) ?: null,
+                'cliente_id' => (int) ($_POST['cliente_id'] ?? 0) ?: null,
+                'responsable' => trim($_POST['responsable'] ?? ''),
+                'proxima_accion' => trim($_POST['proxima_accion'] ?? ''),
+                'fecha_seguimiento' => $_POST['fecha_seguimiento'] ?: null,
+                'comentarios' => trim($_POST['comentarios'] ?? ''),
+                'estado_comercial' => $_POST['estado_comercial'] ?? 'abierto',
+                'probabilidad_cierre' => (int) ($_POST['probabilidad_cierre'] ?? 0),
+                'fecha_creacion' => date('Y-m-d H:i:s'),
+            ]);
+        }
+
+        if ($modulo === 'aprobaciones') {
+            $this->modelo->crear('aprobaciones_cotizacion', [
+                'empresa_id' => $empresaId,
+                'cotizacion_id' => (int) ($_POST['cotizacion_id'] ?? 0) ?: null,
+                'monto' => (float) ($_POST['monto'] ?? 0),
+                'motivo' => trim($_POST['motivo'] ?? ''),
+                'solicitante' => trim($_POST['solicitante'] ?? ''),
+                'aprobador' => trim($_POST['aprobador'] ?? ''),
+                'estado' => $_POST['estado'] ?? 'pendiente',
+                'fecha_aprobacion' => $_POST['fecha_aprobacion'] ?: null,
+                'observaciones' => trim($_POST['observaciones'] ?? ''),
+                'fecha_creacion' => date('Y-m-d H:i:s'),
+            ]);
+        }
+
+        if ($modulo === 'documentos') {
+            $this->modelo->crear('documentos_plantillas', [
+                'empresa_id' => $empresaId,
+                'nombre' => trim($_POST['nombre'] ?? ''),
+                'tipo_documento' => trim($_POST['tipo_documento'] ?? 'cotizacion'),
+                'terminos_defecto' => trim($_POST['terminos_defecto'] ?? ''),
+                'observaciones_defecto' => trim($_POST['observaciones_defecto'] ?? ''),
+                'firma' => trim($_POST['firma'] ?? ''),
+                'logo' => trim($_POST['logo'] ?? ''),
+                'pie_documento' => trim($_POST['pie_documento'] ?? ''),
+                'estado' => $_POST['estado'] ?? 'activo',
+                'fecha_creacion' => date('Y-m-d H:i:s'),
+            ]);
+        }
+
+        if ($modulo === 'notificaciones') {
+            $this->modelo->crear('notificaciones_empresa', [
+                'empresa_id' => $empresaId,
+                'tipo' => trim($_POST['tipo'] ?? 'sistema'),
+                'titulo' => trim($_POST['titulo'] ?? ''),
+                'mensaje' => trim($_POST['mensaje'] ?? ''),
+                'estado' => trim($_POST['estado'] ?? 'pendiente'),
+                'fecha_evento' => $_POST['fecha_evento'] ?: null,
+                'fecha_creacion' => date('Y-m-d H:i:s'),
+            ]);
+        }
+
+        if ($modulo === 'historial') {
+            $this->modelo->crear('historial_actividad', [
+                'empresa_id' => $empresaId,
+                'usuario_nombre' => usuario_actual()['nombre'] ?? 'Sistema',
+                'modulo' => trim($_POST['modulo'] ?? ''),
+                'accion' => trim($_POST['accion'] ?? ''),
+                'detalle' => trim($_POST['detalle'] ?? ''),
+                'fecha_creacion' => date('Y-m-d H:i:s'),
+            ]);
+        }
+
+        flash('success', 'Registro guardado correctamente.');
+        $this->redirigir('/app/' . $modulo);
+    }
+
+    public function reportes(): void
+    {
+        $empresaId = empresa_actual_id();
+        $resumen = $this->modelo->estadisticasInicio($empresaId);
+        $this->vista('empresa/reportes/index', compact('resumen'), 'empresa');
+    }
+}
