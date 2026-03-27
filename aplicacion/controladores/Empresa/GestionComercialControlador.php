@@ -8,6 +8,7 @@ use Aplicacion\Modelos\Cliente;
 use Aplicacion\Modelos\Cotizacion;
 use Aplicacion\Modelos\Usuario;
 use Aplicacion\Servicios\ExcelExpoFormato;
+use Aplicacion\Servicios\ServicioPreciosLista;
 
 class GestionComercialControlador extends Controlador
 {
@@ -382,6 +383,7 @@ class GestionComercialControlador extends Controlador
             $vigenciaDesde = $_POST['vigencia_desde'] ?: null;
             $vigenciaHasta = $_POST['vigencia_hasta'] ?: null;
             $tipoLista = trim($_POST['tipo_lista'] ?? 'general');
+            $canalVenta = trim($_POST['canal_venta'] ?? '');
             $estado = $_POST['estado'] ?? 'activo';
 
             if ($nombre === '') {
@@ -404,6 +406,7 @@ class GestionComercialControlador extends Controlador
                 'vigencia_desde' => $vigenciaDesde,
                 'vigencia_hasta' => $vigenciaHasta,
                 'tipo_lista' => $tipoLista !== '' ? $tipoLista : 'general',
+                'canal_venta' => $canalVenta !== '' ? $canalVenta : null,
                 'estado' => $estado,
                 'reglas_base' => trim($_POST['reglas_base'] ?? ''),
                 'fecha_creacion' => date('Y-m-d H:i:s'),
@@ -519,6 +522,11 @@ class GestionComercialControlador extends Controlador
             return;
         }
 
+        if ($modulo === 'listas-precios') {
+            $this->editarListaPrecios($id);
+            return;
+        }
+
         $mapeo = $this->mapeoModulos();
         if (!isset($mapeo[$modulo])) {
             http_response_code(404);
@@ -538,6 +546,11 @@ class GestionComercialControlador extends Controlador
     {
         if ($modulo === 'vendedores') {
             $this->actualizarVendedor($id);
+            return;
+        }
+
+        if ($modulo === 'listas-precios') {
+            $this->actualizarListaPrecios($id);
             return;
         }
 
@@ -638,6 +651,65 @@ class GestionComercialControlador extends Controlador
         $this->redirigir('/app/' . $modulo);
     }
 
+    private function editarListaPrecios(int $id): void
+    {
+        $empresaId = empresa_actual_id();
+        $registro = $this->modelo->obtenerPorId('listas_precios', $empresaId, $id);
+
+        if (!$registro) {
+            flash('danger', 'Lista de precios no encontrada.');
+            $this->redirigir('/app/listas-precios');
+        }
+
+        $this->vista('empresa/modulos/listas_precios_editar', compact('registro'), 'empresa');
+    }
+
+    private function actualizarListaPrecios(int $id): void
+    {
+        validar_csrf();
+        $empresaId = empresa_actual_id();
+        $registro = $this->modelo->obtenerPorId('listas_precios', $empresaId, $id);
+
+        if (!$registro) {
+            flash('danger', 'Lista de precios no encontrada.');
+            $this->redirigir('/app/listas-precios');
+        }
+
+        $nombre = trim($_POST['nombre'] ?? '');
+        $vigenciaDesde = $_POST['vigencia_desde'] ?: null;
+        $vigenciaHasta = $_POST['vigencia_hasta'] ?: null;
+        $tipoLista = trim($_POST['tipo_lista'] ?? 'general');
+        $canalVenta = trim($_POST['canal_venta'] ?? '');
+        $estado = $_POST['estado'] ?? 'activo';
+
+        if ($nombre === '') {
+            flash('danger', 'El nombre de la lista de precios es obligatorio.');
+            $this->redirigir('/app/listas-precios/editar/' . $id);
+        }
+
+        if (!in_array($estado, ['activo', 'inactivo'], true)) {
+            $estado = 'activo';
+        }
+
+        if ($vigenciaDesde !== null && $vigenciaHasta !== null && $vigenciaHasta < $vigenciaDesde) {
+            flash('danger', 'La vigencia hasta no puede ser anterior a la vigencia desde.');
+            $this->redirigir('/app/listas-precios/editar/' . $id);
+        }
+
+        $this->modelo->actualizarDinamico('listas_precios', $empresaId, $id, [
+            'nombre' => $nombre,
+            'vigencia_desde' => $vigenciaDesde,
+            'vigencia_hasta' => $vigenciaHasta,
+            'tipo_lista' => $tipoLista !== '' ? $tipoLista : 'general',
+            'canal_venta' => $canalVenta !== '' ? $canalVenta : null,
+            'estado' => $estado,
+            'reglas_base' => trim($_POST['reglas_base'] ?? ''),
+        ]);
+
+        flash('success', 'Lista de precios actualizada correctamente.');
+        $this->redirigir('/app/listas-precios');
+    }
+
     private function mapeoModulos(): array
     {
         return [
@@ -651,5 +723,37 @@ class GestionComercialControlador extends Controlador
             'notificaciones' => ['tabla' => 'notificaciones_empresa', 'titulo' => 'Notificaciones'],
             'historial' => ['tabla' => 'historial_actividad', 'titulo' => 'Historial / actividad'],
         ];
+    }
+
+    public function precioProducto(): void
+    {
+        $empresaId = empresa_actual_id();
+        $productoId = (int) ($_GET['producto_id'] ?? 0);
+        $clienteId = (int) ($_GET['cliente_id'] ?? 0) ?: null;
+        $canal = trim((string) ($_GET['canal'] ?? ''));
+
+        header('Content-Type: application/json; charset=UTF-8');
+
+        if ($productoId <= 0) {
+            http_response_code(422);
+            echo json_encode(['ok' => false, 'mensaje' => 'producto_id es obligatorio']);
+            return;
+        }
+
+        $precio = (new ServicioPreciosLista())->calcularPrecioProducto(
+            $empresaId,
+            $productoId,
+            $clienteId,
+            $canal !== '' ? $canal : null,
+            date('Y-m-d')
+        );
+
+        if (!$precio) {
+            http_response_code(404);
+            echo json_encode(['ok' => false, 'mensaje' => 'Producto no encontrado']);
+            return;
+        }
+
+        echo json_encode(['ok' => true, 'data' => $precio], JSON_UNESCAPED_UNICODE);
     }
 }

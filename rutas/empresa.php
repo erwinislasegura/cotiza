@@ -77,6 +77,7 @@ $enrutador->agregar('GET', '/app/categorias/editar/{id}', fn($id) => (new Gestio
 $enrutador->agregar('POST', '/app/categorias/editar/{id}', fn($id) => (new GestionComercialControlador())->actualizarRegistro('categorias', (int) $id), $mwEmpresa);
 $enrutador->agregar('POST', '/app/categorias/eliminar/{id}', fn($id) => (new GestionComercialControlador())->eliminarRegistro('categorias', (int) $id), $mwEmpresa);
 $enrutador->agregar('GET', '/app/listas-precios', fn() => (new GestionComercialControlador())->moduloBase('listas-precios'), $mwEmpresa);
+$enrutador->agregar('GET', '/app/listas-precios/precio-producto', [GestionComercialControlador::class, 'precioProducto'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/listas-precios', fn() => (new GestionComercialControlador())->guardarModuloBase('listas-precios'), $mwEmpresa);
 $enrutador->agregar('GET', '/app/listas-precios/ver/{id}', fn($id) => (new GestionComercialControlador())->verRegistro('listas-precios', (int) $id), $mwEmpresa);
 $enrutador->agregar('GET', '/app/listas-precios/editar/{id}', fn($id) => (new GestionComercialControlador())->editarRegistro('listas-precios', (int) $id), $mwEmpresa);

@@ -61,6 +61,15 @@
         </select>
       </div>
       <div class="col-md-2">
+        <label class="form-label">Lista de precios</label>
+        <select name="lista_precio_id" class="form-select">
+          <option value="">General</option>
+          <?php foreach ($listasPrecios as $lista): ?>
+            <option value="<?= (int) $lista['id'] ?>"><?= e($lista['nombre']) ?></option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+      <div class="col-md-2">
         <label class="form-label">Estado</label>
         <select name="estado" class="form-select">
           <option value="activo">Activo</option>
@@ -112,6 +121,7 @@
           <th>Correo</th>
           <th>Teléfono</th>
           <th>Ciudad</th>
+          <th>Lista precio</th>
           <th>Estado</th>
           <th class="text-end">Acciones</th>
         </tr>
@@ -119,7 +129,7 @@
       <tbody>
         <?php if (empty($clientes)): ?>
           <tr>
-            <td colspan="8" class="text-center py-4 text-muted">No hay clientes registrados con este criterio.</td>
+            <td colspan="9" class="text-center py-4 text-muted">No hay clientes registrados con este criterio.</td>
           </tr>
         <?php else: ?>
           <?php foreach($clientes as $c): ?>
@@ -130,6 +140,20 @@
               <td><?= e($c['correo']) ?></td>
               <td><?= e($c['telefono']) ?></td>
               <td><?= e($c['ciudad'] ?? '') ?></td>
+              <td>
+                <?php $listaId = (int) ($mapaListasPorCliente[(int) $c['id']] ?? 0); ?>
+                <?php if ($listaId === 0): ?>
+                  <span class="text-muted">General</span>
+                <?php else: ?>
+                  <?php
+                    $nombreLista = 'General';
+                    foreach ($listasPrecios as $lp) {
+                        if ((int) $lp['id'] === $listaId) { $nombreLista = (string) $lp['nombre']; break; }
+                    }
+                  ?>
+                  <?= e($nombreLista) ?>
+                <?php endif; ?>
+              </td>
               <td>
                 <span class="badge <?= ($c['estado'] === 'activo') ? 'badge-estado-activo' : 'badge-estado-inactivo' ?>">
                   <?= e(ucfirst($c['estado'])) ?>

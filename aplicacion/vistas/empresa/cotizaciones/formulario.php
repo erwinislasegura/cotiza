@@ -31,13 +31,23 @@ $puedeGuardar = $hayClientes && $hayProductos;
                 </div>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-2">
                 <label class="small">Estado</label>
                 <select class="form-select" name="estado">
                     <option>borrador</option>
                     <option>enviada</option>
                     <option>aprobada</option>
                     <option>rechazada</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="small">Canal venta</label>
+                <select class="form-select" name="canal_venta" id="canal_venta">
+                    <option value="">General</option>
+                    <option value="local">Local</option>
+                    <option value="delivery">Delivery</option>
+                    <option value="ecommerce">E-commerce</option>
                 </select>
             </div>
 
@@ -66,6 +76,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span>Detalle de cotización</span>
+            <small class="text-muted">Al seleccionar producto se sugerirá precio según lista del cliente/canal.</small>
             <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-linea">Agregar línea</button>
         </div>
         <div class="card-body">
@@ -133,7 +144,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
     <tr>
         <td>
             <div class="input-group input-group-sm">
-                <select class="form-select" name="producto_id[]">
+                <select class="form-select js-producto" name="producto_id[]">
                     <option value="">Seleccionar</option>
                     <?php foreach ($productos as $p): ?>
                         <option value="<?= $p['id'] ?>"><?= e($p['nombre']) ?></option>
@@ -231,6 +242,36 @@ $puedeGuardar = $hayClientes && $hayProductos;
         return '$' + (Math.round((valor + Number.EPSILON) * 100) / 100).toFixed(2);
     }
 
+    async function autocompletarPrecioDesdeLista(fila) {
+        const selectProducto = fila.querySelector('.js-producto');
+        const clienteId = document.querySelector('[name="cliente_id"]')?.value || '';
+        const canal = document.getElementById('canal_venta')?.value || '';
+
+        if (!selectProducto || !selectProducto.value || !clienteId) {
+            return;
+        }
+
+        try {
+            const params = new URLSearchParams({
+                producto_id: selectProducto.value,
+                cliente_id: clienteId,
+                canal: canal
+            });
+            const resp = await fetch('<?= e(url('/app/listas-precios/precio-producto')) ?>?' + params.toString(), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await resp.json();
+            if (data.ok && data.data && typeof data.data.precio_final !== 'undefined') {
+                const inputPrecio = fila.querySelector('.js-precio');
+                if (inputPrecio && (parseFloat(inputPrecio.value || '0') <= 0)) {
+                    inputPrecio.value = String(data.data.precio_final);
+                }
+            }
+        } catch (e) {
+            // Ignorar para no interrumpir la cotización manual
+        }
+    }
+
     function recalcular() {
         let subtotal = 0;
         let iva = 0;
@@ -284,6 +325,14 @@ $puedeGuardar = $hayClientes && $hayProductos;
             control.addEventListener('input', recalcular);
             control.addEventListener('change', recalcular);
         });
+
+        const selectProducto = fila.querySelector('.js-producto');
+        if (selectProducto) {
+            selectProducto.addEventListener('change', async () => {
+                await autocompletarPrecioDesdeLista(fila);
+                recalcular();
+            });
+        }
         cuerpo.appendChild(fila);
     }
 
@@ -295,6 +344,8 @@ $puedeGuardar = $hayClientes && $hayProductos;
     agregarFila();
     document.getElementById('descuento_tipo_total').addEventListener('change', recalcular);
     document.getElementById('descuento_total').addEventListener('input', recalcular);
+    document.querySelector('[name="cliente_id"]')?.addEventListener('change', () => { cuerpo.querySelectorAll('tr').forEach((fila) => autocompletarPrecioDesdeLista(fila)); });
+    document.getElementById('canal_venta')?.addEventListener('change', () => { cuerpo.querySelectorAll('tr').forEach((fila) => autocompletarPrecioDesdeLista(fila)); });
     recalcular();
 })();
 </script>

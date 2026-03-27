@@ -12,15 +12,25 @@ class ClientesControlador extends Controlador
 {
     public function index(): void
     {
+        $empresaId = empresa_actual_id();
         $buscar = trim($_GET['q'] ?? '');
-        $clientes = (new Cliente())->listar(empresa_actual_id(), $buscar);
-        $vendedores = (new GestionComercial())->listarTablaEmpresa('vendedores', empresa_actual_id(), '', 200);
-        $this->vista('empresa/clientes/index', compact('clientes', 'buscar', 'vendedores'), 'empresa');
+        $gestion = new GestionComercial();
+        $clientes = (new Cliente())->listar($empresaId, $buscar);
+        $vendedores = $gestion->listarTablaEmpresa('vendedores', $empresaId, '', 200);
+        $listasPrecios = $gestion->listarListasPreciosActivas($empresaId);
+
+        $mapaListasPorCliente = [];
+        foreach ($clientes as $cliente) {
+            $mapaListasPorCliente[(int) $cliente['id']] = $gestion->obtenerListaPrecioCliente($empresaId, (int) $cliente['id']);
+        }
+
+        $this->vista('empresa/clientes/index', compact('clientes', 'buscar', 'vendedores', 'listasPrecios', 'mapaListasPorCliente'), 'empresa');
     }
 
     public function crear(): void
     {
-        $this->vista('empresa/clientes/formulario', ['cliente' => null], 'empresa');
+        $listasPrecios = (new GestionComercial())->listarListasPreciosActivas(empresa_actual_id());
+        $this->vista('empresa/clientes/formulario', ['cliente' => null, 'listasPrecios' => $listasPrecios], 'empresa');
     }
 
     public function guardar(): void
@@ -36,7 +46,7 @@ class ClientesControlador extends Controlador
             $nombre = 'Cliente';
         }
 
-        $modelo->crear([
+        $clienteId = $modelo->crear([
             'empresa_id' => $empresaId,
             'nombre' => $nombre,
             'razon_social' => $razonSocial,
@@ -51,6 +61,8 @@ class ClientesControlador extends Controlador
             'notas' => trim($_POST['notas'] ?? ''),
             'estado' => $_POST['estado'] ?? 'activo',
         ]);
+        $listaPrecioId = (int) ($_POST['lista_precio_id'] ?? 0) ?: null;
+        (new GestionComercial())->asignarListaPrecioCliente($empresaId, $clienteId, $listaPrecioId);
 
         flash('success', 'Cliente creado correctamente.');
         $this->redirigir($this->obtenerRutaRetorno('/app/clientes'));
@@ -141,7 +153,10 @@ class ClientesControlador extends Controlador
             $this->redirigir('/app/clientes');
         }
         $vendedores = (new GestionComercial())->listarTablaEmpresa('vendedores', $empresaId, '', 200);
-        $this->vista('empresa/clientes/editar', compact('cliente', 'vendedores'), 'empresa');
+        $gestion = new GestionComercial();
+        $listasPrecios = $gestion->listarListasPreciosActivas($empresaId);
+        $listaPrecioClienteId = $gestion->obtenerListaPrecioCliente($empresaId, $id);
+        $this->vista('empresa/clientes/editar', compact('cliente', 'vendedores', 'listasPrecios', 'listaPrecioClienteId'), 'empresa');
     }
 
     public function actualizar(int $id): void
@@ -160,6 +175,10 @@ class ClientesControlador extends Controlador
             'notas' => trim($_POST['notas'] ?? ''),
             'estado' => $_POST['estado'] ?? 'activo',
         ]);
+
+        $listaPrecioId = (int) ($_POST['lista_precio_id'] ?? 0) ?: null;
+        (new GestionComercial())->asignarListaPrecioCliente(empresa_actual_id(), $id, $listaPrecioId);
+
         flash('success', 'Cliente actualizado correctamente.');
         $this->redirigir('/app/clientes');
     }

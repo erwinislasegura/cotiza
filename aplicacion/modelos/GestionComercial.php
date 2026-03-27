@@ -194,4 +194,67 @@ class GestionComercial extends Modelo
 
         return $salida;
     }
+
+    public function listarListasPreciosActivas(int $empresaId): array
+    {
+        $stmt = $this->db->prepare('SELECT id, nombre, tipo_lista, vigencia_desde, vigencia_hasta
+            FROM listas_precios
+            WHERE empresa_id = :empresa_id AND estado = "activo"
+            ORDER BY nombre ASC');
+        $stmt->execute(['empresa_id' => $empresaId]);
+        return $stmt->fetchAll();
+    }
+
+    public function obtenerListaPrecioCliente(int $empresaId, int $clienteId): ?int
+    {
+        $this->asegurarTablaClientesListas();
+
+        $stmt = $this->db->prepare('SELECT lista_precio_id
+            FROM clientes_listas_precios
+            WHERE empresa_id = :empresa_id AND cliente_id = :cliente_id
+            ORDER BY id DESC
+            LIMIT 1');
+        $stmt->execute(['empresa_id' => $empresaId, 'cliente_id' => $clienteId]);
+        $valor = $stmt->fetchColumn();
+        return $valor !== false ? (int) $valor : null;
+    }
+
+    public function asignarListaPrecioCliente(int $empresaId, int $clienteId, ?int $listaPrecioId): void
+    {
+        $this->asegurarTablaClientesListas();
+
+        if ($listaPrecioId === null || $listaPrecioId <= 0) {
+            $stmtDelete = $this->db->prepare('DELETE FROM clientes_listas_precios WHERE empresa_id = :empresa_id AND cliente_id = :cliente_id');
+            $stmtDelete->execute(['empresa_id' => $empresaId, 'cliente_id' => $clienteId]);
+            return;
+        }
+
+        $stmt = $this->db->prepare('INSERT INTO clientes_listas_precios (empresa_id, cliente_id, lista_precio_id, fecha_creacion)
+            VALUES (:empresa_id, :cliente_id, :lista_precio_id, NOW())
+            ON DUPLICATE KEY UPDATE
+                lista_precio_id = VALUES(lista_precio_id),
+                fecha_actualizacion = NOW()');
+        $stmt->execute([
+            'empresa_id' => $empresaId,
+            'cliente_id' => $clienteId,
+            'lista_precio_id' => $listaPrecioId,
+        ]);
+    }
+
+    private function asegurarTablaClientesListas(): void
+    {
+        $this->db->exec('CREATE TABLE IF NOT EXISTS clientes_listas_precios (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            empresa_id BIGINT UNSIGNED NOT NULL,
+            cliente_id BIGINT UNSIGNED NOT NULL,
+            lista_precio_id BIGINT UNSIGNED NOT NULL,
+            fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            fecha_actualizacion DATETIME NULL,
+            UNIQUE KEY uniq_cliente_lista (empresa_id, cliente_id),
+            INDEX idx_clientes_listas_lista (lista_precio_id),
+            CONSTRAINT fk_clientes_listas_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
+            CONSTRAINT fk_clientes_listas_cliente FOREIGN KEY (cliente_id) REFERENCES clientes(id),
+            CONSTRAINT fk_clientes_listas_lista FOREIGN KEY (lista_precio_id) REFERENCES listas_precios(id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+    }
 }

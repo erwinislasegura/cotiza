@@ -27,6 +27,15 @@ $formulario = '
     <label class="form-label">Tipo</label>
     <input name="tipo_lista" class="form-control" value="general" placeholder="general / mayorista / campaña">
 </div>
+<div class="col-md-2">
+    <label class="form-label">Canal</label>
+    <select name="canal_venta" class="form-select">
+        <option value="">Todos</option>
+        <option value="local">Local</option>
+        <option value="delivery">Delivery</option>
+        <option value="ecommerce">E-commerce</option>
+    </select>
+</div>
 <div class="col-md-3">
     <label class="form-label">Estado</label>
     <select name="estado" class="form-select">
@@ -43,7 +52,7 @@ $formulario = '
 render_modulo_simple(
     'Listas de precios',
     '/app/listas-precios',
-    ['nombre', 'vigencia_desde', 'vigencia_hasta', 'tipo_lista', 'estado'],
+    ['nombre', 'vigencia_desde', 'vigencia_hasta', 'tipo_lista', 'canal_venta', 'estado'],
     $registros,
     $formulario,
     $buscar,

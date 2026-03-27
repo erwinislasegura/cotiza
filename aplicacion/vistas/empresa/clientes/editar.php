@@ -10,6 +10,7 @@
 <div class="col-md-3"><label class="form-label">Dirección</label><input name="direccion" class="form-control" value="<?= e($cliente['direccion']) ?>"></div>
 <div class="col-md-2"><label class="form-label">Ciudad</label><input name="ciudad" class="form-control" value="<?= e($cliente['ciudad']) ?>"></div>
 <div class="col-md-2"><label class="form-label">Vendedor</label><select name="vendedor_id" class="form-select"><option value="">Sin asignar</option><?php foreach($vendedores as $v): ?><option value="<?= (int)$v['id'] ?>" <?= (int)$cliente['vendedor_id']===(int)$v['id'] ? 'selected' : '' ?>><?= e($v['nombre']) ?></option><?php endforeach; ?></select></div>
+<div class="col-md-3"><label class="form-label">Lista de precios</label><select name="lista_precio_id" class="form-select"><option value="">General</option><?php foreach($listasPrecios as $lp): ?><option value="<?= (int)$lp['id'] ?>" <?= (int)$listaPrecioClienteId===(int)$lp['id'] ? 'selected' : '' ?>><?= e($lp['nombre']) ?></option><?php endforeach; ?></select></div>
 <div class="col-md-12"><label class="form-label">Observaciones</label><textarea name="notas" class="form-control" rows="2"><?= e($cliente['notas']) ?></textarea></div>
 <div class="col-12"><button class="btn btn-primary btn-sm">Guardar cambios</button> <a class="btn btn-outline-secondary btn-sm" href="<?= e(url('/app/clientes')) ?>">Cancelar</a></div>
 </form></div></div>
