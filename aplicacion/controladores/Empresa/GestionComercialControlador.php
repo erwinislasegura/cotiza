@@ -378,13 +378,33 @@ class GestionComercialControlador extends Controlador
         }
 
         if ($modulo === 'listas-precios') {
+            $nombre = trim($_POST['nombre'] ?? '');
+            $vigenciaDesde = $_POST['vigencia_desde'] ?: null;
+            $vigenciaHasta = $_POST['vigencia_hasta'] ?: null;
+            $tipoLista = trim($_POST['tipo_lista'] ?? 'general');
+            $estado = $_POST['estado'] ?? 'activo';
+
+            if ($nombre === '') {
+                flash('danger', 'El nombre de la lista de precios es obligatorio.');
+                $this->redirigir('/app/listas-precios');
+            }
+
+            if (!in_array($estado, ['activo', 'inactivo'], true)) {
+                $estado = 'activo';
+            }
+
+            if ($vigenciaDesde !== null && $vigenciaHasta !== null && $vigenciaHasta < $vigenciaDesde) {
+                flash('danger', 'La vigencia hasta no puede ser anterior a la vigencia desde.');
+                $this->redirigir('/app/listas-precios');
+            }
+
             $this->modelo->crear('listas_precios', [
                 'empresa_id' => $empresaId,
-                'nombre' => trim($_POST['nombre'] ?? ''),
-                'vigencia_desde' => $_POST['vigencia_desde'] ?: null,
-                'vigencia_hasta' => $_POST['vigencia_hasta'] ?: null,
-                'tipo_lista' => trim($_POST['tipo_lista'] ?? 'general'),
-                'estado' => $_POST['estado'] ?? 'activo',
+                'nombre' => $nombre,
+                'vigencia_desde' => $vigenciaDesde,
+                'vigencia_hasta' => $vigenciaHasta,
+                'tipo_lista' => $tipoLista !== '' ? $tipoLista : 'general',
+                'estado' => $estado,
                 'reglas_base' => trim($_POST['reglas_base'] ?? ''),
                 'fecha_creacion' => date('Y-m-d H:i:s'),
             ]);
