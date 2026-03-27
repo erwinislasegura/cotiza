@@ -48,6 +48,7 @@ $enrutador->agregar('GET', '/app/usuarios/editar/{id}', [UsuariosControlador::cl
 $enrutador->agregar('POST', '/app/usuarios/editar/{id}', [UsuariosControlador::class, 'actualizar'], $mwEmpresa);
 
 $enrutador->agregar('GET', '/app/contactos', [GestionComercialControlador::class, 'contactos'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/contactos/exportar/excel', [GestionComercialControlador::class, 'exportarContactosExcel'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/contactos', [GestionComercialControlador::class, 'guardarContacto'], $mwEmpresa);
 
 $enrutador->agregar('GET', '/app/contactos/ver/{id}', fn($id) => (new GestionComercialControlador())->verRegistro('contactos', (int) $id), $mwEmpresa);

@@ -28,18 +28,34 @@ class GestionComercialControlador extends Controlador
     {
         $empresaId = empresa_actual_id();
         $buscar = trim($_GET['q'] ?? '');
-        $clientes = (new Cliente())->listar($empresaId);
-        $contactos = $this->modelo->listarTablaEmpresa('contactos_cliente', $empresaId, $buscar, 30);
+        $clientes = array_values(array_filter((new Cliente())->listar($empresaId), static function (array $cliente): bool {
+            return ($cliente['estado'] ?? 'activo') === 'activo';
+        }));
+        $contactos = $this->modelo->listarContactosRegistrados($empresaId, $buscar, 100);
         $this->vista('empresa/contactos/index', compact('contactos', 'clientes', 'buscar'), 'empresa');
     }
 
     public function guardarContacto(): void
     {
         validar_csrf();
+        $empresaId = empresa_actual_id();
+        $clienteId = (int) ($_POST['cliente_id'] ?? 0);
+        $cliente = (new Cliente())->obtenerPorId($empresaId, $clienteId);
+        if (!$cliente) {
+            flash('danger', 'Debes seleccionar un cliente registrado válido.');
+            $this->redirigir('/app/contactos');
+        }
+
+        $nombre = trim($_POST['nombre'] ?? '');
+        if ($nombre === '') {
+            flash('danger', 'El nombre del contacto es obligatorio.');
+            $this->redirigir('/app/contactos');
+        }
+
         $this->modelo->crear('contactos_cliente', [
-            'empresa_id' => empresa_actual_id(),
-            'cliente_id' => (int) ($_POST['cliente_id'] ?? 0),
-            'nombre' => trim($_POST['nombre'] ?? ''),
+            'empresa_id' => $empresaId,
+            'cliente_id' => $clienteId,
+            'nombre' => $nombre,
             'cargo' => trim($_POST['cargo'] ?? ''),
             'correo' => trim($_POST['correo'] ?? ''),
             'telefono' => trim($_POST['telefono'] ?? ''),
@@ -50,6 +66,63 @@ class GestionComercialControlador extends Controlador
         ]);
         flash('success', 'Contacto guardado correctamente.');
         $this->redirigir('/app/contactos');
+    }
+
+    public function exportarContactosExcel(): void
+    {
+        $empresaId = empresa_actual_id();
+        $buscar = trim($_GET['q'] ?? '');
+        $contactos = $this->modelo->listarContactosRegistrados($empresaId, $buscar, 5000);
+
+        $nombreArchivo = 'contactos_' . date('Ymd_His') . '.xls';
+        header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $nombreArchivo . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        echo "\xEF\xBB\xBF";
+        echo '<html><head><meta charset="UTF-8"></head><body>';
+        echo '<table border="1" cellspacing="0" cellpadding="4" style="border-collapse:collapse;font-family:Calibri,Arial,sans-serif;font-size:11pt;">';
+        echo '<tr style="background:#d9d9d9;font-weight:700;">';
+        echo '<th>N°</th>';
+        echo '<th>Cliente</th>';
+        echo '<th>Nombre contacto</th>';
+        echo '<th>Cargo</th>';
+        echo '<th>Correo</th>';
+        echo '<th>Teléfono</th>';
+        echo '<th>Celular</th>';
+        echo '<th>Principal</th>';
+        echo '</tr>';
+
+        $indice = 1;
+        foreach ($contactos as $contacto) {
+            echo '<tr>';
+            echo '<td>' . $indice . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($contacto['cliente_nombre'] ?: ($contacto['cliente_razon_social'] ?? '')) . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($contacto['nombre'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($contacto['cargo'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($contacto['correo'] ?? '') . '</td>';
+            echo '<td style="mso-number-format:\\@;">' . $this->escapeExcelHtml($contacto['telefono'] ?? '') . '</td>';
+            echo '<td style="mso-number-format:\\@;">' . $this->escapeExcelHtml($contacto['celular'] ?? '') . '</td>';
+            echo '<td>' . (!empty($contacto['es_principal']) ? 'Sí' : 'No') . '</td>';
+            echo '</tr>';
+            $indice++;
+        }
+
+        echo '</table></body></html>';
+
+        exit;
+    }
+
+    private function escapeExcelHtml(mixed $valor): string
+    {
+        $texto = trim(str_replace(["\r\n", "\r", "\n", "\t"], ' ', (string) $valor));
+
+        if ($texto !== '' && preg_match('/^[=+\-@]/', $texto) === 1) {
+            $texto = "'" . $texto;
+        }
+
+        return htmlspecialchars($texto, ENT_QUOTES, 'UTF-8');
     }
 
     public function moduloBase(string $modulo): void
