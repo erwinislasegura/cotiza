@@ -1,0 +1,1 @@
+<h1 class="h5">Usuarios de empresa</h1><table class="table table-sm"><thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th></tr></thead><tbody><?php foreach($usuarios as $u): ?><tr><td><?= e($u['nombre']) ?></td><td><?= e($u['correo']) ?></td><td><?= e($u['rol']) ?></td><td><?= e($u['estado']) ?></td></tr><?php endforeach; ?></tbody></table>
