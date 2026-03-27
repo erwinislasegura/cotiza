@@ -1,3 +1,8 @@
+<?php
+$hayClientes = !empty($clientes);
+$hayProductos = !empty($productos);
+$puedeGuardar = $hayClientes && $hayProductos;
+?>
 <h1 class="h4 mb-3">Crear cotización</h1>
 
 <form method="POST" class="d-grid gap-3">
@@ -15,6 +20,9 @@
                 <label class="small">Cliente</label>
                 <div class="input-group">
                     <select class="form-select" name="cliente_id" required>
+                        <?php if (!$hayClientes): ?>
+                            <option value="">No hay clientes registrados</option>
+                        <?php endif; ?>
                         <?php foreach ($clientes as $c): ?>
                             <option value="<?= $c['id'] ?>"><?= e($c['nombre']) ?></option>
                         <?php endforeach; ?>
@@ -62,6 +70,9 @@
                 <label class="small">Producto</label>
                 <div class="input-group">
                     <select class="form-select" name="producto_id" required>
+                        <?php if (!$hayProductos): ?>
+                            <option value="">No hay productos registrados</option>
+                        <?php endif; ?>
                         <?php foreach ($productos as $p): ?>
                             <option value="<?= $p['id'] ?>"><?= e($p['nombre']) ?></option>
                         <?php endforeach; ?>
@@ -97,8 +108,14 @@
         </div>
     </div>
 
+    <?php if (!$puedeGuardar): ?>
+        <div class="alert alert-warning mb-0">
+            Debes crear al menos un cliente y un producto antes de guardar una cotización.
+        </div>
+    <?php endif; ?>
+
     <div>
-        <button class="btn btn-primary btn-sm">Guardar cotización</button>
+        <button class="btn btn-primary btn-sm"<?= $puedeGuardar ? '' : ' disabled' ?>>Guardar cotización</button>
         <button class="btn btn-outline-success btn-sm" type="button" onclick="window.location.href='mailto:?subject=' + encodeURIComponent('Cotización <?= e($siguienteNumero) ?>')">Enviar por correo</button>
         <button class="btn btn-outline-dark btn-sm" type="button" onclick="window.print()">Imprimir</button>
         <a href="<?= e(url('/app/cotizaciones')) ?>" class="btn btn-outline-secondary btn-sm">Cancelar</a>

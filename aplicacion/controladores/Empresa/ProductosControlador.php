@@ -47,11 +47,10 @@ class ProductosControlador extends Controlador
         $this->redirigir($this->obtenerRutaRetorno('/app/productos'));
     }
 
-
     private function obtenerRutaRetorno(string $rutaPredeterminada): string
     {
         $ruta = trim($_POST['redirect_to'] ?? '');
-        if ($ruta !== '' && str_starts_with($ruta, '/app/')) {
+        if ($ruta !== '' && strpos($ruta, '/app/') === 0) {
             return $ruta;
         }
 
