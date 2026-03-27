@@ -24,6 +24,7 @@ $enrutador->agregar('POST', '/app/clientes/editar/{id}', [ClientesControlador::c
 $enrutador->agregar('POST', '/app/clientes/eliminar/{id}', [ClientesControlador::class, 'eliminar'], $mwEmpresa);
 
 $enrutador->agregar('GET', '/app/productos', [ProductosControlador::class, 'index'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/productos/exportar/excel', [ProductosControlador::class, 'exportarExcel'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/productos', [ProductosControlador::class, 'guardar'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/productos/crear', [ProductosControlador::class, 'crear'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/productos/crear', [ProductosControlador::class, 'guardar'], $mwEmpresa);

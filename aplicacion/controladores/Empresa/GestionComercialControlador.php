@@ -420,6 +420,12 @@ class GestionComercialControlador extends Controlador
         }
 
         flash('success', 'Registro guardado correctamente.');
+
+        $rutaRetorno = trim($_POST['redirect_to'] ?? '');
+        if ($rutaRetorno !== '' && strpos($rutaRetorno, '/app/') === 0) {
+            $this->redirigir($rutaRetorno);
+        }
+
         $this->redirigir('/app/' . $modulo);
     }
 
