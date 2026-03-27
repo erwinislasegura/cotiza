@@ -6,6 +6,7 @@ use Aplicacion\Nucleo\Controlador;
 use Aplicacion\Modelos\GestionComercial;
 use Aplicacion\Modelos\Cliente;
 use Aplicacion\Modelos\Cotizacion;
+use Aplicacion\Modelos\Usuario;
 use Aplicacion\Servicios\ExcelExpoFormato;
 
 class GestionComercialControlador extends Controlador
@@ -253,8 +254,23 @@ class GestionComercialControlador extends Controlador
         $registros = $this->modelo->listarTablaEmpresa($def['tabla'], $empresaId, $buscar, 40);
         $clientes = (new Cliente())->listar($empresaId);
         $cotizaciones = (new Cotizacion())->listar($empresaId);
+        $usuarios = (new Usuario())->listarPorEmpresa($empresaId);
+
+        if ($modulo === 'vendedores') {
+            $usuariosPorId = [];
+            foreach ($usuarios as $usuario) {
+                $usuariosPorId[(int) $usuario['id']] = $usuario['nombre'] ?? '';
+            }
+
+            $registros = array_map(static function (array $registro) use ($usuariosPorId): array {
+                $usuarioId = (int) ($registro['usuario_id'] ?? 0);
+                $registro['usuario_nombre'] = $usuarioId > 0 ? ($usuariosPorId[$usuarioId] ?? 'Usuario no encontrado') : 'Sin usuario';
+                return $registro;
+            }, $registros);
+        }
+
         $titulo = $def['titulo'];
-        $this->vista($def['vista'], compact('registros', 'buscar', 'clientes', 'cotizaciones', 'titulo'), 'empresa');
+        $this->vista($def['vista'], compact('registros', 'buscar', 'clientes', 'cotizaciones', 'usuarios', 'titulo'), 'empresa');
     }
 
     public function guardarModuloBase(string $modulo): void
@@ -267,6 +283,7 @@ class GestionComercialControlador extends Controlador
             $correo = trim($_POST['correo'] ?? '');
             $estado = $_POST['estado'] ?? 'activo';
             $comision = (float) ($_POST['comision'] ?? 0);
+            $usuarioId = (int) ($_POST['usuario_id'] ?? 0);
 
             if ($nombre === '') {
                 flash('danger', 'El nombre del vendedor es obligatorio.');
@@ -290,6 +307,15 @@ class GestionComercialControlador extends Controlador
                 $comision = 100;
             }
 
+            $usuarioAsignado = null;
+            if ($usuarioId > 0) {
+                $usuarioAsignado = (new Usuario())->obtenerPorIdEmpresa($empresaId, $usuarioId);
+                if (!$usuarioAsignado) {
+                    flash('danger', 'El usuario seleccionado no pertenece a tu empresa.');
+                    $this->redirigir('/app/vendedores');
+                }
+            }
+
             $this->modelo->crear('vendedores', [
                 'empresa_id' => $empresaId,
                 'nombre' => $nombre,
@@ -297,6 +323,7 @@ class GestionComercialControlador extends Controlador
                 'telefono' => trim($_POST['telefono'] ?? ''),
                 'comision' => $comision,
                 'estado' => $estado,
+                'usuario_id' => $usuarioAsignado ? (int) $usuarioAsignado['id'] : null,
                 'fecha_creacion' => date('Y-m-d H:i:s'),
             ]);
         }
@@ -422,6 +449,11 @@ class GestionComercialControlador extends Controlador
 
     public function editarRegistro(string $modulo, int $id): void
     {
+        if ($modulo === 'vendedores') {
+            $this->editarVendedor($id);
+            return;
+        }
+
         $mapeo = $this->mapeoModulos();
         if (!isset($mapeo[$modulo])) {
             http_response_code(404);
@@ -439,6 +471,11 @@ class GestionComercialControlador extends Controlador
 
     public function actualizarRegistro(string $modulo, int $id): void
     {
+        if ($modulo === 'vendedores') {
+            $this->actualizarVendedor($id);
+            return;
+        }
+
         validar_csrf();
         $mapeo = $this->mapeoModulos();
         if (!isset($mapeo[$modulo])) {
@@ -449,6 +486,79 @@ class GestionComercialControlador extends Controlador
         $this->modelo->actualizarDinamico($mapeo[$modulo]['tabla'], empresa_actual_id(), $id, $data);
         flash('success', 'Registro actualizado correctamente.');
         $this->redirigir('/app/' . $modulo);
+    }
+
+    public function editarVendedor(int $id): void
+    {
+        $empresaId = empresa_actual_id();
+        $vendedor = $this->modelo->obtenerPorId('vendedores', $empresaId, $id);
+        if (!$vendedor) {
+            flash('danger', 'Vendedor no encontrado.');
+            $this->redirigir('/app/vendedores');
+        }
+
+        $usuarios = (new Usuario())->listarPorEmpresa($empresaId);
+        $this->vista('empresa/modulos/vendedores_editar', compact('vendedor', 'usuarios'), 'empresa');
+    }
+
+    public function actualizarVendedor(int $id): void
+    {
+        validar_csrf();
+        $empresaId = empresa_actual_id();
+        $vendedor = $this->modelo->obtenerPorId('vendedores', $empresaId, $id);
+        if (!$vendedor) {
+            flash('danger', 'Vendedor no encontrado.');
+            $this->redirigir('/app/vendedores');
+        }
+
+        $nombre = trim($_POST['nombre'] ?? '');
+        $correo = trim($_POST['correo'] ?? '');
+        $estado = $_POST['estado'] ?? 'activo';
+        $comision = (float) ($_POST['comision'] ?? 0);
+        $usuarioId = (int) ($_POST['usuario_id'] ?? 0);
+
+        if ($nombre === '') {
+            flash('danger', 'El nombre del vendedor es obligatorio.');
+            $this->redirigir('/app/vendedores/editar/' . $id);
+        }
+
+        if ($correo !== '' && filter_var($correo, FILTER_VALIDATE_EMAIL) === false) {
+            flash('danger', 'El correo del vendedor no es válido.');
+            $this->redirigir('/app/vendedores/editar/' . $id);
+        }
+
+        if (!in_array($estado, ['activo', 'inactivo'], true)) {
+            $estado = 'activo';
+        }
+
+        if ($comision < 0) {
+            $comision = 0;
+        }
+
+        if ($comision > 100) {
+            $comision = 100;
+        }
+
+        $usuarioAsignado = null;
+        if ($usuarioId > 0) {
+            $usuarioAsignado = (new Usuario())->obtenerPorIdEmpresa($empresaId, $usuarioId);
+            if (!$usuarioAsignado) {
+                flash('danger', 'El usuario seleccionado no pertenece a tu empresa.');
+                $this->redirigir('/app/vendedores/editar/' . $id);
+            }
+        }
+
+        $this->modelo->actualizarDinamico('vendedores', $empresaId, $id, [
+            'nombre' => $nombre,
+            'correo' => $correo,
+            'telefono' => trim($_POST['telefono'] ?? ''),
+            'comision' => $comision,
+            'estado' => $estado,
+            'usuario_id' => $usuarioAsignado ? (int) $usuarioAsignado['id'] : null,
+        ]);
+
+        flash('success', 'Vendedor actualizado correctamente.');
+        $this->redirigir('/app/vendedores');
     }
 
     public function eliminarRegistro(string $modulo, int $id): void
