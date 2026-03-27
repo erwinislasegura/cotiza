@@ -1,0 +1,2 @@
+<aside class="sidebar p-3 bg-primary text-white"><h6 class="text-uppercase">Mi Empresa</h6><nav class="nav flex-column small gap-1">
+<a class="nav-link text-white" href="/app/panel">Panel</a><a class="nav-link text-white" href="/app/clientes">Clientes</a><a class="nav-link text-white" href="/app/productos">Productos</a><a class="nav-link text-white" href="/app/cotizaciones">Cotizaciones</a><a class="nav-link text-white" href="/app/usuarios">Usuarios</a><a class="nav-link text-white" href="/app/configuracion">Configuración</a></nav></aside>
