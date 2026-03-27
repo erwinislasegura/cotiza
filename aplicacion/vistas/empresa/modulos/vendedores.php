@@ -1,2 +1,28 @@
-<?php require __DIR__ . '/_tabla_simple.php'; ?>
-<?php render_modulo_simple('Vendedores', '/app/vendedores', ['nombre','correo','telefono','comision','estado'], $registros, '<div class="col-md-3"><label class="form-label">Nombre</label><input name="nombre" class="form-control" required></div><div class="col-md-3"><label class="form-label">Correo</label><input name="correo" class="form-control"></div><div class="col-md-2"><label class="form-label">Teléfono</label><input name="telefono" class="form-control"></div><div class="col-md-2"><label class="form-label">Comisión %</label><input name="comision" class="form-control" type="number" step="0.01" value="0"></div><div class="col-md-2"><label class="form-label">Estado</label><select name="estado" class="form-select"><option value="activo">Activo</option><option value="inactivo">Inactivo</option></select></div>',$buscar); ?>
+<?php
+
+use Aplicacion\Servicios\ExcelExpoFormato;
+
+require __DIR__ . '/_tabla_simple.php';
+
+$vendedor = null;
+ob_start();
+require __DIR__ . '/_formulario_vendedor.php';
+$formularioVendedor = (string) ob_get_clean();
+
+$accionesListado = sprintf(
+    '<a href="%s" class="%s" style="%s">%s</a>',
+    e(url('/app/vendedores/exportar/excel?q=' . urlencode($buscar))),
+    e(ExcelExpoFormato::BOTON_CLASES),
+    e(ExcelExpoFormato::BOTON_ESTILO),
+    e(ExcelExpoFormato::BOTON_TEXTO)
+);
+
+render_modulo_simple(
+    'Vendedores',
+    '/app/vendedores',
+    ['nombre', 'correo', 'telefono', 'comision', 'estado', 'usuario_nombre'],
+    $registros,
+    $formularioVendedor,
+    $buscar,
+    $accionesListado
+);

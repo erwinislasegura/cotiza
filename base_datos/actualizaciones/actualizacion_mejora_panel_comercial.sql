@@ -57,6 +57,7 @@ WHERE cc.empresa_id IS NULL;
 CREATE TABLE IF NOT EXISTS vendedores (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   empresa_id BIGINT UNSIGNED NOT NULL,
+  usuario_id BIGINT UNSIGNED NULL,
   nombre VARCHAR(160) NOT NULL,
   correo VARCHAR(160) NULL,
   telefono VARCHAR(80) NULL,
@@ -64,8 +65,17 @@ CREATE TABLE IF NOT EXISTS vendedores (
   estado ENUM('activo','inactivo') NOT NULL DEFAULT 'activo',
   fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_vendedores_empresa (empresa_id),
+  INDEX idx_vendedores_usuario (usuario_id),
+  CONSTRAINT fk_vendedores_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
   CONSTRAINT fk_vendedores_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id)
 );
+
+SET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=@db_name AND TABLE_NAME='vendedores' AND COLUMN_NAME='usuario_id') = 0,
+  'ALTER TABLE vendedores ADD COLUMN usuario_id BIGINT UNSIGNED NULL AFTER empresa_id','SELECT 1'); PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+SET @sql = IF((SELECT COUNT(*) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=@db_name AND TABLE_NAME='vendedores' AND INDEX_NAME='idx_vendedores_usuario') = 0,
+  'ALTER TABLE vendedores ADD INDEX idx_vendedores_usuario (usuario_id)','SELECT 1'); PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+SET @sql = IF((SELECT COUNT(*) FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA=@db_name AND TABLE_NAME='vendedores' AND CONSTRAINT_NAME='fk_vendedores_usuario') = 0,
+  'ALTER TABLE vendedores ADD CONSTRAINT fk_vendedores_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id)','SELECT 1'); PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 CREATE TABLE IF NOT EXISTS listas_precios (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -164,7 +174,11 @@ SET @sql = IF(
   'SELECT 1'
 ); PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-CREATE INDEX idx_contactos_empresa ON contactos_cliente (empresa_id);
+SET @sql = IF(
+  (SELECT COUNT(*) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=@db_name AND TABLE_NAME='contactos_cliente' AND INDEX_NAME='idx_contactos_empresa') = 0,
+  'CREATE INDEX idx_contactos_empresa ON contactos_cliente (empresa_id)',
+  'SELECT 1'
+); PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- =====================================================
 -- 3) Catálogos base sugeridos (si no existen datos).
