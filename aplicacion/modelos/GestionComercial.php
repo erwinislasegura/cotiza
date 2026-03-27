@@ -66,6 +66,37 @@ class GestionComercial extends Modelo
         return $stmt->fetchAll();
     }
 
+    public function listarContactosRegistrados(int $empresaId, string $buscar = '', int $limite = 30): array
+    {
+        $sql = 'SELECT cc.*, c.nombre AS cliente_nombre, c.razon_social AS cliente_razon_social, c.estado AS cliente_estado
+            FROM contactos_cliente cc
+            INNER JOIN clientes c ON c.id = cc.cliente_id AND c.empresa_id = cc.empresa_id
+            WHERE cc.empresa_id = :empresa_id
+              AND c.fecha_eliminacion IS NULL';
+        $params = ['empresa_id' => $empresaId];
+
+        if ($buscar !== '') {
+            $sql .= ' AND (
+                cc.nombre LIKE :buscar
+                OR cc.correo LIKE :buscar
+                OR cc.cargo LIKE :buscar
+                OR c.nombre LIKE :buscar
+                OR c.razon_social LIKE :buscar
+            )';
+            $params['buscar'] = "%{$buscar}%";
+        }
+
+        $sql .= ' ORDER BY cc.id DESC LIMIT :limite';
+        $stmt = $this->db->prepare($sql);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue(':' . $k, $v);
+        }
+        $stmt->bindValue(':limite', $limite, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
     public function crear(string $tabla, array $data): int
     {
         if (!in_array($tabla, $this->tablasPermitidas, true)) {
