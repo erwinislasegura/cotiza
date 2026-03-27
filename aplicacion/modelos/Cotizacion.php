@@ -33,11 +33,11 @@ class Cotizacion extends Modelo
     {
         $this->db->beginTransaction();
         try {
-            $sql = 'INSERT INTO cotizaciones (empresa_id, cliente_id, usuario_id, numero, consecutivo, estado, subtotal, descuento, impuesto, total, observaciones, terminos_condiciones, fecha_emision, fecha_vencimiento, fecha_creacion) VALUES (:empresa_id,:cliente_id,:usuario_id,:numero,:consecutivo,:estado,:subtotal,:descuento,:impuesto,:total,:observaciones,:terminos_condiciones,:fecha_emision,:fecha_vencimiento,NOW())';
+            $sql = 'INSERT INTO cotizaciones (empresa_id, cliente_id, usuario_id, numero, consecutivo, estado, subtotal, descuento_tipo, descuento_valor, descuento, impuesto, total, observaciones, terminos_condiciones, fecha_emision, fecha_vencimiento, fecha_creacion) VALUES (:empresa_id,:cliente_id,:usuario_id,:numero,:consecutivo,:estado,:subtotal,:descuento_tipo,:descuento_valor,:descuento,:impuesto,:total,:observaciones,:terminos_condiciones,:fecha_emision,:fecha_vencimiento,NOW())';
             $this->db->prepare($sql)->execute($cotizacion);
             $cotizacionId = (int) $this->db->lastInsertId();
 
-            $sqlItem = 'INSERT INTO items_cotizacion (cotizacion_id, producto_id, descripcion, cantidad, precio_unitario, porcentaje_impuesto, subtotal, total, fecha_creacion) VALUES (:cotizacion_id,:producto_id,:descripcion,:cantidad,:precio_unitario,:porcentaje_impuesto,:subtotal,:total,NOW())';
+            $sqlItem = 'INSERT INTO items_cotizacion (cotizacion_id, producto_id, descripcion, cantidad, precio_unitario, descuento_tipo, descuento_valor, descuento_monto, porcentaje_impuesto, subtotal, total, fecha_creacion) VALUES (:cotizacion_id,:producto_id,:descripcion,:cantidad,:precio_unitario,:descuento_tipo,:descuento_valor,:descuento_monto,:porcentaje_impuesto,:subtotal,:total,NOW())';
             $stmtItem = $this->db->prepare($sqlItem);
             foreach ($items as $item) {
                 $item['cotizacion_id'] = $cotizacionId;
@@ -79,6 +79,30 @@ class Cotizacion extends Modelo
         $data['empresa_id'] = $empresaId;
         $data['id'] = $id;
         $this->db->prepare($sql)->execute($data);
+    }
+
+    public function actualizarConItems(int $empresaId, int $id, array $cotizacion, array $items): void
+    {
+        $this->db->beginTransaction();
+        try {
+            $sql = 'UPDATE cotizaciones SET cliente_id=:cliente_id, estado=:estado, subtotal=:subtotal, descuento_tipo=:descuento_tipo, descuento_valor=:descuento_valor, descuento=:descuento, impuesto=:impuesto, total=:total, observaciones=:observaciones, terminos_condiciones=:terminos_condiciones, fecha_emision=:fecha_emision, fecha_vencimiento=:fecha_vencimiento, fecha_actualizacion=NOW() WHERE empresa_id=:empresa_id AND id=:id AND fecha_eliminacion IS NULL';
+            $cotizacion['empresa_id'] = $empresaId;
+            $cotizacion['id'] = $id;
+            $this->db->prepare($sql)->execute($cotizacion);
+
+            $this->db->prepare('DELETE FROM items_cotizacion WHERE cotizacion_id=:cotizacion_id')->execute(['cotizacion_id' => $id]);
+            $sqlItem = 'INSERT INTO items_cotizacion (cotizacion_id, producto_id, descripcion, cantidad, precio_unitario, descuento_tipo, descuento_valor, descuento_monto, porcentaje_impuesto, subtotal, total, fecha_creacion) VALUES (:cotizacion_id,:producto_id,:descripcion,:cantidad,:precio_unitario,:descuento_tipo,:descuento_valor,:descuento_monto,:porcentaje_impuesto,:subtotal,:total,NOW())';
+            $stmtItem = $this->db->prepare($sqlItem);
+            foreach ($items as $item) {
+                $item['cotizacion_id'] = $id;
+                $stmtItem->execute($item);
+            }
+
+            $this->db->commit();
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
     }
 
     public function eliminar(int $empresaId, int $id): void
