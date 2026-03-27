@@ -1,6 +1,9 @@
 <section class="modulo-head d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <h1 class="h4 mb-0">Clientes</h1>
-  <a href="<?= e(url('/app/contactos')) ?>" class="btn btn-outline-primary btn-sm">Ver contactos</a>
+  <div class="d-flex gap-2">
+    <a href="<?= e(url('/app/clientes/exportar/excel?q=' . urlencode($buscar))) ?>" class="btn btn-success btn-sm">Exportar Excel tabulado</a>
+    <a href="<?= e(url('/app/contactos')) ?>" class="btn btn-outline-primary btn-sm">Ver contactos</a>
+  </div>
 </section>
 
 <div class="card mb-3">
