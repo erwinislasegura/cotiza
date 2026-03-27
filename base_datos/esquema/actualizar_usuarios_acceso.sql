@@ -3,7 +3,7 @@ USE cotiza_saas;
 START TRANSACTION;
 
 -- Hash bcrypt para la clave demo: Demo1234*
-SET @hash_demo = '$2y$10$l2Li4fKGe.f4z2xkqf0B7e0hOn4z3vQgpWhorQi95pSl5f4BbLxvK';
+SET @hash_demo = '$2y$12$l7d9QArsnPnqUeo/YjnXfOsDig87Wswc2LvMubdMw2kt1LRD4xhdi';
 SET @rol_superadmin = (SELECT id FROM roles WHERE codigo = 'superadministrador' LIMIT 1);
 SET @rol_admin_empresa = (SELECT id FROM roles WHERE codigo = 'administrador_empresa' LIMIT 1);
 SET @rol_usuario_empresa = (SELECT id FROM roles WHERE codigo = 'usuario_empresa' LIMIT 1);

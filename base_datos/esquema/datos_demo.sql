@@ -7,11 +7,11 @@ VALUES
 (3, 'Servicios Pacífico SAS', 'Pacífico Servicios', '811222333', 'ventas@pacifico.com', '3028880001', 'Av. 3 Norte', 'Cali', 'Colombia', 'vencida', '2025-10-01', 1);
 
 INSERT INTO usuarios (empresa_id, rol_id, nombre, correo, password, estado) VALUES
-(NULL, 1, 'Super Admin', 'superadmin@cotizapro.com', '$2y$10$l2Li4fKGe.f4z2xkqf0B7e0hOn4z3vQgpWhorQi95pSl5f4BbLxvK', 'activo'),
-(2, 2, 'Laura Mejía', 'admin@andina.com', '$2y$10$l2Li4fKGe.f4z2xkqf0B7e0hOn4z3vQgpWhorQi95pSl5f4BbLxvK', 'activo'),
-(2, 3, 'Analista Andina', 'usuario@andina.com', '$2y$10$l2Li4fKGe.f4z2xkqf0B7e0hOn4z3vQgpWhorQi95pSl5f4BbLxvK', 'activo'),
-(2, 3, 'QA Andina', 'qa@andina.com', '$2y$10$l2Li4fKGe.f4z2xkqf0B7e0hOn4z3vQgpWhorQi95pSl5f4BbLxvK', 'activo'),
-(3, 2, 'Carlos Reyes', 'admin@pacifico.com', '$2y$10$l2Li4fKGe.f4z2xkqf0B7e0hOn4z3vQgpWhorQi95pSl5f4BbLxvK', 'activo');
+(NULL, 1, 'Super Admin', 'superadmin@cotizapro.com', '$2y$12$l7d9QArsnPnqUeo/YjnXfOsDig87Wswc2LvMubdMw2kt1LRD4xhdi', 'activo'),
+(2, 2, 'Laura Mejía', 'admin@andina.com', '$2y$12$l7d9QArsnPnqUeo/YjnXfOsDig87Wswc2LvMubdMw2kt1LRD4xhdi', 'activo'),
+(2, 3, 'Analista Andina', 'usuario@andina.com', '$2y$12$l7d9QArsnPnqUeo/YjnXfOsDig87Wswc2LvMubdMw2kt1LRD4xhdi', 'activo'),
+(2, 3, 'QA Andina', 'qa@andina.com', '$2y$12$l7d9QArsnPnqUeo/YjnXfOsDig87Wswc2LvMubdMw2kt1LRD4xhdi', 'activo'),
+(3, 2, 'Carlos Reyes', 'admin@pacifico.com', '$2y$12$l7d9QArsnPnqUeo/YjnXfOsDig87Wswc2LvMubdMw2kt1LRD4xhdi', 'activo');
 
 INSERT INTO suscripciones (id, empresa_id, plan_id, estado, fecha_inicio, fecha_vencimiento, renovacion_automatica, observaciones)
 VALUES

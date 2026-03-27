@@ -55,3 +55,4 @@ Plataforma SaaS multiempresa para gestión comercial de cotizaciones, diseñada 
 ## Script de actualización de accesos
 Si necesitas regenerar/normalizar usuarios de acceso (superadmin, admin y QA), ejecuta:
 - `base_datos/esquema/actualizar_usuarios_acceso.sql`
+- Si el login falla con usuarios demo, vuelve a ejecutar este script para restablecer contraseñas.
