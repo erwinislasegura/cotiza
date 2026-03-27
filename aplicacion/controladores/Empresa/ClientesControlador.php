@@ -5,6 +5,7 @@ namespace Aplicacion\Controladores\Empresa;
 use Aplicacion\Nucleo\Controlador;
 use Aplicacion\Modelos\Cliente;
 use Aplicacion\Modelos\GestionComercial;
+use Aplicacion\Servicios\ExcelExpoFormato;
 use Aplicacion\Servicios\ServicioPlan;
 
 class ClientesControlador extends Controlador
@@ -68,8 +69,8 @@ class ClientesControlador extends Controlador
 
         echo "\xEF\xBB\xBF";
         echo '<html><head><meta charset="UTF-8"></head><body>';
-        echo '<table border="1" cellspacing="0" cellpadding="4" style="border-collapse:collapse;font-family:Calibri,Arial,sans-serif;font-size:11pt;">';
-        echo '<tr style="background:#d9d9d9;font-weight:700;">';
+        echo '<table border="1" cellspacing="0" cellpadding="4" style="' . ExcelExpoFormato::TABLA_ESTILO . '">';
+        echo '<tr style="' . ExcelExpoFormato::ENCABEZADO_ESTILO . '">';
         echo '<th>N°</th>';
         echo '<th>Razón social</th>';
         echo '<th>Nombre comercial</th>';
@@ -86,9 +87,9 @@ class ClientesControlador extends Controlador
             echo '<td>' . $indice . '</td>';
             echo '<td>' . $this->escapeExcelHtml($cliente['razon_social'] ?: ($cliente['nombre'] ?? '')) . '</td>';
             echo '<td>' . $this->escapeExcelHtml($cliente['nombre_comercial'] ?: ($cliente['nombre'] ?? '')) . '</td>';
-            echo '<td style="mso-number-format:\\@;">' . $this->escapeExcelHtml($cliente['identificador_fiscal'] ?? '') . '</td>';
+            echo '<td style="' . ExcelExpoFormato::CELDA_TEXTO_EXCEL . '">' . $this->escapeExcelHtml($cliente['identificador_fiscal'] ?? '') . '</td>';
             echo '<td>' . $this->escapeExcelHtml($cliente['correo'] ?? '') . '</td>';
-            echo '<td style="mso-number-format:\\@;">' . $this->escapeExcelHtml($cliente['telefono'] ?? '') . '</td>';
+            echo '<td style="' . ExcelExpoFormato::CELDA_TEXTO_EXCEL . '">' . $this->escapeExcelHtml($cliente['telefono'] ?? '') . '</td>';
             echo '<td>' . $this->escapeExcelHtml($cliente['ciudad'] ?? '') . '</td>';
             echo '<td>' . $this->escapeExcelHtml(ucfirst((string) ($cliente['estado'] ?? ''))) . '</td>';
             echo '</tr>';

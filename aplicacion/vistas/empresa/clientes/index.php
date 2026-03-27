@@ -87,7 +87,11 @@
       <div class="small text-muted">Registros encontrados: <?= count($clientes) ?></div>
     </div>
     <div class="d-flex gap-2">
-      <a href="<?= e(url('/app/clientes/exportar/excel?q=' . urlencode($buscar))) ?>" class="btn btn-success btn-sm">Exportar Excel</a>
+      <a
+        href="<?= e(url('/app/clientes/exportar/excel?q=' . urlencode($buscar))) ?>"
+        class="<?= e(\Aplicacion\Servicios\ExcelExpoFormato::BOTON_CLASES) ?>"
+        style="<?= e(\Aplicacion\Servicios\ExcelExpoFormato::BOTON_ESTILO) ?>"
+      ><?= e(\Aplicacion\Servicios\ExcelExpoFormato::BOTON_TEXTO) ?></a>
       <form method="GET" class="d-flex gap-2">
         <input class="form-control form-control-sm" name="q" value="<?= e($buscar) ?>" placeholder="Buscar por nombre, fiscal, correo...">
         <button class="btn btn-outline-secondary btn-sm">Buscar</button>
