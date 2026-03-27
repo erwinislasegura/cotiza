@@ -34,6 +34,32 @@
     </div>
 </section>
 
+
+<section class="py-5 bg-white border-top border-bottom">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <h2 class="h4 mb-3">Diferencia entre operar sin sistema y con sistema</h2>
+                <div class="chart-card small">
+                    <div class="chart-row"><span>Cotizaciones enviadas al día</span><div class="chart-bars"><div class="bar bar-negative" style="width: 36%">Sin sistema: 6</div><div class="bar bar-positive" style="width: 88%">Con CotizaPro: 15</div></div></div>
+                    <div class="chart-row"><span>Tiempo de respuesta al cliente</span><div class="chart-bars"><div class="bar bar-negative" style="width: 76%">Sin sistema: 24h</div><div class="bar bar-positive" style="width: 34%">Con CotizaPro: 6h</div></div></div>
+                    <div class="chart-row"><span>Orden del proceso comercial</span><div class="chart-bars"><div class="bar bar-negative" style="width: 40%">Sin sistema: 38%</div><div class="bar bar-positive" style="width: 90%">Con CotizaPro: 86%</div></div></div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <h2 class="h4 mb-3">Evolución de ganancias tras implementar el sistema</h2>
+                <div class="chart-card small">
+                    <div class="trend-item"><span>Trimestre 1</span><strong>+7% ingresos</strong></div>
+                    <div class="trend-item"><span>Trimestre 2</span><strong>+12% ingresos</strong></div>
+                    <div class="trend-item"><span>Trimestre 3</span><strong>+18% ingresos</strong></div>
+                    <div class="trend-item"><span>Trimestre 4</span><strong>+24% ingresos</strong></div>
+                </div>
+                <p class="small text-secondary mt-2 mb-0">Comparativo de referencia para mostrar cómo un proceso comercial ordenado impacta ventas y márgenes.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
 <section class="py-5 bg-white border-top border-bottom">
     <div class="container">
         <h2 class="h4 mb-4">Características funcionales del sistema</h2>
@@ -119,3 +145,10 @@
         </div>
     </div>
 </section>
+
+<div class="d-md-none mobile-buy-bar">
+    <div class="d-flex gap-2">
+        <a href="<?= e(url('/planes')) ?>" class="btn btn-primary btn-sm">Ver planes</a>
+        <a href="<?= e(url('/contacto')) ?>" class="btn btn-outline-secondary btn-sm">Contactar</a>
+    </div>
+</div>

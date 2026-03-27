@@ -41,6 +41,36 @@
     </div>
 </section>
 
+
+<section class="py-5 bg-white border-top border-bottom">
+    <div class="container">
+        <div class="row g-4 align-items-start">
+            <div class="col-lg-6">
+                <h2 class="h4 mb-3">Comparación real: empresa sin sistema vs con sistema</h2>
+                <p class="text-secondary small">Cuando una empresa digitaliza cotizaciones, reduce tiempos operativos y mejora su tasa de cierre comercial.</p>
+                <div class="chart-card small">
+                    <div class="chart-row"><span>Tiempo promedio por cotización</span><div class="chart-bars"><div class="bar bar-negative" style="width: 82%">Sin sistema: 45 min</div><div class="bar bar-positive" style="width: 38%">Con CotizaPro: 18 min</div></div></div>
+                    <div class="chart-row"><span>Errores en propuestas</span><div class="chart-bars"><div class="bar bar-negative" style="width: 70%">Sin sistema: 14%</div><div class="bar bar-positive" style="width: 22%">Con CotizaPro: 4%</div></div></div>
+                    <div class="chart-row"><span>Seguimiento efectivo</span><div class="chart-bars"><div class="bar bar-negative" style="width: 34%">Sin sistema: 35%</div><div class="bar bar-positive" style="width: 86%">Con CotizaPro: 82%</div></div></div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <h2 class="h4 mb-3">Caso de crecimiento en ganancias</h2>
+                <p class="text-secondary small">Ejemplo de empresa comercial que implementó el software de cotizaciones y mejoró su rentabilidad en 6 meses.</p>
+                <div class="chart-card small">
+                    <div class="trend-item"><span>Mes 1</span><strong>+2% ganancia</strong></div>
+                    <div class="trend-item"><span>Mes 2</span><strong>+5% ganancia</strong></div>
+                    <div class="trend-item"><span>Mes 3</span><strong>+8% ganancia</strong></div>
+                    <div class="trend-item"><span>Mes 4</span><strong>+11% ganancia</strong></div>
+                    <div class="trend-item"><span>Mes 5</span><strong>+15% ganancia</strong></div>
+                    <div class="trend-item"><span>Mes 6</span><strong>+19% ganancia</strong></div>
+                </div>
+                <p class="small text-secondary mt-2 mb-0">Resultados referenciales para ilustrar impacto comercial al estandarizar cotizaciones y seguimiento.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
 <section class="py-5 bg-white border-top border-bottom">
     <div class="container">
         <h2 class="h4 mb-3">¿Cómo funciona el sistema de cotizaciones?</h2>
@@ -131,12 +161,19 @@ $faqDestacadas = [
 
 <section class="py-5">
     <div class="container text-center">
-        <h2 class="h4">Profesionaliza tus cotizaciones y acelera tus ventas desde hoy</h2>
+        <h2 class="h4">Empieza hoy con un plan y convierte tu proceso comercial en una ventaja competitiva</h2>
         <p class="text-secondary">Da el siguiente paso hacia un proceso comercial más claro, medible y escalable para tu empresa.</p>
         <div class="d-flex justify-content-center gap-2 flex-wrap">
-            <a href="<?= e(url('/registro')) ?>" class="btn btn-primary btn-sm">Comenzar ahora</a>
+            <a href="<?= e(url('/registro')) ?>" class="btn btn-primary btn-sm">Crear cuenta empresarial</a>
             <a href="<?= e(url('/planes')) ?>" class="btn btn-outline-primary btn-sm">Ver planes</a>
             <a href="<?= e(url('/contacto')) ?>" class="btn btn-outline-secondary btn-sm">Hablar con ventas</a>
         </div>
     </div>
 </section>
+
+<div class="d-md-none mobile-buy-bar">
+    <div class="d-flex gap-2">
+        <a href="<?= e(url('/planes')) ?>" class="btn btn-primary btn-sm">Ver planes</a>
+        <a href="<?= e(url('/contacto')) ?>" class="btn btn-outline-secondary btn-sm">Contactar</a>
+    </div>
+</div>

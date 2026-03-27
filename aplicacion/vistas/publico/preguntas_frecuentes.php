@@ -79,3 +79,10 @@ $faqs = [
         </div>
     </div>
 </section>
+
+<div class="d-md-none mobile-buy-bar">
+    <div class="d-flex gap-2">
+        <a href="<?= e(url('/planes')) ?>" class="btn btn-primary btn-sm">Ver planes</a>
+        <a href="<?= e(url('/contacto')) ?>" class="btn btn-outline-secondary btn-sm">Contactar</a>
+    </div>
+</div>

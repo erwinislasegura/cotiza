@@ -23,7 +23,7 @@
     </div>
 </section>
 
-<section class="py-5">
+<section class="py-5" id="planes-lista">
     <div class="container">
         <div class="row g-4">
             <?php foreach($planes as $plan): ?>
@@ -70,3 +70,10 @@
         </div>
     </div>
 </section>
+
+<div class="d-md-none mobile-buy-bar">
+    <div class="d-flex gap-2">
+        <a href="#planes-lista" class="btn btn-primary btn-sm">Comprar plan</a>
+        <a href="<?= e(url('/contacto')) ?>" class="btn btn-outline-secondary btn-sm">Contactar</a>
+    </div>
+</div>

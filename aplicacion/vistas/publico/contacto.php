@@ -3,7 +3,7 @@
         <div class="row g-4 align-items-center">
             <div class="col-lg-7">
                 <span class="badge bg-info-subtle text-info-emphasis mb-2">Contacto comercial</span>
-                <h1 class="display-6 fw-bold mb-3">Te ayudamos a elegir el mejor plan para tu empresa</h1>
+                <h1 class="display-6 fw-bold mb-3">Habla con ventas y elige el plan correcto para tu empresa</h1>
                 <p class="lead text-secondary mb-0">Cuéntanos cómo cotiza hoy tu negocio y te recomendamos la opción más conveniente para mejorar control comercial, velocidad de respuesta y cierre de ventas.</p>
             </div>
             <div class="col-lg-5">
@@ -75,3 +75,10 @@
         </div>
     </div>
 </section>
+
+<div class="d-md-none mobile-buy-bar">
+    <div class="d-flex gap-2">
+        <a href="<?= e(url('/planes')) ?>" class="btn btn-primary btn-sm">Ver planes</a>
+        <a href="<?= e(url('/registro')) ?>" class="btn btn-outline-secondary btn-sm">Crear cuenta</a>
+    </div>
+</div>
