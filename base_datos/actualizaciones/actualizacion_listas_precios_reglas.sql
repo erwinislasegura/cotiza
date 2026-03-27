@@ -10,6 +10,14 @@ SET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEM
   'ALTER TABLE listas_precios ADD COLUMN segmento_mercado VARCHAR(120) NULL AFTER canal_venta',
   'SELECT 1'); PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
+SET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=@db_name AND TABLE_NAME='listas_precios' AND COLUMN_NAME='ajuste_tipo') = 0,
+  'ALTER TABLE listas_precios ADD COLUMN ajuste_tipo ENUM("incremento","descuento") NOT NULL DEFAULT "incremento" AFTER segmento_mercado',
+  'SELECT 1'); PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=@db_name AND TABLE_NAME='listas_precios' AND COLUMN_NAME='ajuste_porcentaje') = 0,
+  'ALTER TABLE listas_precios ADD COLUMN ajuste_porcentaje DECIMAL(8,4) NOT NULL DEFAULT 0 AFTER ajuste_tipo',
+  'SELECT 1'); PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
 CREATE TABLE IF NOT EXISTS clientes_listas_precios (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   empresa_id BIGINT UNSIGNED NOT NULL,

@@ -24,6 +24,9 @@ class ServicioPreciosLista
         $lista = $this->resolverListaPrecio($empresaId, $clienteId, $canal, $fecha);
         $regla = $lista ? $this->resolverRegla($empresaId, (int) $lista['id'], (int) $producto['id'], (int) ($producto['categoria_id'] ?? 0)) : null;
         if ($regla === null && $lista) {
+            $regla = $this->resolverReglaDesdeCamposLista($lista);
+        }
+        if ($regla === null && $lista) {
             $regla = $this->resolverReglaDesdeTexto((string) ($lista['reglas_base'] ?? ''));
         }
 
@@ -161,6 +164,24 @@ class ServicioPreciosLista
             'ambito' => 'global',
             'prioridad' => 999,
             'porcentaje' => abs($valor),
+            'tipo_ajuste' => $tipo,
+        ];
+    }
+
+    private function resolverReglaDesdeCamposLista(array $lista): ?array
+    {
+        $porcentaje = (float) ($lista['ajuste_porcentaje'] ?? 0);
+        if ($porcentaje <= 0) {
+            return null;
+        }
+
+        $tipo = ($lista['ajuste_tipo'] ?? 'incremento') === 'descuento' ? 'descuento' : 'incremento';
+
+        return [
+            'id' => 0,
+            'ambito' => 'global',
+            'prioridad' => 500,
+            'porcentaje' => $porcentaje,
             'tipo_ajuste' => $tipo,
         ];
     }

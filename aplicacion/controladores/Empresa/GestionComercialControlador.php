@@ -384,6 +384,8 @@ class GestionComercialControlador extends Controlador
             $vigenciaHasta = $_POST['vigencia_hasta'] ?: null;
             $tipoLista = trim($_POST['tipo_lista'] ?? 'general');
             $canalVenta = trim($_POST['canal_venta'] ?? '');
+            $ajusteTipo = ($_POST['ajuste_tipo'] ?? 'incremento') === 'descuento' ? 'descuento' : 'incremento';
+            $ajustePorcentaje = max(0, (float) ($_POST['ajuste_porcentaje'] ?? 0));
             $estado = $_POST['estado'] ?? 'activo';
 
             if ($nombre === '') {
@@ -407,6 +409,8 @@ class GestionComercialControlador extends Controlador
                 'vigencia_hasta' => $vigenciaHasta,
                 'tipo_lista' => $tipoLista !== '' ? $tipoLista : 'general',
                 'canal_venta' => $canalVenta !== '' ? $canalVenta : null,
+                'ajuste_tipo' => $ajusteTipo,
+                'ajuste_porcentaje' => $ajustePorcentaje,
                 'estado' => $estado,
                 'reglas_base' => trim($_POST['reglas_base'] ?? ''),
                 'fecha_creacion' => date('Y-m-d H:i:s'),
@@ -680,6 +684,8 @@ class GestionComercialControlador extends Controlador
         $vigenciaHasta = $_POST['vigencia_hasta'] ?: null;
         $tipoLista = trim($_POST['tipo_lista'] ?? 'general');
         $canalVenta = trim($_POST['canal_venta'] ?? '');
+        $ajusteTipo = ($_POST['ajuste_tipo'] ?? 'incremento') === 'descuento' ? 'descuento' : 'incremento';
+        $ajustePorcentaje = max(0, (float) ($_POST['ajuste_porcentaje'] ?? 0));
         $estado = $_POST['estado'] ?? 'activo';
 
         if ($nombre === '') {
@@ -702,6 +708,8 @@ class GestionComercialControlador extends Controlador
             'vigencia_hasta' => $vigenciaHasta,
             'tipo_lista' => $tipoLista !== '' ? $tipoLista : 'general',
             'canal_venta' => $canalVenta !== '' ? $canalVenta : null,
+            'ajuste_tipo' => $ajusteTipo,
+            'ajuste_porcentaje' => $ajustePorcentaje,
             'estado' => $estado,
             'reglas_base' => trim($_POST['reglas_base'] ?? ''),
         ]);
