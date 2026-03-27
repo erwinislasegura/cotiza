@@ -8,7 +8,7 @@ class Cotizacion extends Modelo
 {
     public function listar(int $empresaId): array
     {
-        $sql = 'SELECT c.*, cl.nombre AS cliente FROM cotizaciones c INNER JOIN clientes cl ON cl.id = c.cliente_id WHERE c.empresa_id = :empresa_id AND c.fecha_eliminacion IS NULL ORDER BY c.id DESC';
+        $sql = 'SELECT c.*, cl.nombre AS cliente, u.nombre AS vendedor FROM cotizaciones c INNER JOIN clientes cl ON cl.id = c.cliente_id INNER JOIN usuarios u ON u.id = c.usuario_id WHERE c.empresa_id = :empresa_id AND c.fecha_eliminacion IS NULL ORDER BY c.id DESC';
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['empresa_id' => $empresaId]);
         return $stmt->fetchAll();
