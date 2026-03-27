@@ -6,6 +6,18 @@ use Aplicacion\Nucleo\Modelo;
 
 class GestionComercial extends Modelo
 {
+    private array $tablasPermitidas = [
+        'contactos_cliente',
+        'vendedores',
+        'categorias_productos',
+        'listas_precios',
+        'seguimientos_comerciales',
+        'aprobaciones_cotizacion',
+        'documentos_plantillas',
+        'notificaciones_empresa',
+        'historial_actividad',
+    ];
+
     public function listarTablaEmpresa(string $tabla, int $empresaId, string $buscar = '', int $limite = 10): array
     {
         $permitidas = [
@@ -56,12 +68,64 @@ class GestionComercial extends Modelo
 
     public function crear(string $tabla, array $data): int
     {
+        if (!in_array($tabla, $this->tablasPermitidas, true)) {
+            throw new \InvalidArgumentException('Tabla no permitida para escritura.');
+        }
         $campos = array_keys($data);
         $columns = implode(',', $campos);
         $binds = ':' . implode(',:', $campos);
         $sql = "INSERT INTO {$tabla} ({$columns}) VALUES ({$binds})";
         $this->db->prepare($sql)->execute($data);
         return (int) $this->db->lastInsertId();
+    }
+
+    public function obtenerPorId(string $tabla, int $empresaId, int $id): ?array
+    {
+        if (!in_array($tabla, $this->tablasPermitidas, true)) {
+            return null;
+        }
+        $stmt = $this->db->prepare("SELECT * FROM {$tabla} WHERE empresa_id = :empresa_id AND id = :id LIMIT 1");
+        $stmt->execute(['empresa_id' => $empresaId, 'id' => $id]);
+        return $stmt->fetch() ?: null;
+    }
+
+    public function eliminar(string $tabla, int $empresaId, int $id): void
+    {
+        if (!in_array($tabla, $this->tablasPermitidas, true)) {
+            return;
+        }
+        $stmt = $this->db->prepare("DELETE FROM {$tabla} WHERE empresa_id = :empresa_id AND id = :id");
+        $stmt->execute(['empresa_id' => $empresaId, 'id' => $id]);
+    }
+
+    public function actualizarDinamico(string $tabla, int $empresaId, int $id, array $data): void
+    {
+        if (!in_array($tabla, $this->tablasPermitidas, true)) {
+            return;
+        }
+
+        $actual = $this->obtenerPorId($tabla, $empresaId, $id);
+        if (!$actual) {
+            return;
+        }
+
+        $permitidos = array_diff(array_keys($actual), ['id', 'empresa_id', 'fecha_creacion']);
+        $asignaciones = [];
+        $params = ['empresa_id' => $empresaId, 'id' => $id];
+
+        foreach ($permitidos as $campo) {
+            if (array_key_exists($campo, $data)) {
+                $asignaciones[] = "{$campo} = :{$campo}";
+                $params[$campo] = $data[$campo] === '' ? null : $data[$campo];
+            }
+        }
+
+        if ($asignaciones === []) {
+            return;
+        }
+
+        $sql = "UPDATE {$tabla} SET " . implode(', ', $asignaciones) . " WHERE empresa_id = :empresa_id AND id = :id";
+        $this->db->prepare($sql)->execute($params);
     }
 
     public function estadisticasInicio(int $empresaId): array

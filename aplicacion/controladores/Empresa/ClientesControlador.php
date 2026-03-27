@@ -48,4 +48,54 @@ class ClientesControlador extends Controlador
         flash('success', 'Cliente creado correctamente.');
         $this->redirigir('/app/clientes');
     }
+
+    public function ver(int $id): void
+    {
+        $cliente = (new Cliente())->obtenerPorId(empresa_actual_id(), $id);
+        if (!$cliente) {
+            flash('danger', 'Cliente no encontrado.');
+            $this->redirigir('/app/clientes');
+        }
+        $this->vista('empresa/clientes/ver', compact('cliente'), 'empresa');
+    }
+
+    public function editar(int $id): void
+    {
+        $empresaId = empresa_actual_id();
+        $cliente = (new Cliente())->obtenerPorId($empresaId, $id);
+        if (!$cliente) {
+            flash('danger', 'Cliente no encontrado.');
+            $this->redirigir('/app/clientes');
+        }
+        $vendedores = (new GestionComercial())->listarTablaEmpresa('vendedores', $empresaId, '', 200);
+        $this->vista('empresa/clientes/editar', compact('cliente', 'vendedores'), 'empresa');
+    }
+
+    public function actualizar(int $id): void
+    {
+        validar_csrf();
+        (new Cliente())->actualizar(empresa_actual_id(), $id, [
+            'razon_social' => trim($_POST['razon_social'] ?? ''),
+            'nombre_comercial' => trim($_POST['nombre_comercial'] ?? ''),
+            'identificador_fiscal' => trim($_POST['identificador_fiscal'] ?? ''),
+            'giro' => trim($_POST['giro'] ?? ''),
+            'correo' => trim($_POST['correo'] ?? ''),
+            'telefono' => trim($_POST['telefono'] ?? ''),
+            'direccion' => trim($_POST['direccion'] ?? ''),
+            'ciudad' => trim($_POST['ciudad'] ?? ''),
+            'vendedor_id' => (int) ($_POST['vendedor_id'] ?? 0) ?: null,
+            'notas' => trim($_POST['notas'] ?? ''),
+            'estado' => $_POST['estado'] ?? 'activo',
+        ]);
+        flash('success', 'Cliente actualizado correctamente.');
+        $this->redirigir('/app/clientes');
+    }
+
+    public function eliminar(int $id): void
+    {
+        validar_csrf();
+        (new Cliente())->eliminar(empresa_actual_id(), $id);
+        flash('success', 'Cliente eliminado correctamente.');
+        $this->redirigir('/app/clientes');
+    }
 }

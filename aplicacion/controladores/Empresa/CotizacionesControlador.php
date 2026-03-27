@@ -81,4 +81,45 @@ class CotizacionesControlador extends Controlador
         flash('success', 'Cotización creada y numerada correctamente.');
         $this->redirigir('/app/cotizaciones');
     }
+
+    public function ver(int $id): void
+    {
+        $cotizacion = (new Cotizacion())->obtenerPorId(empresa_actual_id(), $id);
+        if (!$cotizacion) {
+            flash('danger', 'Cotización no encontrada.');
+            $this->redirigir('/app/cotizaciones');
+        }
+        $this->vista('empresa/cotizaciones/ver', compact('cotizacion'), 'empresa');
+    }
+
+    public function editar(int $id): void
+    {
+        $cotizacion = (new Cotizacion())->obtenerPorId(empresa_actual_id(), $id);
+        if (!$cotizacion) {
+            flash('danger', 'Cotización no encontrada.');
+            $this->redirigir('/app/cotizaciones');
+        }
+        $this->vista('empresa/cotizaciones/editar', compact('cotizacion'), 'empresa');
+    }
+
+    public function actualizar(int $id): void
+    {
+        validar_csrf();
+        (new Cotizacion())->actualizarBasico(empresa_actual_id(), $id, [
+            'estado' => $_POST['estado'] ?? 'borrador',
+            'observaciones' => trim($_POST['observaciones'] ?? ''),
+            'terminos_condiciones' => trim($_POST['terminos_condiciones'] ?? ''),
+            'fecha_vencimiento' => $_POST['fecha_vencimiento'] ?? date('Y-m-d'),
+        ]);
+        flash('success', 'Cotización actualizada correctamente.');
+        $this->redirigir('/app/cotizaciones');
+    }
+
+    public function eliminar(int $id): void
+    {
+        validar_csrf();
+        (new Cotizacion())->eliminar(empresa_actual_id(), $id);
+        flash('success', 'Cotización eliminada correctamente.');
+        $this->redirigir('/app/cotizaciones');
+    }
 }

@@ -1,0 +1,3 @@
+<h1 class="h4 mb-3">Ver usuario</h1>
+<div class="card"><div class="card-body"><dl class="row mb-0"><dt class="col-sm-3">Nombre</dt><dd class="col-sm-9"><?= e($usuario['nombre']) ?></dd><dt class="col-sm-3">Correo</dt><dd class="col-sm-9"><?= e($usuario['correo']) ?></dd><dt class="col-sm-3">Rol</dt><dd class="col-sm-9"><?= e($usuario['rol']) ?></dd><dt class="col-sm-3">Estado</dt><dd class="col-sm-9"><?= e($usuario['estado']) ?></dd></dl></div></div>
+<div class="mt-3"><a class="btn btn-outline-secondary btn-sm" href="<?= e(url('/app/usuarios')) ?>">Volver</a> <a class="btn btn-primary btn-sm" href="<?= e(url('/app/usuarios/editar/' . $usuario['id'])) ?>">Editar</a></div>

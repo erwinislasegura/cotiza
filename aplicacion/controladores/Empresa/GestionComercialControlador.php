@@ -199,4 +199,79 @@ class GestionComercialControlador extends Controlador
         $resumen = $this->modelo->estadisticasInicio($empresaId);
         $this->vista('empresa/reportes/index', compact('resumen'), 'empresa');
     }
+
+    public function verRegistro(string $modulo, int $id): void
+    {
+        $mapeo = $this->mapeoModulos();
+        if (!isset($mapeo[$modulo])) {
+            http_response_code(404);
+            echo 'Módulo no encontrado';
+            return;
+        }
+        $registro = $this->modelo->obtenerPorId($mapeo[$modulo]['tabla'], empresa_actual_id(), $id);
+        if (!$registro) {
+            flash('danger', 'Registro no encontrado.');
+            $this->redirigir('/app/' . $modulo);
+        }
+        $titulo = $mapeo[$modulo]['titulo'];
+        $this->vista('empresa/modulos/ver', compact('registro', 'titulo', 'modulo'), 'empresa');
+    }
+
+    public function editarRegistro(string $modulo, int $id): void
+    {
+        $mapeo = $this->mapeoModulos();
+        if (!isset($mapeo[$modulo])) {
+            http_response_code(404);
+            echo 'Módulo no encontrado';
+            return;
+        }
+        $registro = $this->modelo->obtenerPorId($mapeo[$modulo]['tabla'], empresa_actual_id(), $id);
+        if (!$registro) {
+            flash('danger', 'Registro no encontrado.');
+            $this->redirigir('/app/' . $modulo);
+        }
+        $titulo = $mapeo[$modulo]['titulo'];
+        $this->vista('empresa/modulos/editar', compact('registro', 'titulo', 'modulo'), 'empresa');
+    }
+
+    public function actualizarRegistro(string $modulo, int $id): void
+    {
+        validar_csrf();
+        $mapeo = $this->mapeoModulos();
+        if (!isset($mapeo[$modulo])) {
+            $this->redirigir('/app/panel');
+        }
+        $data = $_POST;
+        unset($data['_csrf']);
+        $this->modelo->actualizarDinamico($mapeo[$modulo]['tabla'], empresa_actual_id(), $id, $data);
+        flash('success', 'Registro actualizado correctamente.');
+        $this->redirigir('/app/' . $modulo);
+    }
+
+    public function eliminarRegistro(string $modulo, int $id): void
+    {
+        validar_csrf();
+        $mapeo = $this->mapeoModulos();
+        if (!isset($mapeo[$modulo])) {
+            $this->redirigir('/app/panel');
+        }
+        $this->modelo->eliminar($mapeo[$modulo]['tabla'], empresa_actual_id(), $id);
+        flash('success', 'Registro eliminado correctamente.');
+        $this->redirigir('/app/' . $modulo);
+    }
+
+    private function mapeoModulos(): array
+    {
+        return [
+            'contactos' => ['tabla' => 'contactos_cliente', 'titulo' => 'Contactos'],
+            'vendedores' => ['tabla' => 'vendedores', 'titulo' => 'Vendedores'],
+            'categorias' => ['tabla' => 'categorias_productos', 'titulo' => 'Categorías'],
+            'listas-precios' => ['tabla' => 'listas_precios', 'titulo' => 'Listas de precios'],
+            'seguimiento' => ['tabla' => 'seguimientos_comerciales', 'titulo' => 'Seguimiento comercial'],
+            'aprobaciones' => ['tabla' => 'aprobaciones_cotizacion', 'titulo' => 'Aprobaciones'],
+            'documentos' => ['tabla' => 'documentos_plantillas', 'titulo' => 'Documentos y plantillas'],
+            'notificaciones' => ['tabla' => 'notificaciones_empresa', 'titulo' => 'Notificaciones'],
+            'historial' => ['tabla' => 'historial_actividad', 'titulo' => 'Historial / actividad'],
+        ];
+    }
 }
