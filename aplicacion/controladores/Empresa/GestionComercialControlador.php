@@ -170,6 +170,45 @@ class GestionComercialControlador extends Controlador
         exit;
     }
 
+
+    public function exportarCategoriasExcel(): void
+    {
+        $empresaId = empresa_actual_id();
+        $buscar = trim($_GET['q'] ?? '');
+        $categorias = $this->modelo->listarTablaEmpresa('categorias_productos', $empresaId, $buscar, 5000);
+
+        $nombreArchivo = 'categorias_' . date('Ymd_His') . '.xls';
+        header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $nombreArchivo . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        echo "ï»¿";
+        echo '<html><head><meta charset="UTF-8"></head><body>';
+        echo '<table border="1" cellspacing="0" cellpadding="4" style="' . ExcelExpoFormato::TABLA_ESTILO . '">';
+        echo '<tr style="' . ExcelExpoFormato::ENCABEZADO_ESTILO . '">';
+        echo '<th>N°</th>';
+        echo '<th>Nombre</th>';
+        echo '<th>Descripción</th>';
+        echo '<th>Estado</th>';
+        echo '</tr>';
+
+        $indice = 1;
+        foreach ($categorias as $categoria) {
+            echo '<tr>';
+            echo '<td>' . $indice . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($categoria['nombre'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($categoria['descripcion'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml(ucfirst((string) ($categoria['estado'] ?? 'activo'))) . '</td>';
+            echo '</tr>';
+            $indice++;
+        }
+
+        echo '</table></body></html>';
+
+        exit;
+    }
+
     public function exportarVendedoresExcel(): void
     {
         $empresaId = empresa_actual_id();
