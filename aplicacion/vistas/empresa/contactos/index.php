@@ -19,18 +19,24 @@
 
 <div class="card">
     <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
-        <strong>Listado de contactos registrados</strong>
+        <div>
+            <strong>Listado de contactos</strong>
+            <div class="small text-muted">Registros encontrados: <?= count($contactos) ?></div>
+        </div>
         <div class="d-flex gap-2">
-            <a href="<?= e(url('/app/contactos/exportar/excel?q=' . urlencode($buscar))) ?>" class="btn btn-success btn-sm">Exportar Excel</a>
+            <a href="<?= e(url('/app/contactos/exportar/excel?q=' . urlencode($buscar))) ?>" class="<?= e(\Aplicacion\Servicios\ExcelExpoFormato::BOTON_CLASES) ?>" style="<?= e(\Aplicacion\Servicios\ExcelExpoFormato::BOTON_ESTILO) ?>"><?= e(\Aplicacion\Servicios\ExcelExpoFormato::BOTON_TEXTO) ?></a>
             <form class="d-flex gap-2" method="GET" action="<?= e(url('/app/contactos')) ?>">
                 <input class="form-control form-control-sm" name="q" value="<?= e($buscar) ?>" placeholder="Buscar por cliente, nombre o correo">
                 <button class="btn btn-outline-secondary btn-sm">Buscar</button>
+                <?php if ($buscar !== ''): ?>
+                    <a class="btn btn-outline-dark btn-sm" href="<?= e(url('/app/contactos')) ?>">Limpiar</a>
+                <?php endif; ?>
             </form>
         </div>
     </div>
     <div class="table-responsive" style="overflow: visible;">
         <table class="table table-sm table-hover mb-0 tabla-admin">
-            <thead>
+            <thead class="table-light">
                 <tr>
                     <th>Cliente</th>
                     <th>Nombre</th>
