@@ -7,6 +7,7 @@ use Aplicacion\Modelos\Cotizacion;
 use Aplicacion\Modelos\Cliente;
 use Aplicacion\Modelos\Producto;
 use Aplicacion\Servicios\ServicioPlan;
+use Aplicacion\Servicios\ServicioPreciosLista;
 
 class CotizacionesControlador extends Controlador
 {
@@ -48,6 +49,9 @@ class CotizacionesControlador extends Controlador
         $impuestos = $_POST['impuesto_item'] ?? [];
         $descuentoTiposLinea = $_POST['descuento_tipo_item'] ?? [];
         $descuentoValoresLinea = $_POST['descuento_item'] ?? [];
+        $canalVenta = trim((string) ($_POST['canal_venta'] ?? ''));
+        $clienteIdSeleccionado = (int) ($_POST['cliente_id'] ?? 0) ?: null;
+        $servicioPrecios = new ServicioPreciosLista();
 
         $items = [];
         $subtotal = 0.0;
@@ -64,6 +68,13 @@ class CotizacionesControlador extends Controlador
             $descripcion = trim((string) ($descripciones[$i] ?? ''));
             $cantidad = (float) ($cantidades[$i] ?? 0);
             $precio = (float) ($precios[$i] ?? 0);
+
+            if ($productoId !== null && $precio <= 0) {
+                $precioCalculado = $servicioPrecios->calcularPrecioProducto($empresaId, $productoId, $clienteIdSeleccionado, $canalVenta !== '' ? $canalVenta : null, date('Y-m-d'));
+                if ($precioCalculado) {
+                    $precio = (float) $precioCalculado['precio_final'];
+                }
+            }
             $impuestoPorcentaje = max(0, (float) ($impuestos[$i] ?? 0));
             $descuentoTipo = ($descuentoTiposLinea[$i] ?? 'valor') === 'porcentaje' ? 'porcentaje' : 'valor';
             $descuentoValor = max(0, (float) ($descuentoValoresLinea[$i] ?? 0));
@@ -169,6 +180,9 @@ class CotizacionesControlador extends Controlador
         $impuestos = $_POST['impuesto_item'] ?? [];
         $descuentoTiposLinea = $_POST['descuento_tipo_item'] ?? [];
         $descuentoValoresLinea = $_POST['descuento_item'] ?? [];
+        $canalVenta = trim((string) ($_POST['canal_venta'] ?? ''));
+        $clienteIdSeleccionado = (int) ($_POST['cliente_id'] ?? 0) ?: null;
+        $servicioPrecios = new ServicioPreciosLista();
 
         $items = [];
         $subtotal = 0.0;
@@ -185,6 +199,13 @@ class CotizacionesControlador extends Controlador
             $descripcion = trim((string) ($descripciones[$i] ?? ''));
             $cantidad = (float) ($cantidades[$i] ?? 0);
             $precio = (float) ($precios[$i] ?? 0);
+
+            if ($productoId !== null && $precio <= 0) {
+                $precioCalculado = $servicioPrecios->calcularPrecioProducto(empresa_actual_id(), $productoId, $clienteIdSeleccionado, $canalVenta !== '' ? $canalVenta : null, date('Y-m-d'));
+                if ($precioCalculado) {
+                    $precio = (float) $precioCalculado['precio_final'];
+                }
+            }
             $impuestoPorcentaje = max(0, (float) ($impuestos[$i] ?? 0));
             $descuentoTipo = ($descuentoTiposLinea[$i] ?? 'valor') === 'porcentaje' ? 'porcentaje' : 'valor';
             $descuentoValor = max(0, (float) ($descuentoValoresLinea[$i] ?? 0));
