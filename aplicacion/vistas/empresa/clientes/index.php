@@ -29,12 +29,12 @@
     <div class="d-flex gap-2 align-items-center"><label class="small text-muted">Mostrar</label><select class="form-select form-select-sm" style="width:90px"><option>10</option><option>25</option><option>50</option></select></div>
     <form method="GET" class="d-flex gap-2"><input class="form-control form-control-sm" name="q" value="<?= e($buscar) ?>" placeholder="Buscar cliente"><button class="btn btn-outline-secondary btn-sm">Buscar</button></form>
   </div>
-  <div class="table-responsive">
+  <div class="table-responsive" style="overflow: visible;">
     <table class="table table-hover table-sm mb-0 tabla-admin">
       <thead><tr><th>Razón social</th><th>Comercial</th><th>Fiscal</th><th>Correo</th><th>Teléfono</th><th>Ciudad</th><th>Estado</th><th class="text-end">Acciones</th></tr></thead>
       <tbody><?php foreach($clientes as $c): ?><tr>
         <td><?= e($c['razon_social'] ?: $c['nombre']) ?></td><td><?= e($c['nombre_comercial'] ?: $c['nombre']) ?></td><td><?= e($c['identificador_fiscal'] ?? '') ?></td><td><?= e($c['correo']) ?></td><td><?= e($c['telefono']) ?></td><td><?= e($c['ciudad'] ?? '') ?></td><td><span class="badge <?= ($c['estado'] === 'activo') ? 'badge-estado-activo' : 'badge-estado-inactivo' ?>"><?= e($c['estado']) ?></span></td>
-        <td class="text-end"><div class="dropdown"><button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">Acciones</button><ul class="dropdown-menu dropdown-menu-end"><li><a class="dropdown-item" href="<?= e(url('/app/clientes/ver/' . $c['id'])) ?>">Ver</a></li><li><a class="dropdown-item" href="<?= e(url('/app/clientes/editar/' . $c['id'])) ?>">Editar</a></li><li><a class="dropdown-item" href="<?= e(url('/app/contactos')) ?>">Ver contactos</a></li><li><form method="POST" action="<?= e(url('/app/clientes/eliminar/' . $c['id'])) ?>" onsubmit="return confirm('¿Confirmas eliminar este cliente?')"><?= csrf_campo() ?><button class="dropdown-item text-danger" type="submit">Eliminar</button></form></li></ul></div></td>
+        <td class="text-end"><div class="dropdown dropup"><button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">Acciones</button><ul class="dropdown-menu dropdown-menu-end"><li><a class="dropdown-item" href="<?= e(url('/app/clientes/ver/' . $c['id'])) ?>">Ver</a></li><li><a class="dropdown-item" href="<?= e(url('/app/clientes/editar/' . $c['id'])) ?>">Editar</a></li><li><a class="dropdown-item" href="<?= e(url('/app/contactos')) ?>">Ver contactos</a></li><li><form method="POST" action="<?= e(url('/app/clientes/eliminar/' . $c['id'])) ?>" onsubmit="return confirm('¿Confirmas eliminar este cliente?')"><?= csrf_campo() ?><button class="dropdown-item text-danger" type="submit">Eliminar</button></form></li></ul></div></td>
       </tr><?php endforeach; ?></tbody>
     </table>
   </div>
