@@ -1,7 +1,6 @@
 <section class="modulo-head d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <h1 class="h4 mb-0">Clientes</h1>
   <div class="d-flex gap-2">
-    <a href="<?= e(url('/app/clientes/exportar/excel?q=' . urlencode($buscar))) ?>" class="btn btn-success btn-sm">Exportar Excel tabulado</a>
     <a href="<?= e(url('/app/contactos')) ?>" class="btn btn-outline-primary btn-sm">Ver contactos</a>
   </div>
 </section>
@@ -88,7 +87,7 @@
       <div class="small text-muted">Registros encontrados: <?= count($clientes) ?></div>
     </div>
     <div class="d-flex gap-2">
-      <a href="<?= e(url('/app/clientes/exportar/excel?q=' . urlencode($buscar))) ?>" class="btn btn-success btn-sm">Exportar Excel tabulado</a>
+      <a href="<?= e(url('/app/clientes/exportar/excel?q=' . urlencode($buscar))) ?>" class="btn btn-success btn-sm">Exportar Excel</a>
       <form method="GET" class="d-flex gap-2">
         <input class="form-control form-control-sm" name="q" value="<?= e($buscar) ?>" placeholder="Buscar por nombre, fiscal, correo...">
         <button class="btn btn-outline-secondary btn-sm">Buscar</button>
