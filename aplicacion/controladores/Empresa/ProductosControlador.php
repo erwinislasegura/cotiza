@@ -63,11 +63,11 @@ class ProductosControlador extends Controlador
         validar_csrf();
 
         if (!isset($_FILES['archivo_productos']) || (int) ($_FILES['archivo_productos']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-            flash('danger', 'Debes subir un archivo CSV válido para productos.');
+            flash('danger', 'Debes subir un archivo Excel válido para productos.');
             $this->redirigir('/app/productos/carga-masiva');
         }
 
-        $filas = $this->leerArchivoCsv((string) $_FILES['archivo_productos']['tmp_name']);
+        $filas = $this->leerArchivoMasivo((string) $_FILES['archivo_productos']['tmp_name'], (string) ($_FILES['archivo_productos']['name'] ?? ''));
         if ($filas === []) {
             flash('danger', 'El archivo no tiene datos para importar.');
             $this->redirigir('/app/productos/carga-masiva');
@@ -142,11 +142,11 @@ class ProductosControlador extends Controlador
         validar_csrf();
 
         if (!isset($_FILES['archivo_categorias']) || (int) ($_FILES['archivo_categorias']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-            flash('danger', 'Debes subir un archivo CSV válido para categorías.');
+            flash('danger', 'Debes subir un archivo Excel válido para categorías.');
             $this->redirigir('/app/productos/carga-masiva');
         }
 
-        $filas = $this->leerArchivoCsv((string) $_FILES['archivo_categorias']['tmp_name']);
+        $filas = $this->leerArchivoMasivo((string) $_FILES['archivo_categorias']['tmp_name'], (string) ($_FILES['archivo_categorias']['name'] ?? ''));
         if ($filas === []) {
             flash('danger', 'El archivo de categorías no tiene datos para importar.');
             $this->redirigir('/app/productos/carga-masiva');
@@ -296,6 +296,80 @@ class ProductosControlador extends Controlador
         echo '</table></body></html>';
 
         exit;
+    }
+
+    private function leerArchivoMasivo(string $rutaArchivo, string $nombreOriginal): array
+    {
+        $extension = mb_strtolower(pathinfo($nombreOriginal, PATHINFO_EXTENSION));
+
+        if ($extension === 'csv') {
+            return $this->leerArchivoCsv($rutaArchivo);
+        }
+
+        $filas = $this->leerArchivoExcelHtml($rutaArchivo);
+        if ($filas !== []) {
+            return $filas;
+        }
+
+        return $this->leerArchivoCsv($rutaArchivo);
+    }
+
+    private function leerArchivoExcelHtml(string $rutaArchivo): array
+    {
+        if (!is_file($rutaArchivo)) {
+            return [];
+        }
+
+        $contenido = (string) file_get_contents($rutaArchivo);
+        if (trim($contenido) === '' || stripos($contenido, '<table') === false) {
+            return [];
+        }
+
+        $internosPrevios = libxml_use_internal_errors(true);
+        $dom = new \DOMDocument();
+        $dom->loadHTML($contenido);
+        libxml_clear_errors();
+        libxml_use_internal_errors($internosPrevios);
+
+        $tabla = $dom->getElementsByTagName('table')->item(0);
+        if (!$tabla) {
+            return [];
+        }
+
+        $filas = [];
+        $encabezados = [];
+        foreach ($tabla->getElementsByTagName('tr') as $indiceFila => $filaHtml) {
+            $celdas = [];
+            foreach ($filaHtml->childNodes as $celda) {
+                if (!in_array($celda->nodeName, ['th', 'td'], true)) {
+                    continue;
+                }
+                $celdas[] = trim((string) $celda->textContent);
+            }
+
+            if ($celdas === []) {
+                continue;
+            }
+
+            if ($indiceFila === 0) {
+                $encabezados = array_map(fn($valor) => $this->normalizarEncabezado((string) $valor), $celdas);
+                continue;
+            }
+
+            $registro = [];
+            foreach ($encabezados as $indice => $encabezado) {
+                if ($encabezado === '') {
+                    continue;
+                }
+                $registro[$encabezado] = isset($celdas[$indice]) ? trim((string) $celdas[$indice]) : '';
+            }
+
+            if ($registro !== []) {
+                $filas[] = $registro;
+            }
+        }
+
+        return $filas;
     }
 
     private function leerArchivoCsv(string $rutaArchivo): array

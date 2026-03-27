@@ -8,7 +8,7 @@
   <ol class="mb-0 mt-2">
     <li>Descarga la plantilla de ejemplo (productos o categorías).</li>
     <li>Llénala en Excel respetando el orden de columnas.</li>
-    <li>Guárdala como <strong>CSV UTF-8 (delimitado por comas)</strong>.</li>
+    <li>Guárdala y súbela en el mismo formato <strong>Excel (.xls)</strong> de la plantilla.</li>
     <li>Sube el archivo desde el formulario correspondiente.</li>
   </ol>
 </div>
@@ -21,7 +21,7 @@
         <a class="btn btn-outline-primary btn-sm" href="<?= e(url('/app/productos/carga-masiva/plantilla/productos')) ?>">Descargar plantilla productos</a>
       </div>
       <div class="card-body">
-        <p class="mb-2">Campos esperados (en este orden):</p>
+        <p class="mb-2">Campos esperados (mismo orden de la plantilla):</p>
         <code>tipo, categoria, codigo, sku, codigo_barras, nombre, descripcion, unidad, precio, costo, impuesto, descuento_maximo, stock_minimo, stock_aviso, estado</code>
         <ul class="mt-3 mb-3 small text-muted">
           <li><strong>Obligatorios:</strong> <code>codigo</code> y <code>nombre</code>.</li>
@@ -32,7 +32,7 @@
         <form method="POST" action="<?= e(url('/app/productos/carga-masiva/productos')) ?>" enctype="multipart/form-data" class="row g-2">
           <?= csrf_campo() ?>
           <div class="col-md-9">
-            <input type="file" name="archivo_productos" class="form-control" accept=".csv" required>
+            <input type="file" name="archivo_productos" class="form-control" accept=".xls,.xlsx,.csv" required>
           </div>
           <div class="col-md-3 d-grid">
             <button class="btn btn-primary">Cargar productos</button>
@@ -49,7 +49,7 @@
         <a class="btn btn-outline-secondary btn-sm" href="<?= e(url('/app/productos/carga-masiva/plantilla/categorias')) ?>">Plantilla categorías</a>
       </div>
       <div class="card-body">
-        <p class="mb-2">Campos esperados:</p>
+        <p class="mb-2">Campos esperados (mismo orden de la plantilla):</p>
         <code>nombre, descripcion, estado</code>
         <ul class="mt-3 mb-3 small text-muted">
           <li><strong>Obligatorio:</strong> <code>nombre</code>.</li>
@@ -58,7 +58,7 @@
         <form method="POST" action="<?= e(url('/app/productos/carga-masiva/categorias')) ?>" enctype="multipart/form-data" class="row g-2">
           <?= csrf_campo() ?>
           <div class="col-12">
-            <input type="file" name="archivo_categorias" class="form-control" accept=".csv" required>
+            <input type="file" name="archivo_categorias" class="form-control" accept=".xls,.xlsx,.csv" required>
           </div>
           <div class="col-12 d-grid">
             <button class="btn btn-secondary">Cargar categorías</button>
