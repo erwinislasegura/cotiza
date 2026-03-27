@@ -134,18 +134,28 @@ class GestionComercial extends Modelo
             'cotizaciones_mes' => "SELECT COUNT(*) total FROM cotizaciones WHERE empresa_id=:empresa_id AND fecha_eliminacion IS NULL AND MONTH(fecha_emision)=MONTH(CURDATE()) AND YEAR(fecha_emision)=YEAR(CURDATE())",
             'aprobadas' => "SELECT COUNT(*) total FROM cotizaciones WHERE empresa_id=:empresa_id AND fecha_eliminacion IS NULL AND estado='aprobada'",
             'rechazadas' => "SELECT COUNT(*) total FROM cotizaciones WHERE empresa_id=:empresa_id AND fecha_eliminacion IS NULL AND estado='rechazada'",
+            'pendientes' => "SELECT COUNT(*) total FROM cotizaciones WHERE empresa_id=:empresa_id AND fecha_eliminacion IS NULL AND estado='pendiente'",
             'por_vencer' => "SELECT COUNT(*) total FROM cotizaciones WHERE empresa_id=:empresa_id AND fecha_eliminacion IS NULL AND fecha_vencimiento BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)",
+            'monto_mes' => "SELECT COALESCE(SUM(total),0) total FROM cotizaciones WHERE empresa_id=:empresa_id AND fecha_eliminacion IS NULL AND MONTH(fecha_emision)=MONTH(CURDATE()) AND YEAR(fecha_emision)=YEAR(CURDATE())",
             'clientes_recientes' => "SELECT nombre, correo, fecha_creacion FROM clientes WHERE empresa_id=:empresa_id AND fecha_eliminacion IS NULL ORDER BY id DESC LIMIT 5",
             'productos_top' => "SELECT descripcion, COUNT(*) total FROM items_cotizacion ic INNER JOIN cotizaciones c ON c.id = ic.cotizacion_id WHERE c.empresa_id=:empresa_id GROUP BY descripcion ORDER BY total DESC LIMIT 5",
             'vendedores_top' => "SELECT u.nombre, COUNT(*) total FROM cotizaciones c INNER JOIN usuarios u ON u.id=c.usuario_id WHERE c.empresa_id=:empresa_id GROUP BY u.nombre ORDER BY total DESC LIMIT 5",
+            'estados_distribucion' => "SELECT estado, COUNT(*) total FROM cotizaciones WHERE empresa_id=:empresa_id AND fecha_eliminacion IS NULL GROUP BY estado",
+            'cotizaciones_ultimos_meses' => "SELECT DATE_FORMAT(fecha_emision, '%Y-%m') periodo, COUNT(*) total, COALESCE(SUM(total),0) monto FROM cotizaciones WHERE empresa_id=:empresa_id AND fecha_eliminacion IS NULL AND fecha_emision >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 5 MONTH) GROUP BY DATE_FORMAT(fecha_emision, '%Y-%m') ORDER BY periodo ASC",
         ];
 
         $salida = [];
         foreach ($queries as $clave => $sql) {
             $stmt = $this->db->prepare($sql);
             $stmt->execute(['empresa_id' => $empresaId]);
-            if (str_contains($clave, 'recientes') || str_contains($clave, 'top')) {
+            if (str_contains($clave, 'recientes')
+                || str_contains($clave, 'top')
+                || str_contains($clave, 'distribucion')
+                || str_contains($clave, 'ultimos_meses')
+            ) {
                 $salida[$clave] = $stmt->fetchAll();
+            } elseif ($clave === 'monto_mes') {
+                $salida[$clave] = (float) ($stmt->fetch()['total'] ?? 0);
             } else {
                 $salida[$clave] = (int) ($stmt->fetch()['total'] ?? 0);
             }
