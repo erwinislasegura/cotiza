@@ -61,52 +61,58 @@ class ClientesControlador extends Controlador
         $clientes = (new Cliente())->listar(empresa_actual_id(), $buscar);
 
         $nombreArchivo = 'clientes_' . date('Ymd_His') . '.xls';
-        header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
+        header('Content-Type: text/tab-separated-values; charset=UTF-8');
         header('Content-Disposition: attachment; filename="' . $nombreArchivo . '"');
         header('Pragma: no-cache');
         header('Expires: 0');
 
+        // BOM para compatibilidad con Excel y caracteres UTF-8.
         echo "\xEF\xBB\xBF";
 
         $columnas = [
+            'N°',
             'Razón social',
             'Nombre comercial',
             'ID fiscal',
-            'Giro',
             'Correo',
             'Teléfono',
-            'Dirección',
             'Ciudad',
             'Estado',
-            'Fecha creación',
         ];
 
         echo implode("\t", $columnas) . "\n";
 
+        $indice = 1;
         foreach ($clientes as $cliente) {
             $fila = [
+                (string) $indice,
                 $cliente['razon_social'] ?: ($cliente['nombre'] ?? ''),
                 $cliente['nombre_comercial'] ?: ($cliente['nombre'] ?? ''),
                 $cliente['identificador_fiscal'] ?? '',
-                $cliente['giro'] ?? '',
                 $cliente['correo'] ?? '',
                 $cliente['telefono'] ?? '',
-                $cliente['direccion'] ?? '',
                 $cliente['ciudad'] ?? '',
-                $cliente['estado'] ?? '',
-                $cliente['fecha_creacion'] ?? '',
+                ucfirst((string) ($cliente['estado'] ?? '')),
             ];
 
-            $filaLimpia = array_map(static function ($valor): string {
-                $texto = (string) $valor;
-                $texto = str_replace(["\r\n", "\r", "\n", "\t"], ' ', $texto);
-                return trim($texto);
-            }, $fila);
-
-            echo implode("\t", $filaLimpia) . "\n";
+            $filaTabulada = array_map([$this, 'normalizarCampoExcel'], $fila);
+            echo implode("\t", $filaTabulada) . "\n";
+            $indice++;
         }
 
         exit;
+    }
+
+    private function normalizarCampoExcel(mixed $valor): string
+    {
+        $texto = trim(str_replace(["\r\n", "\r", "\n", "\t"], ' ', (string) $valor));
+
+        // Evita que Excel interprete fórmulas al abrir el archivo.
+        if ($texto !== '' && preg_match('/^[=+\-@]/', $texto) === 1) {
+            $texto = "'" . $texto;
+        }
+
+        return $texto;
     }
 
     private function obtenerRutaRetorno(string $rutaPredeterminada): string
