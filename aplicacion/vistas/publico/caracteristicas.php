@@ -1,0 +1,1 @@
+<div class="container py-5"><h1 class="h3">Características</h1><p class="text-secondary">Control multiempresa, planes por funcionalidades, suscripciones y cotizaciones con numeración automática por empresa.</p></div>
