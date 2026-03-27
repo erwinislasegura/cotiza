@@ -6,6 +6,7 @@
         <li class="nav-item"><a class="nav-link" href="<?= e(url('/caracteristicas')) ?>">Características</a></li>
         <li class="nav-item"><a class="nav-link" href="<?= e(url('/planes')) ?>">Planes</a></li>
         <li class="nav-item"><a class="nav-link" href="<?= e(url('/contacto')) ?>">Contacto</a></li>
+        <li class="nav-item"><a class="nav-link" href="<?= e(url('/preguntas-frecuentes')) ?>">FAQ</a></li>
         <li class="nav-item"><a class="btn btn-outline-primary btn-sm" href="<?= e(url('/iniciar-sesion')) ?>">Iniciar sesión</a></li>
         <li class="nav-item"><a class="btn btn-primary btn-sm" href="<?= e(url('/registro')) ?>">Comenzar ahora</a></li>
       </ul>
