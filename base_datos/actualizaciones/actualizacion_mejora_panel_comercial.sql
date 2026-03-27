@@ -174,7 +174,11 @@ SET @sql = IF(
   'SELECT 1'
 ); PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-CREATE INDEX idx_contactos_empresa ON contactos_cliente (empresa_id);
+SET @sql = IF(
+  (SELECT COUNT(*) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=@db_name AND TABLE_NAME='contactos_cliente' AND INDEX_NAME='idx_contactos_empresa') = 0,
+  'CREATE INDEX idx_contactos_empresa ON contactos_cliente (empresa_id)',
+  'SELECT 1'
+); PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- =====================================================
 -- 3) Catálogos base sugeridos (si no existen datos).
