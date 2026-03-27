@@ -36,11 +36,15 @@ class ProductosControlador extends Controlador
             'codigo' => trim($_POST['codigo'] ?? ''),
             'nombre' => trim($_POST['nombre'] ?? ''),
             'descripcion' => trim($_POST['descripcion'] ?? ''),
+            'sku' => trim($_POST['sku'] ?? ''),
+            'codigo_barras' => trim($_POST['codigo_barras'] ?? ''),
             'unidad' => trim($_POST['unidad'] ?? 'unidad'),
             'precio' => (float) ($_POST['precio'] ?? 0),
             'costo' => (float) ($_POST['costo'] ?? 0),
             'impuesto' => (float) ($_POST['impuesto'] ?? 0),
             'descuento_maximo' => (float) ($_POST['descuento_maximo'] ?? 0),
+            'stock_minimo' => (float) ($_POST['stock_minimo'] ?? 0),
+            'stock_aviso' => (float) ($_POST['stock_aviso'] ?? 0),
             'estado' => $_POST['estado'] ?? 'activo',
         ]);
         flash('success', 'Producto creado correctamente.');
@@ -88,11 +92,15 @@ class ProductosControlador extends Controlador
             'codigo' => trim($_POST['codigo'] ?? ''),
             'nombre' => trim($_POST['nombre'] ?? ''),
             'descripcion' => trim($_POST['descripcion'] ?? ''),
+            'sku' => trim($_POST['sku'] ?? ''),
+            'codigo_barras' => trim($_POST['codigo_barras'] ?? ''),
             'unidad' => trim($_POST['unidad'] ?? 'unidad'),
             'precio' => (float) ($_POST['precio'] ?? 0),
             'costo' => (float) ($_POST['costo'] ?? 0),
             'impuesto' => (float) ($_POST['impuesto'] ?? 0),
             'descuento_maximo' => (float) ($_POST['descuento_maximo'] ?? 0),
+            'stock_minimo' => (float) ($_POST['stock_minimo'] ?? 0),
+            'stock_aviso' => (float) ($_POST['stock_aviso'] ?? 0),
             'estado' => $_POST['estado'] ?? 'activo',
         ]);
         flash('success', 'Producto actualizado correctamente.');

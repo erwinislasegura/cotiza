@@ -11,7 +11,7 @@ class Producto extends Modelo
         $sql = 'SELECT p.*, c.nombre AS categoria FROM productos p LEFT JOIN categorias_productos c ON c.id = p.categoria_id WHERE p.empresa_id=:empresa_id AND p.fecha_eliminacion IS NULL';
         $params = ['empresa_id' => $empresaId];
         if ($buscar !== '') {
-            $sql .= ' AND (p.nombre LIKE :buscar OR p.codigo LIKE :buscar)';
+            $sql .= ' AND (p.nombre LIKE :buscar OR p.codigo LIKE :buscar OR p.sku LIKE :buscar OR p.codigo_barras LIKE :buscar)';
             $params['buscar'] = "%{$buscar}%";
         }
         $sql .= ' ORDER BY p.id DESC';
@@ -29,7 +29,7 @@ class Producto extends Modelo
 
     public function crear(array $data): int
     {
-        $sql = 'INSERT INTO productos (empresa_id,categoria_id,tipo,codigo,nombre,descripcion,unidad,precio,costo,impuesto,descuento_maximo,estado,fecha_creacion) VALUES (:empresa_id,:categoria_id,:tipo,:codigo,:nombre,:descripcion,:unidad,:precio,:costo,:impuesto,:descuento_maximo,:estado,NOW())';
+        $sql = 'INSERT INTO productos (empresa_id,categoria_id,tipo,codigo,sku,codigo_barras,nombre,descripcion,unidad,precio,costo,impuesto,descuento_maximo,stock_minimo,stock_aviso,estado,fecha_creacion) VALUES (:empresa_id,:categoria_id,:tipo,:codigo,:sku,:codigo_barras,:nombre,:descripcion,:unidad,:precio,:costo,:impuesto,:descuento_maximo,:stock_minimo,:stock_aviso,:estado,NOW())';
         $this->db->prepare($sql)->execute($data);
         return (int) $this->db->lastInsertId();
     }
@@ -43,7 +43,7 @@ class Producto extends Modelo
 
     public function actualizar(int $empresaId, int $id, array $data): void
     {
-        $sql = 'UPDATE productos SET categoria_id=:categoria_id, tipo=:tipo, codigo=:codigo, nombre=:nombre, descripcion=:descripcion, unidad=:unidad, precio=:precio, costo=:costo, impuesto=:impuesto, descuento_maximo=:descuento_maximo, estado=:estado, fecha_actualizacion=NOW() WHERE empresa_id=:empresa_id AND id=:id AND fecha_eliminacion IS NULL';
+        $sql = 'UPDATE productos SET categoria_id=:categoria_id, tipo=:tipo, codigo=:codigo, sku=:sku, codigo_barras=:codigo_barras, nombre=:nombre, descripcion=:descripcion, unidad=:unidad, precio=:precio, costo=:costo, impuesto=:impuesto, descuento_maximo=:descuento_maximo, stock_minimo=:stock_minimo, stock_aviso=:stock_aviso, estado=:estado, fecha_actualizacion=NOW() WHERE empresa_id=:empresa_id AND id=:id AND fecha_eliminacion IS NULL';
         $data['empresa_id'] = $empresaId;
         $data['id'] = $id;
         $this->db->prepare($sql)->execute($data);
