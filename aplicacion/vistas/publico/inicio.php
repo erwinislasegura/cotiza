@@ -6,9 +6,9 @@
                 <h1 class="display-6 fw-bold">Cotiza más rápido, vende con orden y proyecta una imagen profesional</h1>
                 <p class="lead text-secondary">Centraliza clientes, productos y cotizaciones en una sola plataforma comercial para equipos B2B.</p>
                 <div class="d-flex flex-wrap gap-2">
-                    <a href="/planes" class="btn btn-primary btn-sm">Ver planes</a>
-                    <a href="/registro" class="btn btn-outline-primary btn-sm">Crear cuenta</a>
-                    <a href="/contacto" class="btn btn-outline-secondary btn-sm">Solicitar información</a>
+                    <a href="<?= e(url('/planes')) ?>" class="btn btn-primary btn-sm">Ver planes</a>
+                    <a href="<?= e(url('/registro')) ?>" class="btn btn-outline-primary btn-sm">Crear cuenta</a>
+                    <a href="<?= e(url('/contacto')) ?>" class="btn btn-outline-secondary btn-sm">Solicitar información</a>
                 </div>
             </div>
             <div class="col-lg-5">
@@ -55,7 +55,7 @@
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="h4">Planes y precios</h2>
-            <a href="/planes" class="btn btn-outline-primary btn-sm">Comparar planes</a>
+            <a href="<?= e(url('/planes')) ?>" class="btn btn-outline-primary btn-sm">Comparar planes</a>
         </div>
         <div class="row g-3">
             <?php foreach ($planes as $plan): ?>
@@ -65,7 +65,7 @@
                             <h5><?= e($plan['nombre']) ?></h5>
                             <p class="small text-secondary"><?= e($plan['resumen_comercial']) ?></p>
                             <div class="h4">$<?= number_format((float)$plan['precio_mensual'], 2) ?><small class="fs-6">/mes</small></div>
-                            <a class="btn btn-primary btn-sm w-100" href="/contratar/<?= e($plan['slug']) ?>">Contratar plan</a>
+                            <a class="btn btn-primary btn-sm w-100" href="<?= e(url('/contratar/' . $plan['slug'])) ?>">Contratar plan</a>
                         </div>
                     </div>
                 </div>
@@ -94,9 +94,9 @@
     <div class="container text-center">
         <h2 class="h4">¿Listo para profesionalizar tus cotizaciones?</h2>
         <div class="d-flex justify-content-center gap-2 flex-wrap">
-            <a href="/registro" class="btn btn-primary btn-sm">Comenzar ahora</a>
-            <a href="/iniciar-sesion" class="btn btn-outline-primary btn-sm">Iniciar sesión</a>
-            <a href="/contacto" class="btn btn-outline-secondary btn-sm">Solicitar información</a>
+            <a href="<?= e(url('/registro')) ?>" class="btn btn-primary btn-sm">Comenzar ahora</a>
+            <a href="<?= e(url('/iniciar-sesion')) ?>" class="btn btn-outline-primary btn-sm">Iniciar sesión</a>
+            <a href="<?= e(url('/contacto')) ?>" class="btn btn-outline-secondary btn-sm">Solicitar información</a>
         </div>
     </div>
 </section>

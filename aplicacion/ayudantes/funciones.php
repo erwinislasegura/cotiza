@@ -17,6 +17,33 @@ function iniciar_sesion_segura(string $nombre): void
     session_start();
 }
 
+function base_path_url(): string
+{
+    $scriptName = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? ''));
+    $dir = str_replace('\\', '/', dirname($scriptName));
+
+    if ($dir === '/' || $dir === '.') {
+        return '';
+    }
+
+    // Si corre desde /public/index.php, la base pública real es el padre.
+    if (str_ends_with($dir, '/public')) {
+        $dir = substr($dir, 0, -7) ?: '';
+    }
+
+    return rtrim($dir, '/');
+}
+
+function url(string $ruta = '/'): string
+{
+    $base = base_path_url();
+    $ruta = '/' . ltrim($ruta, '/');
+    if ($ruta === '/index.php') {
+        $ruta = '/';
+    }
+    return ($base === '' ? '' : $base) . $ruta;
+}
+
 function csrf_token(): string
 {
     if (!isset($_SESSION['_csrf'])) {

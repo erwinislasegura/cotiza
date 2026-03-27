@@ -7,7 +7,7 @@ class AutenticadoMiddleware
     public function manejar(): void
     {
         if (!usuario_actual()) {
-            header('Location: /iniciar-sesion');
+            header('Location: ' . url('/iniciar-sesion')); 
             exit;
         }
     }

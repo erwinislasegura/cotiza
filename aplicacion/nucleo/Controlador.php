@@ -14,7 +14,7 @@ abstract class Controlador
 
     protected function redirigir(string $ruta): void
     {
-        header('Location: ' . $ruta);
+        header('Location: ' . url($ruta));
         exit;
     }
 }
