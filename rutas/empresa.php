@@ -52,8 +52,8 @@ $enrutador->agregar('GET', '/app/contactos/exportar/excel', [GestionComercialCon
 $enrutador->agregar('POST', '/app/contactos', [GestionComercialControlador::class, 'guardarContacto'], $mwEmpresa);
 
 $enrutador->agregar('GET', '/app/contactos/ver/{id}', fn($id) => (new GestionComercialControlador())->verRegistro('contactos', (int) $id), $mwEmpresa);
-$enrutador->agregar('GET', '/app/contactos/editar/{id}', fn($id) => (new GestionComercialControlador())->editarRegistro('contactos', (int) $id), $mwEmpresa);
-$enrutador->agregar('POST', '/app/contactos/editar/{id}', fn($id) => (new GestionComercialControlador())->actualizarRegistro('contactos', (int) $id), $mwEmpresa);
+$enrutador->agregar('GET', '/app/contactos/editar/{id}', [GestionComercialControlador::class, 'editarContacto'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/contactos/editar/{id}', [GestionComercialControlador::class, 'actualizarContacto'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/contactos/eliminar/{id}', fn($id) => (new GestionComercialControlador())->eliminarRegistro('contactos', (int) $id), $mwEmpresa);
 
 $enrutador->agregar('GET', '/app/vendedores', fn() => (new GestionComercialControlador())->moduloBase('vendedores'), $mwEmpresa);

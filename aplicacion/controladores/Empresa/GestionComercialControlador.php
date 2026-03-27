@@ -28,9 +28,7 @@ class GestionComercialControlador extends Controlador
     {
         $empresaId = empresa_actual_id();
         $buscar = trim($_GET['q'] ?? '');
-        $clientes = array_values(array_filter((new Cliente())->listar($empresaId), static function (array $cliente): bool {
-            return ($cliente['estado'] ?? 'activo') === 'activo';
-        }));
+        $clientes = $this->obtenerClientesActivos($empresaId);
         $contactos = $this->modelo->listarContactosRegistrados($empresaId, $buscar, 100);
         $this->vista('empresa/contactos/index', compact('contactos', 'clientes', 'buscar'), 'empresa');
     }
@@ -65,6 +63,61 @@ class GestionComercialControlador extends Controlador
             'fecha_creacion' => date('Y-m-d H:i:s'),
         ]);
         flash('success', 'Contacto guardado correctamente.');
+        $this->redirigir('/app/contactos');
+    }
+
+    public function editarContacto(int $id): void
+    {
+        $empresaId = empresa_actual_id();
+        $contacto = $this->modelo->obtenerPorId('contactos_cliente', $empresaId, $id);
+        if (!$contacto) {
+            flash('danger', 'Contacto no encontrado.');
+            $this->redirigir('/app/contactos');
+        }
+
+        $clientes = $this->obtenerClientesActivos($empresaId);
+        if ($clientes === []) {
+            flash('danger', 'No hay clientes activos registrados para editar este contacto.');
+            $this->redirigir('/app/contactos');
+        }
+
+        $this->vista('empresa/contactos/editar', compact('contacto', 'clientes'), 'empresa');
+    }
+
+    public function actualizarContacto(int $id): void
+    {
+        validar_csrf();
+        $empresaId = empresa_actual_id();
+        $contacto = $this->modelo->obtenerPorId('contactos_cliente', $empresaId, $id);
+        if (!$contacto) {
+            flash('danger', 'Contacto no encontrado.');
+            $this->redirigir('/app/contactos');
+        }
+
+        $clienteId = (int) ($_POST['cliente_id'] ?? 0);
+        $cliente = (new Cliente())->obtenerPorId($empresaId, $clienteId);
+        if (!$cliente || ($cliente['estado'] ?? 'activo') !== 'activo') {
+            flash('danger', 'Debes seleccionar un cliente registrado activo.');
+            $this->redirigir('/app/contactos/editar/' . $id);
+        }
+
+        $nombre = trim($_POST['nombre'] ?? '');
+        if ($nombre === '') {
+            flash('danger', 'El nombre del contacto es obligatorio.');
+            $this->redirigir('/app/contactos/editar/' . $id);
+        }
+
+        $this->modelo->actualizarDinamico('contactos_cliente', $empresaId, $id, [
+            'cliente_id' => $clienteId,
+            'nombre' => $nombre,
+            'cargo' => trim($_POST['cargo'] ?? ''),
+            'correo' => trim($_POST['correo'] ?? ''),
+            'telefono' => trim($_POST['telefono'] ?? ''),
+            'celular' => trim($_POST['celular'] ?? ''),
+            'es_principal' => isset($_POST['es_principal']) ? 1 : 0,
+            'observaciones' => trim($_POST['observaciones'] ?? ''),
+        ]);
+        flash('success', 'Contacto actualizado correctamente.');
         $this->redirigir('/app/contactos');
     }
 
@@ -123,6 +176,13 @@ class GestionComercialControlador extends Controlador
         }
 
         return htmlspecialchars($texto, ENT_QUOTES, 'UTF-8');
+    }
+
+    private function obtenerClientesActivos(int $empresaId): array
+    {
+        return array_values(array_filter((new Cliente())->listar($empresaId), static function (array $cliente): bool {
+            return ($cliente['estado'] ?? 'activo') === 'activo';
+        }));
     }
 
     public function moduloBase(string $modulo): void

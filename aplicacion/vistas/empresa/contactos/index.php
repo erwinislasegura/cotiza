@@ -1,9 +1,6 @@
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <h1 class="h4 mb-0">Contactos</h1>
-    <div class="d-flex gap-2">
-        <a href="<?= e(url('/app/contactos/exportar/excel?q=' . urlencode($buscar))) ?>" class="btn btn-success btn-sm">Exportar Excel</a>
-        <a href="<?= e(url('/app/clientes')) ?>" class="btn btn-outline-primary btn-sm">Volver a clientes</a>
-    </div>
+    <a href="<?= e(url('/app/clientes')) ?>" class="btn btn-outline-primary btn-sm">Volver a clientes</a>
 </div>
 
 <div class="card mb-3">
@@ -15,51 +12,7 @@
                 <a href="<?= e(url('/app/clientes/crear')) ?>" class="alert-link">Registrar cliente</a>.
             </div>
         <?php else: ?>
-            <form method="POST" action="<?= e(url('/app/contactos')) ?>" class="row g-3">
-                <?= csrf_campo() ?>
-                <div class="col-md-4">
-                    <label class="form-label">Cliente registrado</label>
-                    <select name="cliente_id" class="form-select" required>
-                        <option value="">Selecciona un cliente</option>
-                        <?php foreach ($clientes as $c): ?>
-                            <option value="<?= (int) $c['id'] ?>"><?= e($c['nombre_comercial'] ?: $c['razon_social'] ?: $c['nombre']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Nombre del contacto</label>
-                    <input name="nombre" class="form-control" required maxlength="120" placeholder="Ej: María Pérez">
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Cargo</label>
-                    <input name="cargo" class="form-control" maxlength="120" placeholder="Ej: Jefe de compras">
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Correo</label>
-                    <input type="email" name="correo" class="form-control" maxlength="150" placeholder="correo@empresa.com">
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Teléfono</label>
-                    <input name="telefono" class="form-control" maxlength="30" placeholder="Ej: +51 1 555 1234">
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Celular</label>
-                    <input name="celular" class="form-control" maxlength="30" placeholder="Ej: +51 999 888 777">
-                </div>
-                <div class="col-md-8">
-                    <label class="form-label">Observaciones</label>
-                    <input name="observaciones" class="form-control" maxlength="255" placeholder="Detalles relevantes del contacto">
-                </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="es_principal" name="es_principal" value="1">
-                        <label class="form-check-label" for="es_principal">Marcar como contacto principal</label>
-                    </div>
-                </div>
-                <div class="col-12">
-                    <button class="btn btn-primary btn-sm">Guardar contacto</button>
-                </div>
-            </form>
+            <?php include __DIR__ . '/_formulario.php'; ?>
         <?php endif; ?>
     </div>
 </div>
@@ -67,10 +20,13 @@
 <div class="card">
     <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
         <strong>Listado de contactos registrados</strong>
-        <form class="d-flex gap-2" method="GET" action="<?= e(url('/app/contactos')) ?>">
-            <input class="form-control form-control-sm" name="q" value="<?= e($buscar) ?>" placeholder="Buscar por cliente, nombre o correo">
-            <button class="btn btn-outline-secondary btn-sm">Buscar</button>
-        </form>
+        <div class="d-flex gap-2">
+            <a href="<?= e(url('/app/contactos/exportar/excel?q=' . urlencode($buscar))) ?>" class="btn btn-success btn-sm">Exportar Excel</a>
+            <form class="d-flex gap-2" method="GET" action="<?= e(url('/app/contactos')) ?>">
+                <input class="form-control form-control-sm" name="q" value="<?= e($buscar) ?>" placeholder="Buscar por cliente, nombre o correo">
+                <button class="btn btn-outline-secondary btn-sm">Buscar</button>
+            </form>
+        </div>
     </div>
     <div class="table-responsive" style="overflow: visible;">
         <table class="table table-sm table-hover mb-0 tabla-admin">
