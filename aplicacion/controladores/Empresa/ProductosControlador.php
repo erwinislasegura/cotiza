@@ -5,6 +5,7 @@ namespace Aplicacion\Controladores\Empresa;
 use Aplicacion\Nucleo\Controlador;
 use Aplicacion\Modelos\Producto;
 use Aplicacion\Modelos\GestionComercial;
+use Aplicacion\Servicios\ExcelExpoFormato;
 use Aplicacion\Servicios\ServicioPlan;
 
 class ProductosControlador extends Controlador
@@ -19,7 +20,8 @@ class ProductosControlador extends Controlador
 
     public function crear(): void
     {
-        $this->vista('empresa/productos/formulario', ['producto' => null], 'empresa');
+        $categorias = (new GestionComercial())->listarTablaEmpresa('categorias_productos', empresa_actual_id(), '', 200);
+        $this->vista('empresa/productos/formulario', ['producto' => null, 'categorias' => $categorias], 'empresa');
     }
 
     public function guardar(): void
@@ -49,6 +51,70 @@ class ProductosControlador extends Controlador
         ]);
         flash('success', 'Producto creado correctamente.');
         $this->redirigir($this->obtenerRutaRetorno('/app/productos'));
+    }
+
+    public function exportarExcel(): void
+    {
+        $buscar = trim($_GET['q'] ?? '');
+        $productos = (new Producto())->listar(empresa_actual_id(), $buscar);
+
+        $nombreArchivo = 'productos_' . date('Ymd_His') . '.xls';
+        header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $nombreArchivo . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        echo "\xEF\xBB\xBF";
+        echo '<html><head><meta charset="UTF-8"></head><body>';
+        echo '<table border="1" cellspacing="0" cellpadding="4" style="' . ExcelExpoFormato::TABLA_ESTILO . '">';
+        echo '<tr style="' . ExcelExpoFormato::ENCABEZADO_ESTILO . '">';
+        echo '<th>N°</th>';
+        echo '<th>Código</th>';
+        echo '<th>SKU</th>';
+        echo '<th>Código de barras</th>';
+        echo '<th>Nombre</th>';
+        echo '<th>Tipo</th>';
+        echo '<th>Categoría</th>';
+        echo '<th>Unidad</th>';
+        echo '<th>Precio</th>';
+        echo '<th>Stock mínimo</th>';
+        echo '<th>Stock aviso</th>';
+        echo '<th>Estado</th>';
+        echo '</tr>';
+
+        $indice = 1;
+        foreach ($productos as $producto) {
+            echo '<tr>';
+            echo '<td>' . $indice . '</td>';
+            echo '<td style="' . ExcelExpoFormato::CELDA_TEXTO_EXCEL . '">' . $this->escapeExcelHtml($producto['codigo'] ?? '') . '</td>';
+            echo '<td style="' . ExcelExpoFormato::CELDA_TEXTO_EXCEL . '">' . $this->escapeExcelHtml($producto['sku'] ?? '') . '</td>';
+            echo '<td style="' . ExcelExpoFormato::CELDA_TEXTO_EXCEL . '">' . $this->escapeExcelHtml($producto['codigo_barras'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($producto['nombre'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml(ucfirst((string) ($producto['tipo'] ?? 'producto'))) . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($producto['categoria'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($producto['unidad'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml(number_format((float) ($producto['precio'] ?? 0), 2)) . '</td>';
+            echo '<td>' . $this->escapeExcelHtml(number_format((float) ($producto['stock_minimo'] ?? 0), 2)) . '</td>';
+            echo '<td>' . $this->escapeExcelHtml(number_format((float) ($producto['stock_aviso'] ?? 0), 2)) . '</td>';
+            echo '<td>' . $this->escapeExcelHtml(ucfirst((string) ($producto['estado'] ?? 'activo'))) . '</td>';
+            echo '</tr>';
+            $indice++;
+        }
+
+        echo '</table></body></html>';
+
+        exit;
+    }
+
+    private function escapeExcelHtml(mixed $valor): string
+    {
+        $texto = trim(str_replace(["\r\n", "\r", "\n", "\t"], ' ', (string) $valor));
+
+        if ($texto !== '' && preg_match('/^[=+\-@]/', $texto) === 1) {
+            $texto = "'" . $texto;
+        }
+
+        return htmlspecialchars($texto, ENT_QUOTES, 'UTF-8');
     }
 
     private function obtenerRutaRetorno(string $rutaPredeterminada): string
