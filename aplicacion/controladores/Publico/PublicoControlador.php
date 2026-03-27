@@ -30,6 +30,11 @@ class PublicoControlador extends Controlador
         $this->vista('publico/contacto', [], 'publico');
     }
 
+    public function preguntasFrecuentes(): void
+    {
+        $this->vista('publico/preguntas_frecuentes', [], 'publico');
+    }
+
     public function enviarContacto(): void
     {
         validar_csrf();
