@@ -8,7 +8,7 @@ class Cotizacion extends Modelo
 {
     public function listar(int $empresaId): array
     {
-        $sql = 'SELECT c.*, cl.nombre AS cliente FROM cotizaciones c INNER JOIN clientes cl ON cl.id = c.cliente_id WHERE c.empresa_id = :empresa_id AND c.fecha_eliminacion IS NULL ORDER BY c.id DESC';
+        $sql = 'SELECT c.*, cl.nombre AS cliente, u.nombre AS vendedor FROM cotizaciones c INNER JOIN clientes cl ON cl.id = c.cliente_id INNER JOIN usuarios u ON u.id = c.usuario_id WHERE c.empresa_id = :empresa_id AND c.fecha_eliminacion IS NULL ORDER BY c.id DESC';
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['empresa_id' => $empresaId]);
         return $stmt->fetchAll();
@@ -57,5 +57,33 @@ class Cotizacion extends Modelo
             $this->db->rollBack();
             throw $e;
         }
+    }
+
+    public function obtenerPorId(int $empresaId, int $id): ?array
+    {
+        $stmt = $this->db->prepare('SELECT c.*, cl.nombre AS cliente FROM cotizaciones c INNER JOIN clientes cl ON cl.id = c.cliente_id WHERE c.empresa_id=:empresa_id AND c.id=:id AND c.fecha_eliminacion IS NULL LIMIT 1');
+        $stmt->execute(['empresa_id' => $empresaId, 'id' => $id]);
+        $cotizacion = $stmt->fetch() ?: null;
+        if (!$cotizacion) {
+            return null;
+        }
+        $stmtItems = $this->db->prepare('SELECT * FROM items_cotizacion WHERE cotizacion_id=:cotizacion_id ORDER BY id ASC');
+        $stmtItems->execute(['cotizacion_id' => $id]);
+        $cotizacion['items'] = $stmtItems->fetchAll();
+        return $cotizacion;
+    }
+
+    public function actualizarBasico(int $empresaId, int $id, array $data): void
+    {
+        $sql = 'UPDATE cotizaciones SET estado=:estado, observaciones=:observaciones, terminos_condiciones=:terminos_condiciones, fecha_vencimiento=:fecha_vencimiento, fecha_actualizacion=NOW() WHERE empresa_id=:empresa_id AND id=:id AND fecha_eliminacion IS NULL';
+        $data['empresa_id'] = $empresaId;
+        $data['id'] = $id;
+        $this->db->prepare($sql)->execute($data);
+    }
+
+    public function eliminar(int $empresaId, int $id): void
+    {
+        $stmt = $this->db->prepare('UPDATE cotizaciones SET fecha_eliminacion = NOW(), estado = "anulada" WHERE empresa_id = :empresa_id AND id = :id AND fecha_eliminacion IS NULL');
+        $stmt->execute(['empresa_id' => $empresaId, 'id' => $id]);
     }
 }

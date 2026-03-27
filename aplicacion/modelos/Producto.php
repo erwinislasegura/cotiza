@@ -29,8 +29,29 @@ class Producto extends Modelo
 
     public function crear(array $data): int
     {
-        $sql = 'INSERT INTO productos (empresa_id,categoria_id,codigo,nombre,descripcion,unidad,precio,impuesto,estado,fecha_creacion) VALUES (:empresa_id,:categoria_id,:codigo,:nombre,:descripcion,:unidad,:precio,:impuesto,:estado,NOW())';
+        $sql = 'INSERT INTO productos (empresa_id,categoria_id,tipo,codigo,nombre,descripcion,unidad,precio,costo,impuesto,descuento_maximo,estado,fecha_creacion) VALUES (:empresa_id,:categoria_id,:tipo,:codigo,:nombre,:descripcion,:unidad,:precio,:costo,:impuesto,:descuento_maximo,:estado,NOW())';
         $this->db->prepare($sql)->execute($data);
         return (int) $this->db->lastInsertId();
+    }
+
+    public function obtenerPorId(int $empresaId, int $id): ?array
+    {
+        $stmt = $this->db->prepare('SELECT * FROM productos WHERE empresa_id = :empresa_id AND id = :id AND fecha_eliminacion IS NULL LIMIT 1');
+        $stmt->execute(['empresa_id' => $empresaId, 'id' => $id]);
+        return $stmt->fetch() ?: null;
+    }
+
+    public function actualizar(int $empresaId, int $id, array $data): void
+    {
+        $sql = 'UPDATE productos SET categoria_id=:categoria_id, tipo=:tipo, codigo=:codigo, nombre=:nombre, descripcion=:descripcion, unidad=:unidad, precio=:precio, costo=:costo, impuesto=:impuesto, descuento_maximo=:descuento_maximo, estado=:estado, fecha_actualizacion=NOW() WHERE empresa_id=:empresa_id AND id=:id AND fecha_eliminacion IS NULL';
+        $data['empresa_id'] = $empresaId;
+        $data['id'] = $id;
+        $this->db->prepare($sql)->execute($data);
+    }
+
+    public function eliminar(int $empresaId, int $id): void
+    {
+        $stmt = $this->db->prepare('UPDATE productos SET fecha_eliminacion = NOW() WHERE empresa_id = :empresa_id AND id = :id AND fecha_eliminacion IS NULL');
+        $stmt->execute(['empresa_id' => $empresaId, 'id' => $id]);
     }
 }

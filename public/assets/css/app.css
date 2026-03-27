@@ -1,13 +1,23 @@
-:root{--color-primario:#1f4f78;--color-fondo:#f5f7fb}
-body{font-size:.92rem;color:#24313f;background:var(--color-fondo)}
-.hero{background:linear-gradient(180deg,#fff,#f7fbff)}
-.sidebar{width:230px;min-height:100vh}
-.topbar{height:52px}
-.card{border-radius:.6rem;border:1px solid #e7ebf0;box-shadow:0 2px 10px rgba(26,43,60,.04)}
-.card-soft{background:#f8fbff}
-.form-control,.form-select{min-height:34px;padding:.35rem .6rem;font-size:.86rem}
-.btn{padding:.34rem .7rem;font-size:.84rem;border-radius:.45rem}
-.table{font-size:.85rem}
-.table> :not(caption)>*>*{padding:.45rem .5rem}
-.badge{font-weight:500}
-.nav-link{padding:.32rem .5rem}
+:root{--color-primario:#0d6efd;--color-fondo:#f4f6f9;--sidebar-ancho:260px}
+body{font-size:.88rem;color:#253648;background:var(--color-fondo)}
+.app-shell{min-height:100vh}
+.sidebar{width:var(--sidebar-ancho);min-height:100vh;position:sticky;top:0;align-self:flex-start}
+.sidebar-app .nav-link{color:#3e5268;border-radius:.45rem;padding:.42rem .55rem}
+.sidebar-app .nav-link:hover{background:#eef3f8;color:#183b63}
+.sidebar-app .nav-link.active{background:var(--color-primario);color:#fff}
+.topbar{height:56px}
+.card{border-radius:.55rem;border:1px solid #dde4ec;box-shadow:0 1px 4px rgba(26,43,60,.05)}
+.card-header{background:#f9fbfd;font-weight:600;padding:.55rem .75rem}
+.form-label{font-size:.78rem;font-weight:600;margin-bottom:.2rem;color:#3b4b5d}
+.form-control,.form-select{height:34px;min-height:34px;padding:.28rem .55rem;font-size:.83rem;border-color:#cfd8e3}
+textarea.form-control{height:auto;min-height:68px}
+.btn{padding:.28rem .62rem;font-size:.81rem;border-radius:.4rem}
+.table{font-size:.82rem}
+.table> :not(caption)>*>*{padding:.42rem .5rem;vertical-align:middle}
+.tabla-admin thead th{background:#f2f6fb;color:#4b5e73;font-weight:700}
+.badge{font-weight:600;padding:.28rem .5rem}
+.badge-estado-activo,.badge-estado-aprobada{background:#d8f0e1;color:#1d6f3f}
+.badge-estado-inactivo,.badge-estado-rechazada{background:#f6d7da;color:#7c2532}
+.badge-estado-pendiente{background:#fff3cd;color:#7a5a00}
+.modulo-head{padding-bottom:.2rem;border-bottom:1px solid #dde4ec}
+.dropdown-menu{font-size:.82rem}

@@ -10,6 +10,7 @@ use Aplicacion\Controladores\Admin\PlanFuncionalidadesControlador;
 use Aplicacion\Controladores\Admin\SuscripcionesControlador;
 use Aplicacion\Controladores\Admin\PagosControlador;
 use Aplicacion\Controladores\Admin\ReportesControlador;
+use Aplicacion\Controladores\Admin\ConfiguracionGeneralControlador;
 
 $mw = [AutenticadoMiddleware::class, SuperAdminMiddleware::class];
 
@@ -37,4 +38,4 @@ $enrutador->agregar('POST', '/admin/suscripciones/ver/{id}', [SuscripcionesContr
 
 $enrutador->agregar('GET', '/admin/pagos', [PagosControlador::class, 'index'], $mw);
 $enrutador->agregar('GET', '/admin/reportes', [ReportesControlador::class, 'index'], $mw);
-$enrutador->agregar('GET', '/admin/configuracion', fn() => print 'Configuración general', $mw);
+$enrutador->agregar('GET', '/admin/configuracion', [ConfiguracionGeneralControlador::class, 'index'], $mw);

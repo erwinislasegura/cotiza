@@ -12,8 +12,15 @@ class CotizacionesControlador extends Controlador
 {
     public function index(): void
     {
+        $buscar = trim($_GET['q'] ?? '');
         $cotizaciones = (new Cotizacion())->listar(empresa_actual_id());
-        $this->vista('empresa/cotizaciones/index', compact('cotizaciones'), 'empresa');
+        if ($buscar !== '') {
+            $cotizaciones = array_values(array_filter($cotizaciones, static function (array $cotizacion) use ($buscar): bool {
+                return str_contains(strtolower($cotizacion['numero']), strtolower($buscar))
+                    || str_contains(strtolower($cotizacion['cliente']), strtolower($buscar));
+            }));
+        }
+        $this->vista('empresa/cotizaciones/index', compact('cotizaciones', 'buscar'), 'empresa');
     }
 
     public function crear(): void
@@ -38,6 +45,8 @@ class CotizacionesControlador extends Controlador
         $precio = (float) $_POST['precio_unitario'];
         $impuestoPorcentaje = (float) $_POST['impuesto_item'];
         $subtotal = $cantidad * $precio;
+        $descuento = (float) ($_POST['descuento'] ?? 0);
+        $subtotal = max(0, $subtotal - $descuento);
         $impuesto = $subtotal * ($impuestoPorcentaje / 100);
         $total = $subtotal + $impuesto;
 
@@ -52,7 +61,7 @@ class CotizacionesControlador extends Controlador
             'consecutivo' => $consecutivo,
             'estado' => $_POST['estado'] ?? 'borrador',
             'subtotal' => $subtotal,
-            'descuento' => 0,
+            'descuento' => $descuento,
             'impuesto' => $impuesto,
             'total' => $total,
             'observaciones' => trim($_POST['observaciones'] ?? ''),
@@ -70,6 +79,47 @@ class CotizacionesControlador extends Controlador
         ]]);
 
         flash('success', 'Cotización creada y numerada correctamente.');
+        $this->redirigir('/app/cotizaciones');
+    }
+
+    public function ver(int $id): void
+    {
+        $cotizacion = (new Cotizacion())->obtenerPorId(empresa_actual_id(), $id);
+        if (!$cotizacion) {
+            flash('danger', 'Cotización no encontrada.');
+            $this->redirigir('/app/cotizaciones');
+        }
+        $this->vista('empresa/cotizaciones/ver', compact('cotizacion'), 'empresa');
+    }
+
+    public function editar(int $id): void
+    {
+        $cotizacion = (new Cotizacion())->obtenerPorId(empresa_actual_id(), $id);
+        if (!$cotizacion) {
+            flash('danger', 'Cotización no encontrada.');
+            $this->redirigir('/app/cotizaciones');
+        }
+        $this->vista('empresa/cotizaciones/editar', compact('cotizacion'), 'empresa');
+    }
+
+    public function actualizar(int $id): void
+    {
+        validar_csrf();
+        (new Cotizacion())->actualizarBasico(empresa_actual_id(), $id, [
+            'estado' => $_POST['estado'] ?? 'borrador',
+            'observaciones' => trim($_POST['observaciones'] ?? ''),
+            'terminos_condiciones' => trim($_POST['terminos_condiciones'] ?? ''),
+            'fecha_vencimiento' => $_POST['fecha_vencimiento'] ?? date('Y-m-d'),
+        ]);
+        flash('success', 'Cotización actualizada correctamente.');
+        $this->redirigir('/app/cotizaciones');
+    }
+
+    public function eliminar(int $id): void
+    {
+        validar_csrf();
+        (new Cotizacion())->eliminar(empresa_actual_id(), $id);
+        flash('success', 'Cotización eliminada correctamente.');
         $this->redirigir('/app/cotizaciones');
     }
 }
