@@ -57,6 +57,7 @@ $enrutador->agregar('POST', '/app/contactos/editar/{id}', [GestionComercialContr
 $enrutador->agregar('POST', '/app/contactos/eliminar/{id}', fn($id) => (new GestionComercialControlador())->eliminarRegistro('contactos', (int) $id), $mwEmpresa);
 
 $enrutador->agregar('GET', '/app/vendedores', fn() => (new GestionComercialControlador())->moduloBase('vendedores'), $mwEmpresa);
+$enrutador->agregar('GET', '/app/vendedores/exportar/excel', [GestionComercialControlador::class, 'exportarVendedoresExcel'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/vendedores', fn() => (new GestionComercialControlador())->guardarModuloBase('vendedores'), $mwEmpresa);
 $enrutador->agregar('GET', '/app/vendedores/ver/{id}', fn($id) => (new GestionComercialControlador())->verRegistro('vendedores', (int) $id), $mwEmpresa);
 $enrutador->agregar('GET', '/app/vendedores/editar/{id}', fn($id) => (new GestionComercialControlador())->editarRegistro('vendedores', (int) $id), $mwEmpresa);
