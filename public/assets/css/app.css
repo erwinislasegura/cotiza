@@ -53,3 +53,5 @@ textarea.form-control{height:auto;min-height:68px}
 .public-page .bar-negative{background:#8a99ad}
 .public-page .trend-item{display:flex;justify-content:space-between;align-items:center;border-bottom:1px dashed #d3ddea;padding:.4rem 0}
 .public-page .trend-item:last-child{border-bottom:0}
+.public-page .chart-card .card-body{height:260px}
+.public-page .chart-card canvas{width:100% !important;height:100% !important}

@@ -39,26 +39,80 @@
     <div class="container">
         <div class="row g-4">
             <div class="col-lg-6">
-                <h2 class="h4 mb-3">Diferencia entre operar sin sistema y con sistema</h2>
-                <div class="chart-card small">
-                    <div class="chart-row"><span>Cotizaciones enviadas al día</span><div class="chart-bars"><div class="bar bar-negative" style="width: 36%">Sin sistema: 6</div><div class="bar bar-positive" style="width: 88%">Con CotizaPro: 15</div></div></div>
-                    <div class="chart-row"><span>Tiempo de respuesta al cliente</span><div class="chart-bars"><div class="bar bar-negative" style="width: 76%">Sin sistema: 24h</div><div class="bar bar-positive" style="width: 34%">Con CotizaPro: 6h</div></div></div>
-                    <div class="chart-row"><span>Orden del proceso comercial</span><div class="chart-bars"><div class="bar bar-negative" style="width: 40%">Sin sistema: 38%</div><div class="bar bar-positive" style="width: 90%">Con CotizaPro: 86%</div></div></div>
+                <h2 class="h4 mb-2">Comparativo de desempeño comercial</h2>
+                <p class="text-secondary small mb-3">La diferencia entre trabajar sin sistema y con una plataforma profesional se refleja en productividad y control.</p>
+                <div class="card chart-card">
+                    <div class="card-body">
+                        <canvas id="graficoComparativoCaracteristicas" height="220"></canvas>
+                    </div>
                 </div>
             </div>
             <div class="col-lg-6">
-                <h2 class="h4 mb-3">Evolución de ganancias tras implementar el sistema</h2>
-                <div class="chart-card small">
-                    <div class="trend-item"><span>Trimestre 1</span><strong>+7% ingresos</strong></div>
-                    <div class="trend-item"><span>Trimestre 2</span><strong>+12% ingresos</strong></div>
-                    <div class="trend-item"><span>Trimestre 3</span><strong>+18% ingresos</strong></div>
-                    <div class="trend-item"><span>Trimestre 4</span><strong>+24% ingresos</strong></div>
+                <h2 class="h4 mb-2">Evolución de ganancias tras implementar el sistema</h2>
+                <p class="text-secondary small mb-3">Visualización estilo dashboard para entender el impacto en ingresos al profesionalizar cotizaciones y seguimiento.</p>
+                <div class="card chart-card">
+                    <div class="card-body">
+                        <canvas id="graficoGananciasCaracteristicas" height="220"></canvas>
+                    </div>
                 </div>
-                <p class="small text-secondary mt-2 mb-0">Comparativo de referencia para mostrar cómo un proceso comercial ordenado impacta ventas y márgenes.</p>
+                <p class="small text-secondary mt-2 mb-0">Escenario de referencia: crecimiento acumulado de <strong>+48%</strong> en 12 meses.</p>
             </div>
         </div>
     </div>
 </section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+(() => {
+    if (typeof Chart === 'undefined') return;
+
+    const comparativo = document.getElementById('graficoComparativoCaracteristicas');
+    if (comparativo) {
+        new Chart(comparativo, {
+            type: 'bar',
+            data: {
+                labels: ['Cotizaciones/semana', 'Tiempo respuesta (h)', 'Seguimiento efectivo (%)'],
+                datasets: [
+                    { label: 'Sin sistema', data: [21, 30, 37], backgroundColor: '#97a6ba', borderRadius: 6 },
+                    { label: 'Con CotizaPro', data: [58, 6, 88], backgroundColor: '#1f6feb', borderRadius: 6 }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                scales: { y: { beginAtZero: true, grid: { color: '#edf1f7' } } }
+            }
+        });
+    }
+
+    const ganancias = document.getElementById('graficoGananciasCaracteristicas');
+    if (ganancias) {
+        new Chart(ganancias, {
+            type: 'line',
+            data: {
+                labels: ['T1', 'T2', 'T3', 'T4'],
+                datasets: [{
+                    label: 'Crecimiento acumulado de ingresos (%)',
+                    data: [9, 21, 34, 48],
+                    fill: true,
+                    tension: 0.35,
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13,110,253,.15)',
+                    pointBackgroundColor: '#0d6efd',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                scales: { y: { beginAtZero: true, ticks: { callback: (v) => v + '%' }, grid: { color: '#edf1f7' } } }
+            }
+        });
+    }
+})();
+</script>
 
 <section class="py-5 bg-white border-top border-bottom">
     <div class="container">

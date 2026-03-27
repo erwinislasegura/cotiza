@@ -44,32 +44,82 @@
 
 <section class="py-5 bg-white border-top border-bottom">
     <div class="container">
-        <div class="row g-4 align-items-start">
+        <div class="row g-4">
             <div class="col-lg-6">
-                <h2 class="h4 mb-3">Comparación real: empresa sin sistema vs con sistema</h2>
-                <p class="text-secondary small">Cuando una empresa digitaliza cotizaciones, reduce tiempos operativos y mejora su tasa de cierre comercial.</p>
-                <div class="chart-card small">
-                    <div class="chart-row"><span>Tiempo promedio por cotización</span><div class="chart-bars"><div class="bar bar-negative" style="width: 82%">Sin sistema: 45 min</div><div class="bar bar-positive" style="width: 38%">Con CotizaPro: 18 min</div></div></div>
-                    <div class="chart-row"><span>Errores en propuestas</span><div class="chart-bars"><div class="bar bar-negative" style="width: 70%">Sin sistema: 14%</div><div class="bar bar-positive" style="width: 22%">Con CotizaPro: 4%</div></div></div>
-                    <div class="chart-row"><span>Seguimiento efectivo</span><div class="chart-bars"><div class="bar bar-negative" style="width: 34%">Sin sistema: 35%</div><div class="bar bar-positive" style="width: 86%">Con CotizaPro: 82%</div></div></div>
+                <h2 class="h4 mb-2">Comparación operativa: sin sistema vs con CotizaPro</h2>
+                <p class="text-secondary small mb-3">Visualiza una diferencia más clara en tiempos, errores y productividad comercial usando un sistema de cotizaciones profesional.</p>
+                <div class="card chart-card">
+                    <div class="card-body">
+                        <canvas id="graficoComparativoInicio" height="220"></canvas>
+                    </div>
                 </div>
             </div>
             <div class="col-lg-6">
-                <h2 class="h4 mb-3">Caso de crecimiento en ganancias</h2>
-                <p class="text-secondary small">Ejemplo de empresa comercial que implementó el software de cotizaciones y mejoró su rentabilidad en 6 meses.</p>
-                <div class="chart-card small">
-                    <div class="trend-item"><span>Mes 1</span><strong>+2% ganancia</strong></div>
-                    <div class="trend-item"><span>Mes 2</span><strong>+5% ganancia</strong></div>
-                    <div class="trend-item"><span>Mes 3</span><strong>+8% ganancia</strong></div>
-                    <div class="trend-item"><span>Mes 4</span><strong>+11% ganancia</strong></div>
-                    <div class="trend-item"><span>Mes 5</span><strong>+15% ganancia</strong></div>
-                    <div class="trend-item"><span>Mes 6</span><strong>+19% ganancia</strong></div>
+                <h2 class="h4 mb-2">Evolución de ganancias tras implementar el sistema</h2>
+                <p class="text-secondary small mb-3">Ejemplo realista de crecimiento acumulado cuando la empresa ordena su proceso de ventas y responde más rápido.</p>
+                <div class="card chart-card">
+                    <div class="card-body">
+                        <canvas id="graficoGananciasInicio" height="220"></canvas>
+                    </div>
                 </div>
-                <p class="small text-secondary mt-2 mb-0">Resultados referenciales para ilustrar impacto comercial al estandarizar cotizaciones y seguimiento.</p>
+                <p class="small text-secondary mt-2 mb-0">Escenario de referencia: mejora acumulada de hasta <strong>+42%</strong> en 6 meses.</p>
             </div>
         </div>
     </div>
 </section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+(() => {
+    if (typeof Chart === 'undefined') return;
+
+    const comparativo = document.getElementById('graficoComparativoInicio');
+    if (comparativo) {
+        new Chart(comparativo, {
+            type: 'bar',
+            data: {
+                labels: ['Tiempo por cotización (min)', 'Errores en cotizaciones (%)', 'Cierres mensuales'],
+                datasets: [
+                    { label: 'Sin sistema', data: [52, 18, 12], backgroundColor: '#97a6ba', borderRadius: 6 },
+                    { label: 'Con CotizaPro', data: [14, 3, 29], backgroundColor: '#1f6feb', borderRadius: 6 }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                scales: { y: { beginAtZero: true, grid: { color: '#edf1f7' } } }
+            }
+        });
+    }
+
+    const ganancias = document.getElementById('graficoGananciasInicio');
+    if (ganancias) {
+        new Chart(ganancias, {
+            type: 'line',
+            data: {
+                labels: ['Mes 1', 'Mes 2', 'Mes 3', 'Mes 4', 'Mes 5', 'Mes 6'],
+                datasets: [{
+                    label: 'Incremento acumulado de ganancias (%)',
+                    data: [4, 11, 18, 26, 34, 42],
+                    fill: true,
+                    tension: 0.35,
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13,110,253,.15)',
+                    pointBackgroundColor: '#0d6efd',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                scales: { y: { beginAtZero: true, ticks: { callback: (v) => v + '%' }, grid: { color: '#edf1f7' } } }
+            }
+        });
+    }
+})();
+</script>
 
 <section class="py-5 bg-white border-top border-bottom">
     <div class="container">
