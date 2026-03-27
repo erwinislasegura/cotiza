@@ -29,11 +29,17 @@ class ClientesControlador extends Controlador
         $modelo = new Cliente();
         (new ServicioPlan())->validarLimite($empresaId, 'maximo_clientes', $modelo->contar($empresaId), 'Has alcanzado el máximo de clientes permitido por tu plan.');
 
+        $razonSocial = trim($_POST['razon_social'] ?? '');
+        $nombre = trim($_POST['nombre'] ?? $razonSocial);
+        if ($nombre === '') {
+            $nombre = 'Cliente';
+        }
+
         $modelo->crear([
             'empresa_id' => $empresaId,
-            'nombre' => trim($_POST['nombre'] ?? ''),
-            'razon_social' => trim($_POST['razon_social'] ?? $_POST['nombre'] ?? ''),
-            'nombre_comercial' => trim($_POST['nombre_comercial'] ?? $_POST['nombre'] ?? ''),
+            'nombre' => $nombre,
+            'razon_social' => $razonSocial,
+            'nombre_comercial' => trim($_POST['nombre_comercial'] ?? $razonSocial),
             'identificador_fiscal' => trim($_POST['identificador_fiscal'] ?? ''),
             'giro' => trim($_POST['giro'] ?? ''),
             'correo' => trim($_POST['correo'] ?? ''),
@@ -47,6 +53,66 @@ class ClientesControlador extends Controlador
 
         flash('success', 'Cliente creado correctamente.');
         $this->redirigir($this->obtenerRutaRetorno('/app/clientes'));
+    }
+
+    public function exportarExcel(): void
+    {
+        $buscar = trim($_GET['q'] ?? '');
+        $clientes = (new Cliente())->listar(empresa_actual_id(), $buscar);
+
+        $nombreArchivo = 'clientes_' . date('Ymd_His') . '.xls';
+        header('Content-Type: text/tab-separated-values; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $nombreArchivo . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        // BOM para compatibilidad con Excel y caracteres UTF-8.
+        echo "\xEF\xBB\xBF";
+
+        $columnas = [
+            'N°',
+            'Razón social',
+            'Nombre comercial',
+            'ID fiscal',
+            'Correo',
+            'Teléfono',
+            'Ciudad',
+            'Estado',
+        ];
+
+        echo implode("\t", $columnas) . "\n";
+
+        $indice = 1;
+        foreach ($clientes as $cliente) {
+            $fila = [
+                (string) $indice,
+                $cliente['razon_social'] ?: ($cliente['nombre'] ?? ''),
+                $cliente['nombre_comercial'] ?: ($cliente['nombre'] ?? ''),
+                $cliente['identificador_fiscal'] ?? '',
+                $cliente['correo'] ?? '',
+                $cliente['telefono'] ?? '',
+                $cliente['ciudad'] ?? '',
+                ucfirst((string) ($cliente['estado'] ?? '')),
+            ];
+
+            $filaTabulada = array_map([$this, 'normalizarCampoExcel'], $fila);
+            echo implode("\t", $filaTabulada) . "\n";
+            $indice++;
+        }
+
+        exit;
+    }
+
+    private function normalizarCampoExcel(mixed $valor): string
+    {
+        $texto = trim(str_replace(["\r\n", "\r", "\n", "\t"], ' ', (string) $valor));
+
+        // Evita que Excel interprete fórmulas al abrir el archivo.
+        if ($texto !== '' && preg_match('/^[=+\-@]/', $texto) === 1) {
+            $texto = "'" . $texto;
+        }
+
+        return $texto;
     }
 
     private function obtenerRutaRetorno(string $rutaPredeterminada): string
