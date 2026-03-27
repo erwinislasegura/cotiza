@@ -1,1 +1,16 @@
-<h1 class="h5">Crear producto</h1><form method="POST" class="row g-2"><?= csrf_campo() ?><div class="col-md-3"><input class="form-control" name="codigo" placeholder="Código" required></div><div class="col-md-4"><input class="form-control" name="nombre" placeholder="Nombre" required></div><div class="col-md-5"><input class="form-control" name="descripcion" placeholder="Descripción"></div><div class="col-md-3"><input class="form-control" name="unidad" value="unidad"></div><div class="col-md-3"><input class="form-control" type="number" step="0.01" name="precio" placeholder="Precio"></div><div class="col-md-3"><input class="form-control" type="number" step="0.01" name="impuesto" value="19"></div><div class="col-md-3"><select name="estado" class="form-select"><option value="activo">Activo</option><option value="inactivo">Inactivo</option></select></div><div class="col-12"><button class="btn btn-primary btn-sm">Guardar</button></div></form>
+<h1 class="h4 mb-3">Crear producto/servicio</h1>
+<div class="card">
+  <div class="card-header">Nuevo ítem comercial</div>
+  <div class="card-body">
+    <?php
+    $accion = url('/app/productos/crear');
+    $textoBoton = 'Guardar ítem';
+    $mostrarCancelar = true;
+    $rutaCancelar = url('/app/productos');
+    $mostrarModalCategoria = true;
+    $modalId = 'modalNuevaCategoriaProductoCrear';
+    $redirigirA = '/app/productos/crear';
+    require __DIR__ . '/_formulario.php';
+    ?>
+  </div>
+</div>
