@@ -17,6 +17,42 @@
   </div>
 </div>
 
+<div class="modal fade" id="modalNuevaCategoria" tabindex="-1" aria-labelledby="modalNuevaCategoriaLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="<?= e(url('/app/categorias')) ?>">
+        <?= csrf_campo() ?>
+        <input type="hidden" name="redirect_to" value="/app/productos">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalNuevaCategoriaLabel">Nueva categoría</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body row g-2">
+          <div class="col-12">
+            <label class="form-label">Nombre</label>
+            <input name="nombre" class="form-control" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Descripción</label>
+            <input name="descripcion" class="form-control">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Estado</label>
+            <select name="estado" class="form-select">
+              <option value="activo">Activo</option>
+              <option value="inactivo">Inactivo</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-sm">Guardar categoría</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <div class="card">
   <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
     <div>
