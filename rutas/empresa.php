@@ -44,6 +44,7 @@ $enrutador->agregar('POST', '/app/cotizaciones/crear', [CotizacionesControlador:
 $enrutador->agregar('GET', '/app/cotizaciones/editar/{id}', [CotizacionesControlador::class, 'editar'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/cotizaciones/editar/{id}', [CotizacionesControlador::class, 'actualizar'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/cotizaciones/ver/{id}', [CotizacionesControlador::class, 'ver'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/cotizaciones/imprimir/{id}', [CotizacionesControlador::class, 'imprimir'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/cotizaciones/eliminar/{id}', [CotizacionesControlador::class, 'eliminar'], $mwEmpresa);
 
 $enrutador->agregar('GET', '/app/configuracion', [ConfiguracionControlador::class, 'index'], $mwEmpresa);

@@ -6,6 +6,7 @@ use Aplicacion\Nucleo\Controlador;
 use Aplicacion\Modelos\Cotizacion;
 use Aplicacion\Modelos\Cliente;
 use Aplicacion\Modelos\Producto;
+use Aplicacion\Modelos\Empresa;
 use Aplicacion\Servicios\ServicioPlan;
 use Aplicacion\Servicios\ServicioPreciosLista;
 
@@ -69,15 +70,19 @@ class CotizacionesControlador extends Controlador
             $cantidad = (float) ($cantidades[$i] ?? 0);
             $precio = (float) ($precios[$i] ?? 0);
 
-            if ($productoId !== null && $precio <= 0) {
-                $precioCalculado = $servicioPrecios->calcularPrecioProducto($empresaId, $productoId, $clienteIdSeleccionado, $canalVenta !== '' ? $canalVenta : null, date('Y-m-d'));
-                if ($precioCalculado) {
-                    $precio = (float) $precioCalculado['precio_final'];
-                }
-            }
             $impuestoPorcentaje = max(0, (float) ($impuestos[$i] ?? 0));
             $descuentoTipo = ($descuentoTiposLinea[$i] ?? 'valor') === 'porcentaje' ? 'porcentaje' : 'valor';
             $descuentoValor = max(0, (float) ($descuentoValoresLinea[$i] ?? 0));
+            [$precio, $descuentoTipo, $descuentoValor] = $this->aplicarPrecioListaLinea(
+                $servicioPrecios,
+                $empresaId,
+                $productoId,
+                $clienteIdSeleccionado,
+                $canalVenta !== '' ? $canalVenta : null,
+                $precio,
+                $descuentoTipo,
+                $descuentoValor
+            );
 
             if ($cantidad <= 0 || $precio < 0) {
                 continue;
@@ -156,6 +161,19 @@ class CotizacionesControlador extends Controlador
         $this->vista('empresa/cotizaciones/ver', compact('cotizacion'), 'empresa');
     }
 
+    public function imprimir(int $id): void
+    {
+        $empresaId = empresa_actual_id();
+        $cotizacion = (new Cotizacion())->obtenerPorId($empresaId, $id);
+        if (!$cotizacion) {
+            flash('danger', 'Cotización no encontrada.');
+            $this->redirigir('/app/cotizaciones');
+        }
+
+        $empresa = (new Empresa())->buscar($empresaId);
+        $this->vista('empresa/cotizaciones/imprimir', compact('cotizacion', 'empresa'), 'empresa');
+    }
+
     public function editar(int $id): void
     {
         $empresaId = empresa_actual_id();
@@ -200,15 +218,19 @@ class CotizacionesControlador extends Controlador
             $cantidad = (float) ($cantidades[$i] ?? 0);
             $precio = (float) ($precios[$i] ?? 0);
 
-            if ($productoId !== null && $precio <= 0) {
-                $precioCalculado = $servicioPrecios->calcularPrecioProducto(empresa_actual_id(), $productoId, $clienteIdSeleccionado, $canalVenta !== '' ? $canalVenta : null, date('Y-m-d'));
-                if ($precioCalculado) {
-                    $precio = (float) $precioCalculado['precio_final'];
-                }
-            }
             $impuestoPorcentaje = max(0, (float) ($impuestos[$i] ?? 0));
             $descuentoTipo = ($descuentoTiposLinea[$i] ?? 'valor') === 'porcentaje' ? 'porcentaje' : 'valor';
             $descuentoValor = max(0, (float) ($descuentoValoresLinea[$i] ?? 0));
+            [$precio, $descuentoTipo, $descuentoValor] = $this->aplicarPrecioListaLinea(
+                $servicioPrecios,
+                empresa_actual_id(),
+                $productoId,
+                $clienteIdSeleccionado,
+                $canalVenta !== '' ? $canalVenta : null,
+                $precio,
+                $descuentoTipo,
+                $descuentoValor
+            );
 
             if ($cantidad <= 0 || $precio < 0) {
                 continue;
@@ -266,6 +288,43 @@ class CotizacionesControlador extends Controlador
         ], $items);
         flash('success', 'Cotización actualizada correctamente.');
         $this->redirigir('/app/cotizaciones');
+    }
+
+    private function aplicarPrecioListaLinea(
+        ServicioPreciosLista $servicioPrecios,
+        int $empresaId,
+        ?int $productoId,
+        ?int $clienteId,
+        ?string $canalVenta,
+        float $precio,
+        string $descuentoTipo,
+        float $descuentoValor
+    ): array {
+        if ($productoId === null) {
+            return [$precio, $descuentoTipo, $descuentoValor];
+        }
+
+        $precioCalculado = $servicioPrecios->calcularPrecioProducto($empresaId, $productoId, $clienteId, $canalVenta, date('Y-m-d'));
+        if (!$precioCalculado) {
+            return [$precio, $descuentoTipo, $descuentoValor];
+        }
+
+        $precioIngresado = $precio > 0;
+
+        $usaDescuentoLista = ($precioCalculado['ajuste_tipo'] ?? '') === 'descuento' && (float) ($precioCalculado['ajuste_porcentaje'] ?? 0) > 0;
+        if ($usaDescuentoLista && !$precioIngresado) {
+            $precio = (float) $precioCalculado['precio_base'];
+        }
+        if ($usaDescuentoLista && $descuentoValor <= 0) {
+            $descuentoTipo = 'porcentaje';
+            $descuentoValor = (float) $precioCalculado['ajuste_porcentaje'];
+        }
+
+        if (!$usaDescuentoLista && !$precioIngresado) {
+            $precio = (float) $precioCalculado['precio_final'];
+        }
+
+        return [$precio, $descuentoTipo, $descuentoValor];
     }
 
     public function eliminar(int $id): void
