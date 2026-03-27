@@ -1,0 +1,1 @@
+<h1 class="h5">Detalle empresa</h1><div class="card card-body small"><strong><?= e($empresa['nombre_comercial'] ?? '') ?></strong><span>Razón social: <?= e($empresa['razon_social'] ?? '') ?></span><span>Fiscal: <?= e($empresa['identificador_fiscal'] ?? '') ?></span><span>Contacto: <?= e($empresa['correo'] ?? '') ?> / <?= e($empresa['telefono'] ?? '') ?></span></div>
