@@ -188,6 +188,26 @@ class CotizacionesControlador extends Controlador
         $this->vista('empresa/cotizaciones/imprimir', compact('cotizacion', 'empresa', 'listaAplicada', 'listasPrecios'), 'impresion');
     }
 
+    public function descargarPdf(int $id): void
+    {
+        $empresaId = empresa_actual_id();
+        $cotizacion = (new Cotizacion())->obtenerPorId($empresaId, $id);
+        if (!$cotizacion) {
+            flash('danger', 'Cotización no encontrada.');
+            $this->redirigir('/app/cotizaciones');
+        }
+
+        $empresa = (new Empresa())->buscar($empresaId);
+        $pdf = $this->generarPdfCotizacion($cotizacion, $empresa ?: []);
+        $nombreArchivo = 'cotizacion-' . preg_replace('/[^A-Za-z0-9\\-_]/', '-', (string) ($cotizacion['numero'] ?? $id)) . '.pdf';
+
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="' . $nombreArchivo . '"');
+        header('Content-Length: ' . strlen($pdf));
+        echo $pdf;
+        exit;
+    }
+
     public function editar(int $id): void
     {
         $empresaId = empresa_actual_id();
@@ -352,6 +372,81 @@ class CotizacionesControlador extends Controlador
             $this->redirigir($rutaMantener);
         }
         $this->redirigir($rutaSalir);
+    }
+
+    private function generarPdfCotizacion(array $cotizacion, array $empresa): string
+    {
+        $clienteNombre = trim((string) (($cotizacion['cliente_razon_social'] ?? '') !== '' ? $cotizacion['cliente_razon_social'] : ($cotizacion['cliente'] ?? '')));
+        $lineas = [
+            strtoupper((string) ($empresa['nombre_comercial'] ?? $empresa['razon_social'] ?? 'EMPRESA')),
+            'COTIZACION ' . (string) ($cotizacion['numero'] ?? ''),
+            'Fecha emision: ' . (string) ($cotizacion['fecha_emision'] ?? ''),
+            'Fecha vencimiento: ' . (string) ($cotizacion['fecha_vencimiento'] ?? ''),
+            'Cliente: ' . $clienteNombre,
+            'Asesor: ' . (string) ($cotizacion['vendedor'] ?? ''),
+            str_repeat('-', 90),
+            'Detalle',
+        ];
+
+        foreach (($cotizacion['items'] ?? []) as $item) {
+            $descripcion = (string) ($item['descripcion'] ?? '');
+            $cantidad = number_format((float) ($item['cantidad'] ?? 0), 2);
+            $precio = number_format((float) ($item['precio_unitario'] ?? 0), 2);
+            $total = number_format((float) ($item['total'] ?? 0), 2);
+            $lineas[] = sprintf('%s | Cant: %s | P.Unit: %s | Total: %s', $descripcion, $cantidad, $precio, $total);
+        }
+
+        $lineas[] = str_repeat('-', 90);
+        $lineas[] = 'Subtotal: ' . number_format((float) ($cotizacion['subtotal'] ?? 0), 2);
+        $lineas[] = 'Impuesto: ' . number_format((float) ($cotizacion['impuesto'] ?? 0), 2);
+        $lineas[] = 'Descuento: ' . number_format((float) ($cotizacion['descuento'] ?? 0), 2);
+        $lineas[] = 'Total: ' . number_format((float) ($cotizacion['total'] ?? 0), 2);
+
+        return $this->crearPdfTexto($lineas);
+    }
+
+    private function crearPdfTexto(array $lineas): string
+    {
+        $escapar = static function (string $texto): string {
+            $t = iconv('UTF-8', 'Windows-1252//TRANSLIT//IGNORE', $texto) ?: $texto;
+            $t = str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $t);
+            return preg_replace('/[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F]/', '', $t) ?? '';
+        };
+
+        $contenido = "BT\n/F1 10 Tf\n50 760 Td\n";
+        $primera = true;
+        foreach ($lineas as $linea) {
+            if (!$primera) {
+                $contenido .= "0 -14 Td\n";
+            }
+            $primera = false;
+            $contenido .= '(' . $escapar((string) $linea) . ") Tj\n";
+        }
+        $contenido .= "ET";
+
+        $objetos = [];
+        $objetos[] = "1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj";
+        $objetos[] = "2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj";
+        $objetos[] = "3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj";
+        $objetos[] = "4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj";
+        $objetos[] = "5 0 obj << /Length " . strlen($contenido) . " >> stream\n" . $contenido . "\nendstream endobj";
+
+        $pdf = "%PDF-1.4\n";
+        $offsets = [0];
+        foreach ($objetos as $obj) {
+            $offsets[] = strlen($pdf);
+            $pdf .= $obj . "\n";
+        }
+        $xref = strlen($pdf);
+        $pdf .= "xref\n0 " . (count($objetos) + 1) . "\n";
+        $pdf .= "0000000000 65535 f \n";
+        for ($i = 1; $i <= count($objetos); $i++) {
+            $pdf .= sprintf("%010d 00000 n \n", $offsets[$i]);
+        }
+        $pdf .= "trailer << /Size " . (count($objetos) + 1) . " /Root 1 0 R >>\n";
+        $pdf .= "startxref\n" . $xref . "\n%%EOF";
+
+        return $pdf;
     }
 
     public function eliminar(int $id): void

@@ -175,7 +175,7 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
     <div>
         <button class="btn btn-primary btn-sm" name="accion" value="guardar"<?= $puedeGuardar ? '' : ' disabled' ?>>Guardar sin salir</button>
         <button class="btn btn-success btn-sm" name="accion" value="guardar_salir"<?= $puedeGuardar ? '' : ' disabled' ?>>Guardar y salir</button>
-        <a class="btn btn-outline-dark btn-sm" target="_blank" href="<?= e(url('/app/cotizaciones/imprimir/' . $cotizacion['id'])) ?>">Imprimir formato</a>
+        <a class="btn btn-outline-dark btn-sm" href="<?= e(url('/app/cotizaciones/pdf/' . $cotizacion['id'])) ?>">Descargar PDF</a>
         <a href="<?= e(url('/app/cotizaciones')) ?>" class="btn btn-outline-secondary btn-sm">Cancelar</a>
     </div>
 </form>

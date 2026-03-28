@@ -145,7 +145,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
         <button class="btn btn-primary btn-sm" name="accion" value="guardar"<?= $puedeGuardar ? '' : ' disabled' ?>>Guardar sin salir</button>
         <button class="btn btn-success btn-sm" name="accion" value="guardar_salir"<?= $puedeGuardar ? '' : ' disabled' ?>>Guardar y salir</button>
         <button class="btn btn-outline-success btn-sm" type="button" onclick="window.location.href='mailto:?subject=' + encodeURIComponent('Cotización <?= e($siguienteNumero) ?>')">Enviar por correo</button>
-        <button class="btn btn-outline-dark btn-sm" type="button" onclick="alert('Guarda la cotización para imprimir el formato comercial.')">Imprimir formato</button>
+        <button class="btn btn-outline-dark btn-sm" type="button" onclick="alert('Guarda la cotización para descargar el PDF.')">Descargar PDF</button>
         <a href="<?= e(url('/app/cotizaciones')) ?>" class="btn btn-outline-secondary btn-sm">Cancelar</a>
     </div>
 </form>
