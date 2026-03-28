@@ -190,26 +190,12 @@ class CotizacionesControlador extends Controlador
 
     public function descargarPdf(int $id): void
     {
-        $empresaId = empresa_actual_id();
-        $cotizacion = (new Cotizacion())->obtenerPorId($empresaId, $id);
-        if (!$cotizacion) {
-            flash('danger', 'Cotización no encontrada.');
-            $this->redirigir('/app/cotizaciones');
-        }
+        $listaPrecioId = (int) ($_GET['lista_precio_id'] ?? 0);
+        $query = $listaPrecioId > 0
+            ? '?lista_precio_id=' . $listaPrecioId . '&modo=pdf'
+            : '?modo=pdf';
 
-        $empresa = (new Empresa())->buscar($empresaId);
-        $listaPrecioId = (int) ($_GET['lista_precio_id'] ?? 0) ?: null;
-        $servicioPrecios = new ServicioPreciosLista();
-        $listaAplicada = $servicioPrecios->resolverListaPrecio(
-            $empresaId,
-            (int) ($cotizacion['cliente_id'] ?? 0) ?: null,
-            null,
-            date('Y-m-d'),
-            $listaPrecioId
-        );
-        $listasPrecios = (new GestionComercial())->listarListasPreciosActivas($empresaId);
-        $autoDescargarPdf = true;
-        $this->vista('empresa/cotizaciones/imprimir', compact('cotizacion', 'empresa', 'listaAplicada', 'listasPrecios', 'autoDescargarPdf'), 'impresion');
+        $this->redirigir('/app/cotizaciones/imprimir/' . $id . $query);
     }
 
     public function editar(int $id): void
