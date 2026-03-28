@@ -255,20 +255,28 @@ class CotizacionesControlador extends Controlador
         $urlPdf = $this->construirUrlInterna('/app/cotizaciones/pdf/' . $id);
         $pdfContenido = $this->generarPdfCotizacion($cotizacion, $empresa ?: []);
 
+        $clienteNombrePlantilla = trim((string) ($clienteActual['razon_social'] ?? ''));
+        if ($clienteNombrePlantilla === '') {
+            $clienteNombrePlantilla = trim((string) ($clienteActual['nombre_comercial'] ?? ''));
+        }
+        if ($clienteNombrePlantilla === '') {
+            $clienteNombrePlantilla = trim((string) ($clienteActual['nombre'] ?? ($cotizacion['cliente'] ?? '')));
+        }
+
         (new ServicioCorreo())->enviar(
             $destinatario,
             'Cotización ' . ($cotizacion['numero'] ?? ('#' . $id)) . ' - ' . ($empresa['nombre_comercial'] ?? 'CotizaPro'),
             'cotizacion_cliente_profesional',
             [
                 'empresa' => $empresa['nombre_comercial'] ?? '',
-                'cliente' => $clienteActual['nombre'] ?? ($cotizacion['cliente'] ?? ''),
+                'cliente' => $clienteNombrePlantilla,
                 'cliente_id' => (int) ($clienteActual['id'] ?? 0),
                 'numero' => $cotizacion['numero'] ?? '',
                 'fecha_vencimiento' => $cotizacion['fecha_vencimiento'] ?? '',
                 'total' => number_format((float) ($cotizacion['total'] ?? 0), 2, ',', '.'),
                 'remitente_correo' => $remitenteCorreo,
                 'remitente_nombre' => $remitenteNombre,
-                'mensaje_html' => $this->construirPlantillaCorreoCotizacion($cotizacion, $empresa ?: [], $urlPublica, $urlPdf),
+                'mensaje_html' => $this->construirPlantillaCorreoCotizacion($cotizacion, $empresa ?: [], $urlPublica, $urlPdf, $clienteNombrePlantilla),
                 'adjuntos' => [[
                     'nombre' => 'Cotizacion-' . ($cotizacion['numero'] ?? $id) . '.pdf',
                     'mime' => 'application/pdf',
@@ -441,10 +449,10 @@ class CotizacionesControlador extends Controlador
         $this->redirigir($rutaSalir);
     }
 
-    private function construirPlantillaCorreoCotizacion(array $cotizacion, array $empresa, string $urlPublica, string $urlPdf): string
+    private function construirPlantillaCorreoCotizacion(array $cotizacion, array $empresa, string $urlPublica, string $urlPdf, string $clienteNombre = ''): string
     {
         $empresaNombre = htmlspecialchars((string) ($empresa['nombre_comercial'] ?? $empresa['razon_social'] ?? 'Tu empresa'), ENT_QUOTES, 'UTF-8');
-        $cliente = htmlspecialchars((string) ($cotizacion['cliente'] ?? 'cliente'), ENT_QUOTES, 'UTF-8');
+        $cliente = htmlspecialchars($clienteNombre !== '' ? $clienteNombre : (string) ($cotizacion['cliente'] ?? 'cliente'), ENT_QUOTES, 'UTF-8');
         $numero = htmlspecialchars((string) ($cotizacion['numero'] ?? ''), ENT_QUOTES, 'UTF-8');
         $fechaVencimiento = htmlspecialchars((string) ($cotizacion['fecha_vencimiento'] ?? ''), ENT_QUOTES, 'UTF-8');
         $total = number_format((float) ($cotizacion['total'] ?? 0), 2, ',', '.');
