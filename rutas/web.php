@@ -9,3 +9,5 @@ $enrutador->agregar('GET', '/contacto', [PublicoControlador::class, 'contacto'])
 $enrutador->agregar('GET', '/preguntas-frecuentes', [PublicoControlador::class, 'preguntasFrecuentes']);
 $enrutador->agregar('POST', '/contacto', [PublicoControlador::class, 'enviarContacto']);
 $enrutador->agregar('GET', '/contratar/{plan}', [PublicoControlador::class, 'contratar']);
+$enrutador->agregar('GET', '/cotizacion/publica/{token}', [PublicoControlador::class, 'verCotizacionPublica']);
+$enrutador->agregar('POST', '/cotizacion/publica/{token}/decision', [PublicoControlador::class, 'registrarDecisionCotizacion']);
