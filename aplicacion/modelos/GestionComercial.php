@@ -197,6 +197,10 @@ class GestionComercial extends Modelo
 
     public function listarListasPreciosActivas(int $empresaId): array
     {
+        if (!$this->tablaExiste('listas_precios')) {
+            return [];
+        }
+
         $stmt = $this->db->prepare('SELECT id, nombre, tipo_lista, vigencia_desde, vigencia_hasta
             FROM listas_precios
             WHERE empresa_id = :empresa_id AND estado = "activo"
@@ -256,5 +260,12 @@ class GestionComercial extends Modelo
             CONSTRAINT fk_clientes_listas_cliente FOREIGN KEY (cliente_id) REFERENCES clientes(id),
             CONSTRAINT fk_clientes_listas_lista FOREIGN KEY (lista_precio_id) REFERENCES listas_precios(id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+    }
+
+    private function tablaExiste(string $tabla): bool
+    {
+        $stmt = $this->db->prepare('SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :tabla LIMIT 1');
+        $stmt->execute(['tabla' => $tabla]);
+        return (bool) $stmt->fetchColumn();
     }
 }

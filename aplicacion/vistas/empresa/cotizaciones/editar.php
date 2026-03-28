@@ -5,6 +5,7 @@ $puedeGuardar = $hayClientes;
 $itemsExistentes = $cotizacion['items'] ?? [];
 $descuentoTipoTotal = $cotizacion['descuento_tipo'] ?? 'valor';
 $descuentoTotalValor = $cotizacion['descuento_valor'] ?? $cotizacion['descuento'] ?? 0;
+$listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
 ?>
 <h1 class="h4 mb-3">Editar cotización</h1>
 
@@ -49,6 +50,15 @@ $descuentoTotalValor = $cotizacion['descuento_valor'] ?? $cotizacion['descuento'
                     <option value="ecommerce">E-commerce</option>
                 </select>
             </div>
+            <div class="col-md-4">
+                <label class="small">Lista de precios aplicada</label>
+                <select class="form-select" name="lista_precio_id" id="lista_precio_id">
+                    <option value="">Automática por cliente/canal</option>
+                    <?php foreach (($listasPrecios ?? []) as $lista): ?>
+                        <option value="<?= (int) $lista['id'] ?>" <?= $listaPrecioIdSeleccionada === (int) $lista['id'] ? 'selected' : '' ?>><?= e($lista['nombre']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
 
             <div class="col-md-3">
                 <label class="small">Fecha emisión</label>
@@ -75,7 +85,7 @@ $descuentoTotalValor = $cotizacion['descuento_valor'] ?? $cotizacion['descuento'
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span>Detalle de cotización</span>
-            <small class="text-muted">Puedes recalcular con lista por cliente/canal dejando precio en 0.</small>
+            <small class="text-muted">Precio y descuento se recalculan con la lista del cliente/canal.</small>
             <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-linea">Agregar línea</button>
         </div>
         <div class="card-body">
@@ -163,7 +173,9 @@ $descuentoTotalValor = $cotizacion['descuento_valor'] ?? $cotizacion['descuento'
     <?php endif; ?>
 
     <div>
-        <button class="btn btn-primary btn-sm"<?= $puedeGuardar ? '' : ' disabled' ?>>Guardar cambios</button>
+        <button class="btn btn-primary btn-sm" name="accion" value="guardar"<?= $puedeGuardar ? '' : ' disabled' ?>>Guardar sin salir</button>
+        <button class="btn btn-success btn-sm" name="accion" value="guardar_salir"<?= $puedeGuardar ? '' : ' disabled' ?>>Guardar y salir</button>
+        <a class="btn btn-outline-dark btn-sm" href="<?= e(url('/app/cotizaciones/pdf/' . $cotizacion['id'])) ?>">Descargar PDF</a>
         <a href="<?= e(url('/app/cotizaciones')) ?>" class="btn btn-outline-secondary btn-sm">Cancelar</a>
     </div>
 </form>
@@ -211,18 +223,35 @@ $descuentoTotalValor = $cotizacion['descuento_valor'] ?? $cotizacion['descuento'
     const btnAgregar = document.getElementById('btn-agregar-linea');
 
     function fmt(v) { return '$' + (Math.round((v + Number.EPSILON) * 100) / 100).toFixed(2); }
-    async function autocompletarPrecioDesdeLista(fila) {
+    async function autocompletarPrecioDesdeLista(fila, forzar = false) {
         const selectProducto = fila.querySelector('.js-producto');
         const clienteId = document.querySelector('[name="cliente_id"]')?.value || '';
         const canal = document.getElementById('canal_venta')?.value || '';
+        const listaPrecioId = document.getElementById('lista_precio_id')?.value || '';
         if (!selectProducto || !selectProducto.value || !clienteId) { return; }
         try {
-            const params = new URLSearchParams({ producto_id: selectProducto.value, cliente_id: clienteId, canal: canal });
+            const params = new URLSearchParams({ producto_id: selectProducto.value, cliente_id: clienteId, canal: canal, lista_precio_id: listaPrecioId });
             const resp = await fetch('<?= e(url('/app/listas-precios/precio-producto')) ?>?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
             const data = await resp.json();
             if (data.ok && data.data && typeof data.data.precio_final !== 'undefined') {
                 const inputPrecio = fila.querySelector('.js-precio');
-                if (inputPrecio && (parseFloat(inputPrecio.value || '0') <= 0)) { inputPrecio.value = String(data.data.precio_final); }
+                const selectDescuento = fila.querySelector('.js-descuento-tipo');
+                const inputDescuento = fila.querySelector('.js-descuento-valor');
+                if (inputPrecio && (forzar || parseFloat(inputPrecio.value || '0') <= 0)) {
+                    const ajusteTipo = data.data.ajuste_tipo || '';
+                    const ajustePorcentaje = parseFloat(data.data.ajuste_porcentaje || '0');
+                    if (ajusteTipo === 'descuento' && ajustePorcentaje > 0) {
+                        inputPrecio.value = String(data.data.precio_base);
+                        if (selectDescuento) { selectDescuento.value = 'porcentaje'; }
+                        if (inputDescuento) { inputDescuento.value = String(ajustePorcentaje); }
+                    } else {
+                        inputPrecio.value = String(data.data.precio_final);
+                        if (forzar && selectDescuento && inputDescuento) {
+                            selectDescuento.value = 'valor';
+                            inputDescuento.value = '0';
+                        }
+                    }
+                }
             }
         } catch (e) { }
     }
@@ -234,7 +263,7 @@ $descuentoTotalValor = $cotizacion['descuento_valor'] ?? $cotizacion['descuento'
         const selectProducto = fila.querySelector('.js-producto');
         if (selectProducto) {
             selectProducto.addEventListener('change', async () => {
-                await autocompletarPrecioDesdeLista(fila);
+                await autocompletarPrecioDesdeLista(fila, true);
                 recalcular();
             });
         }
@@ -272,8 +301,9 @@ $descuentoTotalValor = $cotizacion['descuento_valor'] ?? $cotizacion['descuento'
     btnAgregar.addEventListener('click', () => { agregarFila(); recalcular(); });
     document.getElementById('descuento_tipo_total').addEventListener('change', recalcular);
     document.getElementById('descuento_total').addEventListener('input', recalcular);
-    document.querySelector('[name="cliente_id"]')?.addEventListener('change', () => { cuerpo.querySelectorAll('tr').forEach((fila) => autocompletarPrecioDesdeLista(fila)); });
-    document.getElementById('canal_venta')?.addEventListener('change', () => { cuerpo.querySelectorAll('tr').forEach((fila) => autocompletarPrecioDesdeLista(fila)); });
+    document.querySelector('[name="cliente_id"]')?.addEventListener('change', () => { cuerpo.querySelectorAll('tr').forEach((fila) => autocompletarPrecioDesdeLista(fila, true)); recalcular(); });
+    document.getElementById('canal_venta')?.addEventListener('change', () => { cuerpo.querySelectorAll('tr').forEach((fila) => autocompletarPrecioDesdeLista(fila, true)); recalcular(); });
+    document.getElementById('lista_precio_id')?.addEventListener('change', () => { cuerpo.querySelectorAll('tr').forEach((fila) => autocompletarPrecioDesdeLista(fila, true)); recalcular(); });
     recalcular();
 })();
 </script>
