@@ -10,6 +10,7 @@ use Aplicacion\Modelos\Empresa;
 use Aplicacion\Modelos\GestionComercial;
 use Aplicacion\Servicios\ServicioPlan;
 use Aplicacion\Servicios\ServicioPreciosLista;
+use Aplicacion\Servicios\ServicioCorreo;
 
 class CotizacionesControlador extends Controlador
 {
@@ -147,6 +148,7 @@ class CotizacionesControlador extends Controlador
             'total' => $total,
             'observaciones' => trim($_POST['observaciones'] ?? ''),
             'terminos_condiciones' => trim($_POST['terminos_condiciones'] ?? ''),
+            'lista_precio_id' => $listaPrecioId,
             'fecha_emision' => $_POST['fecha_emision'] ?? date('Y-m-d'),
             'fecha_vencimiento' => $_POST['fecha_vencimiento'] ?? date('Y-m-d', strtotime('+15 days')),
         ], $items);
@@ -182,7 +184,7 @@ class CotizacionesControlador extends Controlador
             (int) ($cotizacion['cliente_id'] ?? 0) ?: null,
             null,
             date('Y-m-d'),
-            $listaPrecioId
+            $listaPrecioId ?: ((int) ($cotizacion['lista_precio_id'] ?? 0) ?: null)
         );
         $listasPrecios = (new GestionComercial())->listarListasPreciosActivas($empresaId);
         $this->vista('empresa/cotizaciones/imprimir', compact('cotizacion', 'empresa', 'listaAplicada', 'listasPrecios'), 'impresion');
@@ -209,8 +211,98 @@ class CotizacionesControlador extends Controlador
         $clientes = (new Cliente())->listar($empresaId);
         $productos = (new Producto())->listar($empresaId);
         $listasPrecios = (new GestionComercial())->listarListasPreciosActivas($empresaId);
-        $listaPrecioSeleccionada = (new ServicioPreciosLista())->resolverListaPrecio($empresaId, (int) $cotizacion['cliente_id'], null, date('Y-m-d'));
+        $listaPrecioSeleccionada = (new ServicioPreciosLista())->resolverListaPrecio(
+            $empresaId,
+            (int) $cotizacion['cliente_id'],
+            null,
+            date('Y-m-d'),
+            (int) ($cotizacion['lista_precio_id'] ?? 0) ?: null
+        );
         $this->vista('empresa/cotizaciones/editar', compact('cotizacion', 'clientes', 'productos', 'listasPrecios', 'listaPrecioSeleccionada'), 'empresa');
+    }
+
+    public function enviar(int $id): void
+    {
+        validar_csrf();
+        $empresaId = empresa_actual_id();
+        $modelo = new Cotizacion();
+        $cotizacion = $modelo->obtenerPorId($empresaId, $id);
+        if (!$cotizacion) {
+            flash('danger', 'Cotización no encontrada.');
+            $this->redirigir('/app/cotizaciones');
+        }
+
+        $clienteActual = (new Cliente())->obtenerPorId($empresaId, (int) ($cotizacion['cliente_id'] ?? 0));
+        if (!$clienteActual) {
+            flash('danger', 'No se encontró el cliente asociado en la base de datos.');
+            $this->redirigir('/app/cotizaciones/editar/' . $id);
+        }
+
+        $destinatario = filter_var((string) ($clienteActual['correo'] ?? ''), FILTER_VALIDATE_EMAIL);
+        if (!$destinatario) {
+            flash('danger', 'El cliente no tiene correo válido para enviar la cotización.');
+            $this->redirigir('/app/cotizaciones/editar/' . $id);
+        }
+
+        $tokenPublico = (string) ($cotizacion['token_publico'] ?? '');
+        if ($tokenPublico === '') {
+            $tokenPublico = bin2hex(random_bytes(32));
+            $modelo->actualizarTokenPublico($empresaId, $id, $tokenPublico);
+            $cotizacion['token_publico'] = $tokenPublico;
+        }
+
+        $empresa = (new Empresa())->buscar($empresaId);
+        $remitenteCorreo = trim((string) ($empresa['imap_remitente_correo'] ?? '')) !== ''
+            ? trim((string) ($empresa['imap_remitente_correo'] ?? ''))
+            : trim((string) ($empresa['correo'] ?? ''));
+        $remitenteNombre = trim((string) ($empresa['imap_remitente_nombre'] ?? '')) !== ''
+            ? trim((string) ($empresa['imap_remitente_nombre'] ?? ''))
+            : trim((string) ($empresa['nombre_comercial'] ?? $empresa['razon_social'] ?? 'CotizaPro'));
+        $urlPublica = $this->construirUrlPublica($tokenPublico);
+        $urlPdf = $this->construirUrlInterna('/app/cotizaciones/pdf/' . $id);
+        $pdfContenido = $this->generarPdfCotizacion($cotizacion, $empresa ?: []);
+
+        $clienteNombrePlantilla = trim((string) ($clienteActual['razon_social'] ?? ''));
+        if ($clienteNombrePlantilla === '') {
+            $clienteNombrePlantilla = trim((string) ($clienteActual['nombre_comercial'] ?? ''));
+        }
+        if ($clienteNombrePlantilla === '') {
+            $clienteNombrePlantilla = trim((string) ($clienteActual['nombre'] ?? ($cotizacion['cliente'] ?? '')));
+        }
+
+        (new ServicioCorreo())->enviar(
+            $destinatario,
+            'Cotización ' . ($cotizacion['numero'] ?? ('#' . $id)) . ' - ' . ($empresa['nombre_comercial'] ?? 'CotizaPro'),
+            'cotizacion_cliente_profesional',
+            [
+                'empresa' => $empresa['nombre_comercial'] ?? '',
+                'cliente' => $clienteNombrePlantilla,
+                'cliente_id' => (int) ($clienteActual['id'] ?? 0),
+                'numero' => $cotizacion['numero'] ?? '',
+                'fecha_vencimiento' => $cotizacion['fecha_vencimiento'] ?? '',
+                'total' => number_format((float) ($cotizacion['total'] ?? 0), 2, ',', '.'),
+                'remitente_correo' => $remitenteCorreo,
+                'remitente_nombre' => $remitenteNombre,
+                'mensaje_html' => $this->construirPlantillaCorreoCotizacion($cotizacion, $empresa ?: [], $urlPublica, $urlPdf, $clienteNombrePlantilla),
+                'adjuntos' => [[
+                    'nombre' => 'Cotizacion-' . ($cotizacion['numero'] ?? $id) . '.pdf',
+                    'mime' => 'application/pdf',
+                    'contenido_base64' => base64_encode($pdfContenido),
+                ]],
+                'link_publico' => $urlPublica,
+                'link_pdf' => $urlPdf,
+            ]
+        );
+
+        (new Cotizacion())->actualizarBasico($empresaId, $id, [
+            'estado' => 'enviada',
+            'observaciones' => (string) ($cotizacion['observaciones'] ?? ''),
+            'terminos_condiciones' => (string) ($cotizacion['terminos_condiciones'] ?? ''),
+            'fecha_vencimiento' => (string) ($cotizacion['fecha_vencimiento'] ?? date('Y-m-d')),
+        ]);
+
+        flash('success', 'Cotización enviada automáticamente al cliente con PDF adjunto y enlace público.');
+        $this->redirigir('/app/cotizaciones/editar/' . $id);
     }
 
     public function actualizar(int $id): void
@@ -311,6 +403,7 @@ class CotizacionesControlador extends Controlador
             'total' => $total,
             'observaciones' => trim($_POST['observaciones'] ?? ''),
             'terminos_condiciones' => trim($_POST['terminos_condiciones'] ?? ''),
+            'lista_precio_id' => $listaPrecioId,
             'fecha_emision' => $_POST['fecha_emision'] ?? date('Y-m-d'),
             'fecha_vencimiento' => $_POST['fecha_vencimiento'] ?? date('Y-m-d'),
         ], $items);
@@ -338,19 +431,15 @@ class CotizacionesControlador extends Controlador
             return [$precio, $descuentoTipo, $descuentoValor];
         }
 
-        $precioIngresado = $precio > 0;
-
         $usaDescuentoLista = ($precioCalculado['ajuste_tipo'] ?? '') === 'descuento' && (float) ($precioCalculado['ajuste_porcentaje'] ?? 0) > 0;
-        if ($usaDescuentoLista && !$precioIngresado) {
-            $precio = (float) $precioCalculado['precio_base'];
-        }
-        if ($usaDescuentoLista && $descuentoValor <= 0) {
+        if ($usaDescuentoLista) {
+            $precio = (float) ($precioCalculado['precio_base'] ?? 0);
             $descuentoTipo = 'porcentaje';
             $descuentoValor = (float) $precioCalculado['ajuste_porcentaje'];
-        }
-
-        if (!$usaDescuentoLista && !$precioIngresado) {
-            $precio = (float) $precioCalculado['precio_final'];
+        } else {
+            $precio = (float) ($precioCalculado['precio_final'] ?? 0);
+            $descuentoTipo = 'valor';
+            $descuentoValor = 0;
         }
 
         return [$precio, $descuentoTipo, $descuentoValor];
@@ -362,6 +451,56 @@ class CotizacionesControlador extends Controlador
             $this->redirigir($rutaMantener);
         }
         $this->redirigir($rutaSalir);
+    }
+
+    private function construirPlantillaCorreoCotizacion(array $cotizacion, array $empresa, string $urlPublica, string $urlPdf, string $clienteNombre = ''): string
+    {
+        $empresaNombre = htmlspecialchars((string) ($empresa['nombre_comercial'] ?? $empresa['razon_social'] ?? 'Tu empresa'), ENT_QUOTES, 'UTF-8');
+        $cliente = htmlspecialchars($clienteNombre !== '' ? $clienteNombre : (string) ($cotizacion['cliente'] ?? 'cliente'), ENT_QUOTES, 'UTF-8');
+        $numero = htmlspecialchars((string) ($cotizacion['numero'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $fechaVencimiento = htmlspecialchars((string) ($cotizacion['fecha_vencimiento'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $total = number_format((float) ($cotizacion['total'] ?? 0), 2, ',', '.');
+        $urlPublicaEsc = htmlspecialchars($urlPublica, ENT_QUOTES, 'UTF-8');
+        $urlPdfEsc = htmlspecialchars($urlPdf, ENT_QUOTES, 'UTF-8');
+
+        return <<<HTML
+<div style="font-family:Arial,Helvetica,sans-serif;background:#f5f7fb;padding:24px;color:#111827;">
+  <div style="max-width:680px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+    <div style="background:#0f3d77;color:#ffffff;padding:20px 24px;">
+      <h2 style="margin:0;font-size:20px;">{$empresaNombre}</h2>
+      <p style="margin:6px 0 0;font-size:13px;opacity:.9;">Envío automático de cotización</p>
+    </div>
+    <div style="padding:24px;">
+      <p style="margin:0 0 14px;">Hola <strong>{$cliente}</strong>,</p>
+      <p style="margin:0 0 14px;line-height:1.5;">Adjuntamos la cotización <strong>{$numero}</strong> por un total de <strong>\${$total}</strong>, con vigencia hasta el <strong>{$fechaVencimiento}</strong>.</p>
+      <p style="margin:0 0 20px;line-height:1.5;">Puedes revisarla en línea y registrar tu decisión desde el siguiente botón:</p>
+      <p style="margin:0 0 18px;">
+        <a href="{$urlPublicaEsc}" style="display:inline-block;background:#0f3d77;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:8px;font-weight:600;">Ver, aceptar o rechazar cotización</a>
+      </p>
+      <p style="margin:0 0 8px;font-size:13px;color:#4b5563;">También puedes descargar el PDF directamente:</p>
+      <p style="margin:0 0 20px;font-size:13px;"><a href="{$urlPdfEsc}" style="color:#0f3d77;">{$urlPdfEsc}</a></p>
+      <p style="margin:0;font-size:12px;color:#6b7280;">Este correo fue generado automáticamente por el sistema de cotizaciones.</p>
+    </div>
+  </div>
+</div>
+HTML;
+    }
+
+    private function construirUrlPublica(string $tokenPublico): string
+    {
+        return $this->construirUrlInterna('/cotizacion/publica/' . $tokenPublico);
+    }
+
+    private function construirUrlInterna(string $ruta): string
+    {
+        $config = require __DIR__ . '/../../../configuracion/aplicacion.php';
+        $base = rtrim((string) ($config['url'] ?? ''), '/');
+        if ($base === '') {
+            $esHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+            $host = (string) ($_SERVER['HTTP_HOST'] ?? 'localhost:8000');
+            $base = ($esHttps ? 'https://' : 'http://') . $host;
+        }
+        return $base . url($ruta);
     }
 
     private function generarPdfCotizacion(array $cotizacion, array $empresa): string
@@ -410,7 +549,16 @@ class CotizacionesControlador extends Controlador
             }
             $c[] = '0.86 0.89 0.92 RG 0.5 w 40 ' . ($y - 2) . ' 532 20 re S';
             $c[] = 'BT /F1 8 Tf 0 0 0 rg 44 ' . ($y + 6) . ' Td (' . $this->pdfEsc((string) ($item['codigo'] ?? ('ITM-' . (string) ($item['id'] ?? '')))) . ') Tj ET';
-            $c[] = 'BT /F1 8 Tf 0 0 0 rg 100 ' . ($y + 6) . ' Td (' . $this->pdfEsc((string) ($item['descripcion'] ?? '')) . ') Tj ET';
+            $nombreProducto = trim((string) ($item['producto_nombre'] ?? ''));
+            $detalleItem = trim((string) ($item['descripcion'] ?? ''));
+            if ($nombreProducto !== '' && $detalleItem !== '') {
+                $detallePdf = $nombreProducto . ' - ' . $detalleItem;
+            } elseif ($nombreProducto !== '') {
+                $detallePdf = $nombreProducto;
+            } else {
+                $detallePdf = $detalleItem;
+            }
+            $c[] = 'BT /F1 8 Tf 0 0 0 rg 100 ' . ($y + 6) . ' Td (' . $this->pdfEsc($detallePdf) . ') Tj ET';
             $c[] = 'BT /F1 8 Tf 0 0 0 rg 348 ' . ($y + 6) . ' Td (' . $this->pdfEsc(number_format((float) ($item['cantidad'] ?? 0), 2)) . ') Tj ET';
             $c[] = 'BT /F1 8 Tf 0 0 0 rg 392 ' . ($y + 6) . ' Td (' . $this->pdfEsc((string) ($item['unidad'] ?? 'Unidad')) . ') Tj ET';
             $c[] = 'BT /F1 8 Tf 0 0 0 rg 452 ' . ($y + 6) . ' Td ($' . $this->pdfEsc(number_format((float) ($item['precio_unitario'] ?? 0), 0, ',', '.')) . ') Tj ET';
