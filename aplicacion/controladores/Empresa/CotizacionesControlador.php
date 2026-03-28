@@ -198,14 +198,18 @@ class CotizacionesControlador extends Controlador
         }
 
         $empresa = (new Empresa())->buscar($empresaId);
-        $pdf = $this->generarPdfCotizacion($cotizacion, $empresa ?: []);
-        $nombreArchivo = 'cotizacion-' . preg_replace('/[^A-Za-z0-9\\-_]/', '-', (string) ($cotizacion['numero'] ?? $id)) . '.pdf';
-
-        header('Content-Type: application/pdf');
-        header('Content-Disposition: attachment; filename="' . $nombreArchivo . '"');
-        header('Content-Length: ' . strlen($pdf));
-        echo $pdf;
-        exit;
+        $listaPrecioId = (int) ($_GET['lista_precio_id'] ?? 0) ?: null;
+        $servicioPrecios = new ServicioPreciosLista();
+        $listaAplicada = $servicioPrecios->resolverListaPrecio(
+            $empresaId,
+            (int) ($cotizacion['cliente_id'] ?? 0) ?: null,
+            null,
+            date('Y-m-d'),
+            $listaPrecioId
+        );
+        $listasPrecios = (new GestionComercial())->listarListasPreciosActivas($empresaId);
+        $autoDescargarPdf = true;
+        $this->vista('empresa/cotizaciones/imprimir', compact('cotizacion', 'empresa', 'listaAplicada', 'listasPrecios', 'autoDescargarPdf'), 'impresion');
     }
 
     public function editar(int $id): void

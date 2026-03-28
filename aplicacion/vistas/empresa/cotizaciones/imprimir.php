@@ -42,7 +42,7 @@ ul { margin: 8px 0 0 18px; padding: 0; font-size: 14px; line-height: 1.6; }
 </style>
 
 <div class="no-print">
-  <button class="btn btn-dark btn-sm" type="button" onclick="window.print()">Imprimir</button>
+  <button class="btn btn-dark btn-sm" type="button" onclick="window.print()">Imprimir / Guardar PDF</button>
   <a class="btn btn-outline-dark btn-sm" href="<?= e(url('/app/cotizaciones/pdf/' . $cotizacion['id'])) ?>">Descargar PDF</a>
   <a class="btn btn-outline-secondary btn-sm" href="<?= e(url('/app/cotizaciones/ver/' . $cotizacion['id'])) ?>">Volver</a>
 </div>
@@ -143,3 +143,11 @@ ul { margin: 8px 0 0 18px; padding: 0; font-size: 14px; line-height: 1.6; }
 
   <div class="pie">Documento generado automáticamente por el sistema de cotizaciones.</div>
 </div>
+
+<?php if (!empty($autoDescargarPdf)): ?>
+<script>
+window.addEventListener('load', () => {
+  setTimeout(() => window.print(), 250);
+});
+</script>
+<?php endif; ?>
