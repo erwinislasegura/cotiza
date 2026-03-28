@@ -372,6 +372,7 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
         document.getElementById('resumen_iva').textContent = fmt(iva);
         document.getElementById('resumen_descuento').textContent = fmt(descTotal);
         document.getElementById('resumen_total').textContent = fmt(Math.max(0, baseTotal - descTotal));
+        actualizarIndicadorLista();
     }
     function agregarFila() { const fila = template.content.firstElementChild.cloneNode(true); bindFila(fila); cuerpo.appendChild(fila); }
     async function aplicarListaATodasLineas(forzar = true) {

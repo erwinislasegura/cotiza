@@ -401,6 +401,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
         document.getElementById('resumen_iva').textContent = fmt(iva);
         document.getElementById('resumen_descuento').textContent = fmt(descuentoTotal);
         document.getElementById('resumen_total').textContent = fmt(Math.max(0, baseTotal - descuentoTotal));
+        actualizarIndicadorLista();
     }
 
     function agregarFila() {
