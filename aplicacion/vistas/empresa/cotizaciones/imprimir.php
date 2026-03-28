@@ -149,18 +149,26 @@ $listaNombre = trim((string) ($listaAplicada['nombre'] ?? ''));
   @page { size: letter; margin: 10mm; }
   @media print {
     html, body { width: 100%; height: auto; }
-    body { padding: 0; background: #fff; font-size: 12px; }
+    body {
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
     .toolbar { display: none !important; }
     .hoja {
       width: 100%;
       max-width: none;
+      margin: 0;
+      padding: 20px;
       box-shadow: none;
       border-radius: 0;
-      padding: 8px;
+      background: #ffffff;
     }
   }
 
-  @media (max-width: 820px) {
+  @media screen and (max-width: 820px) {
     body { padding: 12px; }
     .hoja { padding: 20px; }
     .encabezado,
