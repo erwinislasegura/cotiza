@@ -1,19 +1,107 @@
 <h1 class="h4 mb-3">Configuración de empresa</h1>
-<div class="card"><div class="card-header">Datos comerciales y formato de documentos</div><div class="card-body">
-  <p class="small text-muted">Módulo base actualizado para operar como SaaS comercial. Esta pantalla centraliza razón social, moneda, impuestos, numeración y formato de documento.</p>
-  <form class="row g-2" onsubmit="alert('Esta base queda lista para conectar persistencia en siguiente iteración.'); return false;">
-    <div class="col-md-3"><label class="form-label">Razón social</label><input class="form-control"></div>
-    <div class="col-md-3"><label class="form-label">Nombre comercial</label><input class="form-control"></div>
-    <div class="col-md-2"><label class="form-label">Identificador fiscal</label><input class="form-control"></div>
-    <div class="col-md-2"><label class="form-label">Moneda</label><input class="form-control" value="USD"></div>
-    <div class="col-md-2"><label class="form-label">Impuesto %</label><input class="form-control" value="19"></div>
-    <div class="col-md-3"><label class="form-label">Correo</label><input class="form-control"></div>
-    <div class="col-md-2"><label class="form-label">Teléfono</label><input class="form-control"></div>
-    <div class="col-md-3"><label class="form-label">Dirección</label><input class="form-control"></div>
-    <div class="col-md-2"><label class="form-label">Ciudad</label><input class="form-control"></div>
-    <div class="col-md-2"><label class="form-label">País</label><input class="form-control"></div>
-    <div class="col-md-2"><label class="form-label">Prefijo cotización</label><input class="form-control" value="COT"></div>
-    <div class="col-md-2"><label class="form-label">Formato</label><select class="form-select"><option>A4</option><option>Letter</option></select></div>
-    <div class="col-12"><button class="btn btn-primary btn-sm">Guardar configuración</button></div>
-  </form>
-</div></div>
+
+<form method="POST" action="<?= e(url('/app/configuracion')) ?>" enctype="multipart/form-data" class="row g-3">
+  <?= csrf_campo() ?>
+
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">Datos generales de la empresa</div>
+      <div class="card-body row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Razón social</label>
+          <input name="razon_social" class="form-control" value="<?= e($empresa['razon_social'] ?? '') ?>" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Nombre comercial</label>
+          <input name="nombre_comercial" class="form-control" value="<?= e($empresa['nombre_comercial'] ?? '') ?>" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Identificador fiscal</label>
+          <input name="identificador_fiscal" class="form-control" value="<?= e($empresa['identificador_fiscal'] ?? '') ?>" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Correo principal</label>
+          <input type="email" name="correo" class="form-control" value="<?= e($empresa['correo'] ?? '') ?>" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Teléfono</label>
+          <input name="telefono" class="form-control" value="<?= e($empresa['telefono'] ?? '') ?>">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Ciudad</label>
+          <input name="ciudad" class="form-control" value="<?= e($empresa['ciudad'] ?? '') ?>">
+        </div>
+        <div class="col-md-8">
+          <label class="form-label">Dirección</label>
+          <input name="direccion" class="form-control" value="<?= e($empresa['direccion'] ?? '') ?>">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">País</label>
+          <input name="pais" class="form-control" value="<?= e($empresa['pais'] ?? '') ?>">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-header">Logo de la empresa</div>
+      <div class="card-body">
+        <?php if (!empty($empresa['logo'])): ?>
+          <div class="mb-3">
+            <img src="<?= e(url($empresa['logo'])) ?>" alt="Logo de empresa" style="max-width: 220px; max-height: 120px;" class="img-thumbnail">
+          </div>
+        <?php endif; ?>
+        <label class="form-label">Subir nuevo logo</label>
+        <input type="file" name="logo" accept=".png,.jpg,.jpeg,.webp,.svg" class="form-control">
+        <small class="text-muted">Formatos permitidos: PNG, JPG, WEBP o SVG. Tamaño máximo: 2MB.</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-header">Correo IMAP para envíos y notificaciones</div>
+      <div class="card-body row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Servidor IMAP</label>
+          <input name="imap_host" class="form-control" placeholder="imap.tudominio.com" value="<?= e($empresa['imap_host'] ?? '') ?>">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Puerto</label>
+          <input type="number" name="imap_port" class="form-control" value="<?= e((string) ($empresa['imap_port'] ?? '993')) ?>" min="1">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Encriptación</label>
+          <select name="imap_encryption" class="form-select">
+            <?php $encryption = $empresa['imap_encryption'] ?? 'tls'; ?>
+            <option value="ssl" <?= $encryption === 'ssl' ? 'selected' : '' ?>>SSL</option>
+            <option value="tls" <?= $encryption === 'tls' ? 'selected' : '' ?>>TLS</option>
+            <option value="none" <?= $encryption === 'none' ? 'selected' : '' ?>>Ninguna</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Usuario IMAP</label>
+          <input name="imap_usuario" class="form-control" value="<?= e($empresa['imap_usuario'] ?? '') ?>">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Contraseña IMAP</label>
+          <input type="password" name="imap_password" class="form-control" placeholder="••••••••">
+          <small class="text-muted">Déjalo en blanco para conservar la contraseña actual.</small>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Correo remitente</label>
+          <input type="email" name="imap_remitente_correo" class="form-control" value="<?= e($empresa['imap_remitente_correo'] ?? '') ?>">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Nombre remitente</label>
+          <input name="imap_remitente_nombre" class="form-control" value="<?= e($empresa['imap_remitente_nombre'] ?? '') ?>">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <button class="btn btn-primary btn-sm">Guardar configuración</button>
+  </div>
+</form>
