@@ -264,7 +264,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
             indicador.innerHTML = `<span style="color:#3f8f62;">Se aplica descuento/lista en ${aplicadas} de ${filas.length} líneas.</span>`;
             return;
         }
-        indicador.innerHTML = '<span class="text-muted">La lista no aplica a las líneas actuales.</span>';
+        indicador.innerHTML = '<span style="color:#b94a48;">No aplica lista de precios en las líneas actuales.</span>';
     }
 
     function renderInfoLista(fila, data = null) {
@@ -272,7 +272,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
         if (!celda) { return; }
         if (!data) {
             fila.dataset.listaAplicada = 'no';
-            celda.innerHTML = '<span class="text-muted">No aplica lista.</span>';
+            celda.innerHTML = '<span style="color:#b94a48;">No aplica lista.</span>';
             actualizarIndicadorLista();
             return;
         }
@@ -286,14 +286,14 @@ $puedeGuardar = $hayClientes && $hayProductos;
 
         if (!data.lista_precio_id) {
             fila.dataset.listaAplicada = 'no';
-            celda.innerHTML = '<span class="text-muted">Sin lista para cliente/canal.</span>';
+            celda.innerHTML = '<span style="color:#b94a48;">Sin lista para cliente/canal.</span>';
             actualizarIndicadorLista();
             return;
         }
 
         if (porcentaje <= 0) {
             fila.dataset.listaAplicada = 'si';
-            celda.innerHTML = `<span class="badge text-bg-secondary mb-1">${nombreLista}</span><div>Lista activa sin ajuste.</div>`;
+            celda.innerHTML = `<span class="badge text-bg-success mb-1">${nombreLista}</span><div style="color:#3f8f62;">Lista detectada y aplicada (sin ajuste porcentual).</div>`;
             actualizarIndicadorLista();
             return;
         }

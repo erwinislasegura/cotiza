@@ -244,14 +244,14 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
             indicador.innerHTML = `<span style="color:#3f8f62;">Lista aplicada en ${aplicadas} de ${filas.length} líneas.</span>`;
             return;
         }
-        indicador.innerHTML = '<span class="text-muted">La lista no aplica a las líneas actuales.</span>';
+        indicador.innerHTML = '<span style="color:#b94a48;">No aplica lista de precios en las líneas actuales.</span>';
     }
     function renderInfoLista(fila, data = null) {
         const celda = fila.querySelector('.js-lista-ajuste');
         if (!celda) { return; }
         if (!data) {
             fila.dataset.listaAplicada = 'no';
-            celda.innerHTML = '<span class="text-muted">No aplica lista de precios.</span>';
+            celda.innerHTML = '<span style="color:#b94a48;">No aplica lista de precios.</span>';
             actualizarIndicadorLista();
             return;
         }
@@ -266,14 +266,14 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
 
         if (!tieneLista) {
             fila.dataset.listaAplicada = 'no';
-            celda.innerHTML = '<span class="text-muted">Sin lista para este cliente/canal.</span>';
+            celda.innerHTML = '<span style="color:#b94a48;">Sin lista para este cliente/canal.</span>';
             actualizarIndicadorLista();
             return;
         }
 
         if (porcentaje <= 0) {
             fila.dataset.listaAplicada = 'si';
-            celda.innerHTML = `<span class="badge text-bg-secondary mb-1">${nombreLista}</span><div>Lista seleccionada sin ajuste activo.</div>`;
+            celda.innerHTML = `<span class="badge text-bg-success mb-1">${nombreLista}</span><div style="color:#3f8f62;">Lista detectada y aplicada (sin ajuste porcentual).</div>`;
             actualizarIndicadorLista();
             return;
         }
