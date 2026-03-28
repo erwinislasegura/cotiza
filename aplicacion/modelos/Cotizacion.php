@@ -8,7 +8,14 @@ class Cotizacion extends Modelo
 {
     public function listar(int $empresaId): array
     {
-        $sql = 'SELECT c.*, cl.nombre AS cliente, u.nombre AS vendedor FROM cotizaciones c INNER JOIN clientes cl ON cl.id = c.cliente_id INNER JOIN usuarios u ON u.id = c.usuario_id WHERE c.empresa_id = :empresa_id AND c.fecha_eliminacion IS NULL ORDER BY c.id DESC';
+        $sql = 'SELECT c.*,
+            COALESCE(NULLIF(cl.razon_social, ""), NULLIF(cl.nombre_comercial, ""), cl.nombre) AS cliente,
+            u.nombre AS vendedor
+            FROM cotizaciones c
+            INNER JOIN clientes cl ON cl.id = c.cliente_id
+            INNER JOIN usuarios u ON u.id = c.usuario_id
+            WHERE c.empresa_id = :empresa_id AND c.fecha_eliminacion IS NULL
+            ORDER BY c.id DESC';
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['empresa_id' => $empresaId]);
         return $stmt->fetchAll();
@@ -62,7 +69,7 @@ class Cotizacion extends Modelo
     public function obtenerPorId(int $empresaId, int $id): ?array
     {
         $stmt = $this->db->prepare('SELECT c.*,
-                cl.nombre AS cliente,
+                COALESCE(NULLIF(cl.razon_social, ""), NULLIF(cl.nombre_comercial, ""), cl.nombre) AS cliente,
                 cl.razon_social AS cliente_razon_social,
                 cl.identificador_fiscal AS cliente_identificador_fiscal,
                 cl.correo AS cliente_correo,
@@ -80,8 +87,54 @@ class Cotizacion extends Modelo
         if (!$cotizacion) {
             return null;
         }
-        $stmtItems = $this->db->prepare('SELECT * FROM items_cotizacion WHERE cotizacion_id=:cotizacion_id ORDER BY id ASC');
+        $stmtItems = $this->db->prepare('SELECT ic.*, p.codigo, p.nombre AS producto_nombre, p.descripcion AS producto_descripcion, p.unidad
+            FROM items_cotizacion ic
+            LEFT JOIN productos p ON p.id = ic.producto_id
+            WHERE ic.cotizacion_id=:cotizacion_id
+            ORDER BY ic.id ASC');
         $stmtItems->execute(['cotizacion_id' => $id]);
+        $cotizacion['items'] = $stmtItems->fetchAll();
+        return $cotizacion;
+    }
+
+    public function actualizarTokenPublico(int $empresaId, int $id, string $token): void
+    {
+        $stmt = $this->db->prepare('UPDATE cotizaciones SET token_publico=:token_publico, fecha_actualizacion=NOW() WHERE empresa_id=:empresa_id AND id=:id AND fecha_eliminacion IS NULL');
+        $stmt->execute([
+            'token_publico' => $token,
+            'empresa_id' => $empresaId,
+            'id' => $id,
+        ]);
+    }
+
+    public function obtenerPorTokenPublico(string $token): ?array
+    {
+        $stmt = $this->db->prepare('SELECT c.*,
+                COALESCE(NULLIF(cl.razon_social, ""), NULLIF(cl.nombre_comercial, ""), cl.nombre) AS cliente,
+                cl.razon_social AS cliente_razon_social,
+                cl.identificador_fiscal AS cliente_identificador_fiscal,
+                cl.correo AS cliente_correo,
+                cl.telefono AS cliente_telefono,
+                cl.direccion AS cliente_direccion,
+                cl.ciudad AS cliente_ciudad,
+                u.nombre AS vendedor
+            FROM cotizaciones c
+            INNER JOIN clientes cl ON cl.id = c.cliente_id
+            INNER JOIN usuarios u ON u.id = c.usuario_id
+            WHERE c.token_publico=:token_publico AND c.fecha_eliminacion IS NULL
+            LIMIT 1');
+        $stmt->execute(['token_publico' => $token]);
+        $cotizacion = $stmt->fetch() ?: null;
+        if (!$cotizacion) {
+            return null;
+        }
+
+        $stmtItems = $this->db->prepare('SELECT ic.*, p.codigo, p.nombre AS producto_nombre, p.descripcion AS producto_descripcion, p.unidad
+            FROM items_cotizacion ic
+            LEFT JOIN productos p ON p.id = ic.producto_id
+            WHERE ic.cotizacion_id=:cotizacion_id
+            ORDER BY ic.id ASC');
+        $stmtItems->execute(['cotizacion_id' => (int) $cotizacion['id']]);
         $cotizacion['items'] = $stmtItems->fetchAll();
         return $cotizacion;
     }
