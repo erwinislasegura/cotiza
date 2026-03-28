@@ -225,7 +225,13 @@ class CotizacionesControlador extends Controlador
             $this->redirigir('/app/cotizaciones');
         }
 
-        $destinatario = filter_var((string) ($cotizacion['cliente_correo'] ?? ''), FILTER_VALIDATE_EMAIL);
+        $clienteActual = (new Cliente())->obtenerPorId($empresaId, (int) ($cotizacion['cliente_id'] ?? 0));
+        if (!$clienteActual) {
+            flash('danger', 'No se encontró el cliente asociado en la base de datos.');
+            $this->redirigir('/app/cotizaciones/editar/' . $id);
+        }
+
+        $destinatario = filter_var((string) ($clienteActual['correo'] ?? ''), FILTER_VALIDATE_EMAIL);
         if (!$destinatario) {
             flash('danger', 'El cliente no tiene correo válido para enviar la cotización.');
             $this->redirigir('/app/cotizaciones/editar/' . $id);
@@ -239,6 +245,12 @@ class CotizacionesControlador extends Controlador
         }
 
         $empresa = (new Empresa())->buscar($empresaId);
+        $remitenteCorreo = trim((string) ($empresa['imap_remitente_correo'] ?? '')) !== ''
+            ? trim((string) ($empresa['imap_remitente_correo'] ?? ''))
+            : trim((string) ($empresa['correo'] ?? ''));
+        $remitenteNombre = trim((string) ($empresa['imap_remitente_nombre'] ?? '')) !== ''
+            ? trim((string) ($empresa['imap_remitente_nombre'] ?? ''))
+            : trim((string) ($empresa['nombre_comercial'] ?? $empresa['razon_social'] ?? 'CotizaPro'));
         $urlPublica = $this->construirUrlPublica($tokenPublico);
         $urlPdf = $this->construirUrlInterna('/app/cotizaciones/pdf/' . $id);
         $pdfContenido = $this->generarPdfCotizacion($cotizacion, $empresa ?: []);
@@ -249,10 +261,13 @@ class CotizacionesControlador extends Controlador
             'cotizacion_cliente_profesional',
             [
                 'empresa' => $empresa['nombre_comercial'] ?? '',
-                'cliente' => $cotizacion['cliente'] ?? '',
+                'cliente' => $clienteActual['nombre'] ?? ($cotizacion['cliente'] ?? ''),
+                'cliente_id' => (int) ($clienteActual['id'] ?? 0),
                 'numero' => $cotizacion['numero'] ?? '',
                 'fecha_vencimiento' => $cotizacion['fecha_vencimiento'] ?? '',
                 'total' => number_format((float) ($cotizacion['total'] ?? 0), 2, ',', '.'),
+                'remitente_correo' => $remitenteCorreo,
+                'remitente_nombre' => $remitenteNombre,
                 'mensaje_html' => $this->construirPlantillaCorreoCotizacion($cotizacion, $empresa ?: [], $urlPublica, $urlPdf),
                 'adjuntos' => [[
                     'nombre' => 'Cotizacion-' . ($cotizacion['numero'] ?? $id) . '.pdf',
