@@ -256,9 +256,12 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
             return;
         }
 
-        const tipoBadge = tipo === 'descuento' ? 'text-bg-success' : 'text-bg-warning';
-        const signo = tipo === 'descuento' ? '-' : '+';
-        celda.innerHTML = `<span class="badge ${tipoBadge} mb-1">${nombreLista}</span><div>${tipo} ${signo}${porcentaje.toFixed(2)}%</div><div>Base ${fmt(precioBase)} → Final ${fmt(precioFinal)}</div><div>Monto ajustado: ${fmt(montoAjuste)}</div>`;
+        const esDescuento = tipo === 'descuento';
+        const tipoBadge = esDescuento ? 'text-bg-success' : 'text-bg-warning';
+        const signo = esDescuento ? '-' : '+';
+        const colorSuave = esDescuento ? 'style="color:#3f8f62;"' : '';
+        const etiqueta = esDescuento ? 'Descuento aplicado' : 'Incremento aplicado';
+        celda.innerHTML = `<span class="badge ${tipoBadge} mb-1">${nombreLista}</span><div ${colorSuave}><strong>${etiqueta}</strong>: ${signo}${porcentaje.toFixed(2)}% (${signo}${fmt(montoAjuste)})</div><div>Base ${fmt(precioBase)} → Final ${fmt(precioFinal)}</div>`;
     }
     async function autocompletarPrecioDesdeLista(fila, forzar = false) {
         const selectProducto = fila.querySelector('.js-producto');
