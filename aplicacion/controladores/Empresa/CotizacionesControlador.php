@@ -377,52 +377,103 @@ class CotizacionesControlador extends Controlador
     private function generarPdfCotizacion(array $cotizacion, array $empresa): string
     {
         $clienteNombre = trim((string) (($cotizacion['cliente_razon_social'] ?? '') !== '' ? $cotizacion['cliente_razon_social'] : ($cotizacion['cliente'] ?? '')));
-        $lineas = [
-            strtoupper((string) ($empresa['nombre_comercial'] ?? $empresa['razon_social'] ?? 'EMPRESA')),
-            'COTIZACION ' . (string) ($cotizacion['numero'] ?? ''),
-            'Fecha emision: ' . (string) ($cotizacion['fecha_emision'] ?? ''),
-            'Fecha vencimiento: ' . (string) ($cotizacion['fecha_vencimiento'] ?? ''),
-            'Cliente: ' . $clienteNombre,
-            'Asesor: ' . (string) ($cotizacion['vendedor'] ?? ''),
-            str_repeat('-', 90),
-            'Detalle',
-        ];
+        $items = $cotizacion['items'] ?? [];
+        $descuentoTexto = (($cotizacion['descuento_tipo'] ?? 'valor') === 'porcentaje')
+            ? number_format((float) ($cotizacion['descuento_valor'] ?? 0), 2) . '%'
+            : '$' . number_format((float) ($cotizacion['descuento'] ?? 0), 0, ',', '.');
+        $neto = max(0, (float) ($cotizacion['subtotal'] ?? 0) - (float) ($cotizacion['descuento'] ?? 0));
 
-        foreach (($cotizacion['items'] ?? []) as $item) {
-            $descripcion = (string) ($item['descripcion'] ?? '');
-            $cantidad = number_format((float) ($item['cantidad'] ?? 0), 2);
-            $precio = number_format((float) ($item['precio_unitario'] ?? 0), 2);
-            $total = number_format((float) ($item['total'] ?? 0), 2);
-            $lineas[] = sprintf('%s | Cant: %s | P.Unit: %s | Total: %s', $descripcion, $cantidad, $precio, $total);
+        $c = [];
+        $c[] = '0.95 0.96 0.98 rg 0 0 612 792 re f';
+        $c[] = '1 1 1 rg 26 26 560 740 re f';
+        $c[] = '0.12 0.31 0.47 RG 2 w 26 695 m 586 695 l S';
+
+        $c[] = 'BT /F1 20 Tf 0.12 0.31 0.47 rg 40 742 Td (' . $this->pdfEsc($empresa['nombre_comercial'] ?? $empresa['razon_social'] ?? 'Comercial') . ') Tj ET';
+        $c[] = 'BT /F1 11 Tf 0.12 0.31 0.47 rg 430 748 Td (COTIZACION) Tj ET';
+        $c[] = 'BT /F1 9 Tf 0 0 0 rg 430 734 Td (N\\260: ' . $this->pdfEsc((string) ($cotizacion['numero'] ?? '')) . ') Tj ET';
+        $c[] = 'BT /F1 9 Tf 0 0 0 rg 430 720 Td (Fecha: ' . $this->pdfEsc((string) ($cotizacion['fecha_emision'] ?? '')) . ') Tj ET';
+        $c[] = 'BT /F1 9 Tf 0 0 0 rg 430 706 Td (Validez: ' . $this->pdfEsc((string) ($cotizacion['fecha_vencimiento'] ?? '')) . ') Tj ET';
+
+        $c[] = 'BT /F1 9 Tf 0 0 0 rg 40 724 Td (RUT: ' . $this->pdfEsc((string) ($empresa['identificador_fiscal'] ?? '')) . ') Tj ET';
+        $c[] = 'BT /F1 9 Tf 0 0 0 rg 40 710 Td (' . $this->pdfEsc(trim((string) (($empresa['direccion'] ?? '') . ', ' . ($empresa['ciudad'] ?? '')))) . ') Tj ET';
+        $c[] = 'BT /F1 9 Tf 0 0 0 rg 40 696 Td (Telefono: ' . $this->pdfEsc((string) ($empresa['telefono'] ?? '')) . ') Tj ET';
+        $c[] = 'BT /F1 9 Tf 0 0 0 rg 40 682 Td (Correo: ' . $this->pdfEsc((string) ($empresa['correo'] ?? '')) . ') Tj ET';
+
+        $c[] = 'BT /F1 10 Tf 0.12 0.31 0.47 rg 40 668 Td (Datos del cliente) Tj ET';
+        $c[] = 'BT /F1 9 Tf 0 0 0 rg 40 652 Td (Cliente: ' . $this->pdfEsc($clienteNombre) . ') Tj ET';
+        $c[] = 'BT /F1 9 Tf 0 0 0 rg 300 652 Td (RUT: ' . $this->pdfEsc((string) ($cotizacion['cliente_identificador_fiscal'] ?? '')) . ') Tj ET';
+        $c[] = 'BT /F1 9 Tf 0 0 0 rg 40 638 Td (Contacto: ' . $this->pdfEsc((string) ($cotizacion['cliente'] ?? '')) . ') Tj ET';
+        $c[] = 'BT /F1 9 Tf 0 0 0 rg 300 638 Td (Correo: ' . $this->pdfEsc((string) ($cotizacion['cliente_correo'] ?? '')) . ') Tj ET';
+        $c[] = 'BT /F1 9 Tf 0 0 0 rg 40 624 Td (Telefono: ' . $this->pdfEsc((string) ($cotizacion['cliente_telefono'] ?? '')) . ') Tj ET';
+        $c[] = 'BT /F1 9 Tf 0 0 0 rg 300 624 Td (Direccion: ' . $this->pdfEsc(trim((string) (($cotizacion['cliente_direccion'] ?? '') . ', ' . ($cotizacion['cliente_ciudad'] ?? '')))) . ') Tj ET';
+
+        $c[] = '0.12 0.31 0.47 rg 40 594 532 18 re f';
+        $headers = [['Codigo', 44], ['Descripcion', 100], ['Cant.', 345], ['Unidad', 390], ['P. Unitario', 450], ['Total', 520]];
+        foreach ($headers as [$txt, $x]) {
+            $c[] = 'BT /F1 8 Tf 1 1 1 rg ' . $x . ' 600 Td (' . $this->pdfEsc($txt) . ') Tj ET';
         }
 
-        $lineas[] = str_repeat('-', 90);
-        $lineas[] = 'Subtotal: ' . number_format((float) ($cotizacion['subtotal'] ?? 0), 2);
-        $lineas[] = 'Impuesto: ' . number_format((float) ($cotizacion['impuesto'] ?? 0), 2);
-        $lineas[] = 'Descuento: ' . number_format((float) ($cotizacion['descuento'] ?? 0), 2);
-        $lineas[] = 'Total: ' . number_format((float) ($cotizacion['total'] ?? 0), 2);
+        $y = 578;
+        foreach ($items as $item) {
+            if ($y < 430) {
+                break;
+            }
+            $c[] = '0.86 0.89 0.92 RG 0.5 w 40 ' . ($y - 2) . ' 532 20 re S';
+            $c[] = 'BT /F1 8 Tf 0 0 0 rg 44 ' . ($y + 6) . ' Td (' . $this->pdfEsc((string) ($item['codigo'] ?? ('ITM-' . (string) ($item['id'] ?? '')))) . ') Tj ET';
+            $c[] = 'BT /F1 8 Tf 0 0 0 rg 100 ' . ($y + 6) . ' Td (' . $this->pdfEsc((string) ($item['descripcion'] ?? '')) . ') Tj ET';
+            $c[] = 'BT /F1 8 Tf 0 0 0 rg 348 ' . ($y + 6) . ' Td (' . $this->pdfEsc(number_format((float) ($item['cantidad'] ?? 0), 2)) . ') Tj ET';
+            $c[] = 'BT /F1 8 Tf 0 0 0 rg 392 ' . ($y + 6) . ' Td (' . $this->pdfEsc((string) ($item['unidad'] ?? 'Unidad')) . ') Tj ET';
+            $c[] = 'BT /F1 8 Tf 0 0 0 rg 452 ' . ($y + 6) . ' Td ($' . $this->pdfEsc(number_format((float) ($item['precio_unitario'] ?? 0), 0, ',', '.')) . ') Tj ET';
+            $c[] = 'BT /F1 8 Tf 0 0 0 rg 522 ' . ($y + 6) . ' Td ($' . $this->pdfEsc(number_format((float) ($item['total'] ?? 0), 0, ',', '.')) . ') Tj ET';
+            $y -= 20;
+        }
 
-        return $this->crearPdfTexto($lineas);
+        $totY = 360;
+        $rows = [
+            ['Subtotal', '$' . number_format((float) ($cotizacion['subtotal'] ?? 0), 0, ',', '.')],
+            ['Descuento', '- ' . $descuentoTexto],
+            ['Neto', '$' . number_format($neto, 0, ',', '.')],
+            ['IVA (19%)', '$' . number_format((float) ($cotizacion['impuesto'] ?? 0), 0, ',', '.')],
+        ];
+        foreach ($rows as $i => [$label, $value]) {
+            $yy = $totY - ($i * 20);
+            $c[] = '0.86 0.89 0.92 RG 0.5 w 330 ' . $yy . ' 242 20 re S';
+            $c[] = 'BT /F1 8 Tf 0 0 0 rg 338 ' . ($yy + 7) . ' Td (' . $this->pdfEsc($label) . ') Tj ET';
+            $c[] = 'BT /F1 8 Tf 0 0 0 rg 500 ' . ($yy + 7) . ' Td (' . $this->pdfEsc($value) . ') Tj ET';
+        }
+        $c[] = '0.12 0.31 0.47 rg 330 280 242 22 re f';
+        $c[] = 'BT /F1 9 Tf 1 1 1 rg 338 288 Td (Total) Tj ET';
+        $c[] = 'BT /F1 9 Tf 1 1 1 rg 500 288 Td ($' . $this->pdfEsc(number_format((float) ($cotizacion['total'] ?? 0), 0, ',', '.')) . ') Tj ET';
+
+        $c[] = 'BT /F1 10 Tf 0.12 0.31 0.47 rg 40 258 Td (Observaciones) Tj ET';
+        $c[] = '0.97 0.98 0.99 rg 40 210 532 40 re f';
+        $c[] = '0.12 0.31 0.47 RG 2 w 40 210 m 40 250 l S';
+        $c[] = 'BT /F1 8 Tf 0 0 0 rg 50 236 Td (' . $this->pdfEsc((string) ($cotizacion['observaciones'] ?? '')) . ') Tj ET';
+
+        $c[] = 'BT /F1 10 Tf 0.12 0.31 0.47 rg 40 190 Td (Terminos y condiciones) Tj ET';
+        $ty = 176;
+        foreach (preg_split('/\\r\\n|\\r|\\n/', trim((string) ($cotizacion['terminos_condiciones'] ?? ''))) as $term) {
+            if (trim($term) === '' || $ty < 110) {
+                continue;
+            }
+            $c[] = 'BT /F1 8 Tf 0 0 0 rg 46 ' . $ty . ' Td (- ' . $this->pdfEsc(trim($term)) . ') Tj ET';
+            $ty -= 12;
+        }
+
+        $c[] = '0.3 0.35 0.4 RG 1 w 70 78 m 260 78 l S';
+        $c[] = '0.3 0.35 0.4 RG 1 w 350 78 m 540 78 l S';
+        $c[] = 'BT /F1 9 Tf 0 0 0 rg 130 66 Td (' . $this->pdfEsc((string) ($cotizacion['vendedor'] ?? '')) . ') Tj ET';
+        $c[] = 'BT /F1 8 Tf 0 0 0 rg 130 54 Td (Ejecutivo Comercial) Tj ET';
+        $c[] = 'BT /F1 9 Tf 0 0 0 rg 420 66 Td (' . $this->pdfEsc((string) ($cotizacion['cliente'] ?? '')) . ') Tj ET';
+        $c[] = 'BT /F1 8 Tf 0 0 0 rg 410 54 Td (Aceptacion cliente) Tj ET';
+        $c[] = 'BT /F1 7 Tf 0.4 0.45 0.5 rg 210 36 Td (Documento generado automaticamente por el sistema de cotizaciones.) Tj ET';
+
+        return $this->crearPdfTexto($c);
     }
 
-    private function crearPdfTexto(array $lineas): string
+    private function crearPdfTexto(array $comandos): string
     {
-        $escapar = static function (string $texto): string {
-            $t = iconv('UTF-8', 'Windows-1252//TRANSLIT//IGNORE', $texto) ?: $texto;
-            $t = str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $t);
-            return preg_replace('/[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F]/', '', $t) ?? '';
-        };
-
-        $contenido = "BT\n/F1 10 Tf\n50 760 Td\n";
-        $primera = true;
-        foreach ($lineas as $linea) {
-            if (!$primera) {
-                $contenido .= "0 -14 Td\n";
-            }
-            $primera = false;
-            $contenido .= '(' . $escapar((string) $linea) . ") Tj\n";
-        }
-        $contenido .= "ET";
+        $contenido = implode("\n", $comandos);
 
         $objetos = [];
         $objetos[] = "1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj";
@@ -447,6 +498,13 @@ class CotizacionesControlador extends Controlador
         $pdf .= "startxref\n" . $xref . "\n%%EOF";
 
         return $pdf;
+    }
+
+    private function pdfEsc(string $texto): string
+    {
+        $t = iconv('UTF-8', 'Windows-1252//TRANSLIT//IGNORE', $texto) ?: $texto;
+        $t = str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $t);
+        return preg_replace('/[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F]/', '', $t) ?? '';
     }
 
     public function eliminar(int $id): void
