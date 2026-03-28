@@ -61,7 +61,20 @@ class Cotizacion extends Modelo
 
     public function obtenerPorId(int $empresaId, int $id): ?array
     {
-        $stmt = $this->db->prepare('SELECT c.*, cl.nombre AS cliente FROM cotizaciones c INNER JOIN clientes cl ON cl.id = c.cliente_id WHERE c.empresa_id=:empresa_id AND c.id=:id AND c.fecha_eliminacion IS NULL LIMIT 1');
+        $stmt = $this->db->prepare('SELECT c.*,
+                cl.nombre AS cliente,
+                cl.razon_social AS cliente_razon_social,
+                cl.identificador_fiscal AS cliente_identificador_fiscal,
+                cl.correo AS cliente_correo,
+                cl.telefono AS cliente_telefono,
+                cl.direccion AS cliente_direccion,
+                cl.ciudad AS cliente_ciudad,
+                u.nombre AS vendedor
+            FROM cotizaciones c
+            INNER JOIN clientes cl ON cl.id = c.cliente_id
+            INNER JOIN usuarios u ON u.id = c.usuario_id
+            WHERE c.empresa_id=:empresa_id AND c.id=:id AND c.fecha_eliminacion IS NULL
+            LIMIT 1');
         $stmt->execute(['empresa_id' => $empresaId, 'id' => $id]);
         $cotizacion = $stmt->fetch() ?: null;
         if (!$cotizacion) {
