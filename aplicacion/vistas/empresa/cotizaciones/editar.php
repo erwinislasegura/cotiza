@@ -94,7 +94,7 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
                     <thead>
                     <tr>
                         <th style="min-width: 220px;">Producto / Servicio</th>
-                        <th style="min-width: 180px;">Descripción</th>
+                        <th style="min-width: 180px;">Detalle</th>
                         <th>Cantidad</th>
                         <th>Precio</th>
                         <th>Descuento</th>
@@ -113,7 +113,7 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
                                     <select class="form-select js-producto" name="producto_id[]">
                                         <option value="">Seleccionar</option>
                                         <?php foreach ($productos as $p): ?>
-                                            <option value="<?= $p['id'] ?>" <?= (int) ($item['producto_id'] ?? 0) === (int) $p['id'] ? 'selected' : '' ?>><?= e($p['nombre']) ?></option>
+                                            <option value="<?= $p['id'] ?>" data-nombre="<?= e($p['nombre']) ?>" data-descripcion="<?= e($p['descripcion'] ?? '') ?>" <?= (int) ($item['producto_id'] ?? 0) === (int) $p['id'] ? 'selected' : '' ?>><?= e($p['nombre']) ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                     <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalProducto">+</button>
@@ -176,6 +176,10 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
         <button class="btn btn-primary btn-sm" name="accion" value="guardar"<?= $puedeGuardar ? '' : ' disabled' ?>>Guardar sin salir</button>
         <button class="btn btn-success btn-sm" name="accion" value="guardar_salir"<?= $puedeGuardar ? '' : ' disabled' ?>>Guardar y salir</button>
         <a class="btn btn-outline-dark btn-sm" href="<?= e(url('/app/cotizaciones/pdf/' . $cotizacion['id'])) ?>">Descargar PDF</a>
+        <form method="POST" action="<?= e(url('/app/cotizaciones/enviar/' . $cotizacion['id'])) ?>" class="d-inline">
+            <?= csrf_campo() ?>
+            <button class="btn btn-warning btn-sm" type="submit">Enviar al cliente</button>
+        </form>
         <a href="<?= e(url('/app/cotizaciones')) ?>" class="btn btn-outline-secondary btn-sm">Cancelar</a>
     </div>
 </form>
@@ -187,13 +191,13 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
                 <select class="form-select js-producto" name="producto_id[]">
                     <option value="">Seleccionar</option>
                     <?php foreach ($productos as $p): ?>
-                        <option value="<?= $p['id'] ?>"><?= e($p['nombre']) ?></option>
+                        <option value="<?= $p['id'] ?>" data-nombre="<?= e($p['nombre']) ?>" data-descripcion="<?= e($p['descripcion'] ?? '') ?>"><?= e($p['nombre']) ?></option>
                     <?php endforeach; ?>
                 </select>
                 <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalProducto">+</button>
             </div>
         </td>
-        <td><input class="form-control form-control-sm" name="descripcion_item[]" placeholder="Descripción"></td>
+        <td><input class="form-control form-control-sm" name="descripcion_item[]" placeholder="Detalle del producto o servicio"></td>
         <td><input class="form-control form-control-sm js-cantidad" type="number" step="0.01" min="0" name="cantidad[]" value="1"></td>
         <td><input class="form-control form-control-sm js-precio" type="number" step="0.01" min="0" name="precio_unitario[]" value="0"></td>
         <td>
@@ -261,8 +265,14 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
         });
         fila.querySelectorAll('input, select').forEach((c) => { c.addEventListener('input', recalcular); c.addEventListener('change', recalcular); });
         const selectProducto = fila.querySelector('.js-producto');
+        const inputDescripcion = fila.querySelector('[name="descripcion_item[]"]');
         if (selectProducto) {
             selectProducto.addEventListener('change', async () => {
+                const opcion = selectProducto.options[selectProducto.selectedIndex];
+                const detalleProducto = opcion?.dataset?.descripcion || opcion?.dataset?.nombre || '';
+                if (inputDescripcion && inputDescripcion.value.trim() === '') {
+                    inputDescripcion.value = detalleProducto;
+                }
                 await autocompletarPrecioDesdeLista(fila, true);
                 recalcular();
             });
