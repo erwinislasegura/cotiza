@@ -58,6 +58,7 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
                         <option value="<?= (int) $lista['id'] ?>" <?= $listaPrecioIdSeleccionada === (int) $lista['id'] ? 'selected' : '' ?>><?= e($lista['nombre']) ?></option>
                     <?php endforeach; ?>
                 </select>
+                <div class="form-text" id="indicador_lista_estado">Selecciona cliente/productos para calcular la lista.</div>
             </div>
 
             <div class="col-md-3">
@@ -230,11 +231,28 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
     const btnAgregar = document.getElementById('btn-agregar-linea');
 
     function fmt(v) { return '$' + (Math.round((v + Number.EPSILON) * 100) / 100).toFixed(2); }
+    function actualizarIndicadorLista() {
+        const indicador = document.getElementById('indicador_lista_estado');
+        if (!indicador) { return; }
+        const filas = Array.from(cuerpo.querySelectorAll('tr'));
+        if (filas.length === 0) {
+            indicador.innerHTML = 'Sin líneas para validar lista de precios.';
+            return;
+        }
+        const aplicadas = filas.filter((fila) => fila.dataset.listaAplicada === 'si').length;
+        if (aplicadas > 0) {
+            indicador.innerHTML = `<span style="color:#3f8f62;">Lista aplicada en ${aplicadas} de ${filas.length} líneas.</span>`;
+            return;
+        }
+        indicador.innerHTML = '<span class="text-muted">La lista no aplica a las líneas actuales.</span>';
+    }
     function renderInfoLista(fila, data = null) {
         const celda = fila.querySelector('.js-lista-ajuste');
         if (!celda) { return; }
         if (!data) {
+            fila.dataset.listaAplicada = 'no';
             celda.innerHTML = '<span class="text-muted">No aplica lista de precios.</span>';
+            actualizarIndicadorLista();
             return;
         }
 
@@ -247,12 +265,16 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
         const montoAjuste = Math.abs(precioFinal - precioBase);
 
         if (!tieneLista) {
+            fila.dataset.listaAplicada = 'no';
             celda.innerHTML = '<span class="text-muted">Sin lista para este cliente/canal.</span>';
+            actualizarIndicadorLista();
             return;
         }
 
         if (porcentaje <= 0) {
+            fila.dataset.listaAplicada = 'si';
             celda.innerHTML = `<span class="badge text-bg-secondary mb-1">${nombreLista}</span><div>Lista seleccionada sin ajuste activo.</div>`;
+            actualizarIndicadorLista();
             return;
         }
 
@@ -261,7 +283,9 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
         const signo = esDescuento ? '-' : '+';
         const colorSuave = esDescuento ? 'style="color:#3f8f62;"' : '';
         const etiqueta = esDescuento ? 'Descuento aplicado' : 'Incremento aplicado';
+        fila.dataset.listaAplicada = 'si';
         celda.innerHTML = `<span class="badge ${tipoBadge} mb-1">${nombreLista}</span><div ${colorSuave}><strong>${etiqueta}</strong>: ${signo}${porcentaje.toFixed(2)}% (${signo}${fmt(montoAjuste)})</div><div>Base ${fmt(precioBase)} → Final ${fmt(precioFinal)}</div>`;
+        actualizarIndicadorLista();
     }
     async function autocompletarPrecioDesdeLista(fila, forzar = false) {
         const selectProducto = fila.querySelector('.js-producto');
@@ -350,17 +374,20 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
         document.getElementById('resumen_total').textContent = fmt(Math.max(0, baseTotal - descTotal));
     }
     function agregarFila() { const fila = template.content.firstElementChild.cloneNode(true); bindFila(fila); cuerpo.appendChild(fila); }
+    async function aplicarListaATodasLineas(forzar = true) {
+        const filas = Array.from(cuerpo.querySelectorAll('tr'));
+        await Promise.all(filas.map((fila) => autocompletarPrecioDesdeLista(fila, forzar)));
+        recalcular();
+        actualizarIndicadorLista();
+    }
     if (cuerpo.querySelectorAll('tr').length === 0) { agregarFila(); }
-    cuerpo.querySelectorAll('tr').forEach((fila) => {
-        bindFila(fila);
-        autocompletarPrecioDesdeLista(fila, true);
-    });
+    cuerpo.querySelectorAll('tr').forEach((fila) => { bindFila(fila); });
     btnAgregar.addEventListener('click', () => { agregarFila(); recalcular(); });
     document.getElementById('descuento_tipo_total').addEventListener('change', recalcular);
     document.getElementById('descuento_total').addEventListener('input', recalcular);
-    document.querySelector('[name="cliente_id"]')?.addEventListener('change', () => { cuerpo.querySelectorAll('tr').forEach((fila) => autocompletarPrecioDesdeLista(fila, true)); recalcular(); });
-    document.getElementById('canal_venta')?.addEventListener('change', () => { cuerpo.querySelectorAll('tr').forEach((fila) => autocompletarPrecioDesdeLista(fila, true)); recalcular(); });
-    document.getElementById('lista_precio_id')?.addEventListener('change', () => { cuerpo.querySelectorAll('tr').forEach((fila) => autocompletarPrecioDesdeLista(fila, true)); recalcular(); });
-    recalcular();
+    document.querySelector('[name="cliente_id"]')?.addEventListener('change', () => { aplicarListaATodasLineas(true); });
+    document.getElementById('canal_venta')?.addEventListener('change', () => { aplicarListaATodasLineas(true); });
+    document.getElementById('lista_precio_id')?.addEventListener('change', () => { aplicarListaATodasLineas(true); });
+    aplicarListaATodasLineas(true);
 })();
 </script>
