@@ -14,14 +14,14 @@ class ServicioPreciosLista
         $this->db = BaseDatos::obtener();
     }
 
-    public function calcularPrecioProducto(int $empresaId, int $productoId, ?int $clienteId = null, ?string $canal = null, ?string $fecha = null): ?array
+    public function calcularPrecioProducto(int $empresaId, int $productoId, ?int $clienteId = null, ?string $canal = null, ?string $fecha = null, ?int $listaPrecioId = null): ?array
     {
         $producto = $this->obtenerProducto($empresaId, $productoId);
         if (!$producto) {
             return null;
         }
 
-        $lista = $this->resolverListaPrecio($empresaId, $clienteId, $canal, $fecha);
+        $lista = $this->resolverListaPrecio($empresaId, $clienteId, $canal, $fecha, $listaPrecioId);
         $regla = $lista ? $this->resolverRegla($empresaId, (int) $lista['id'], (int) $producto['id'], (int) ($producto['categoria_id'] ?? 0)) : null;
         if ($regla === null && $lista) {
             $regla = $this->resolverReglaDesdeCamposLista($lista);
@@ -56,9 +56,32 @@ class ServicioPreciosLista
         ];
     }
 
-    public function resolverListaPrecio(int $empresaId, ?int $clienteId = null, ?string $canal = null, ?string $fecha = null): ?array
+    public function resolverListaPrecio(int $empresaId, ?int $clienteId = null, ?string $canal = null, ?string $fecha = null, ?int $listaPrecioId = null): ?array
     {
+        if (!$this->tablaExiste('listas_precios')) {
+            return null;
+        }
+
         $fechaRef = $fecha ?: date('Y-m-d');
+
+        if ($listaPrecioId !== null && $listaPrecioId > 0) {
+            $stmtLista = $this->db->prepare('SELECT * FROM listas_precios
+                WHERE empresa_id = :empresa_id
+                  AND id = :id
+                  AND estado = "activo"
+                  AND (vigencia_desde IS NULL OR vigencia_desde <= :fecha_ref)
+                  AND (vigencia_hasta IS NULL OR vigencia_hasta >= :fecha_ref)
+                LIMIT 1');
+            $stmtLista->execute([
+                'empresa_id' => $empresaId,
+                'id' => $listaPrecioId,
+                'fecha_ref' => $fechaRef,
+            ]);
+            $listaManual = $stmtLista->fetch();
+            if ($listaManual) {
+                return $listaManual;
+            }
+        }
 
         if ($clienteId && $this->tablaExiste('clientes_listas_precios')) {
             $sqlCliente = 'SELECT lp.*
