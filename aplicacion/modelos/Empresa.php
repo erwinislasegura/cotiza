@@ -24,4 +24,55 @@ class Empresa extends Modelo
         $this->db->prepare($sql)->execute($data);
         return (int) $this->db->lastInsertId();
     }
+
+    public function obtenerConfiguracion(int $empresaId): ?array
+    {
+        $stmt = $this->db->prepare('SELECT * FROM empresas WHERE id = :id AND fecha_eliminacion IS NULL');
+        $stmt->execute(['id' => $empresaId]);
+        return $stmt->fetch() ?: null;
+    }
+
+    public function actualizarConfiguracion(int $empresaId, array $data): void
+    {
+        $sql = 'UPDATE empresas
+            SET
+                razon_social = :razon_social,
+                nombre_comercial = :nombre_comercial,
+                identificador_fiscal = :identificador_fiscal,
+                correo = :correo,
+                telefono = :telefono,
+                direccion = :direccion,
+                ciudad = :ciudad,
+                pais = :pais,
+                logo = :logo,
+                imap_host = :imap_host,
+                imap_port = :imap_port,
+                imap_encryption = :imap_encryption,
+                imap_usuario = :imap_usuario,
+                imap_password = :imap_password,
+                imap_remitente_correo = :imap_remitente_correo,
+                imap_remitente_nombre = :imap_remitente_nombre,
+                fecha_actualizacion = NOW()
+            WHERE id = :empresa_id AND fecha_eliminacion IS NULL';
+
+        $this->db->prepare($sql)->execute([
+            'empresa_id' => $empresaId,
+            'razon_social' => $data['razon_social'],
+            'nombre_comercial' => $data['nombre_comercial'],
+            'identificador_fiscal' => $data['identificador_fiscal'],
+            'correo' => $data['correo'],
+            'telefono' => $data['telefono'],
+            'direccion' => $data['direccion'],
+            'ciudad' => $data['ciudad'],
+            'pais' => $data['pais'],
+            'logo' => $data['logo'],
+            'imap_host' => $data['imap_host'],
+            'imap_port' => $data['imap_port'],
+            'imap_encryption' => $data['imap_encryption'],
+            'imap_usuario' => $data['imap_usuario'],
+            'imap_password' => $data['imap_password'],
+            'imap_remitente_correo' => $data['imap_remitente_correo'],
+            'imap_remitente_nombre' => $data['imap_remitente_nombre'],
+        ]);
+    }
 }
