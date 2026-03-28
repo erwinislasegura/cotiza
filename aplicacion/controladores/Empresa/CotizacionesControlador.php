@@ -522,7 +522,16 @@ HTML;
             }
             $c[] = '0.86 0.89 0.92 RG 0.5 w 40 ' . ($y - 2) . ' 532 20 re S';
             $c[] = 'BT /F1 8 Tf 0 0 0 rg 44 ' . ($y + 6) . ' Td (' . $this->pdfEsc((string) ($item['codigo'] ?? ('ITM-' . (string) ($item['id'] ?? '')))) . ') Tj ET';
-            $c[] = 'BT /F1 8 Tf 0 0 0 rg 100 ' . ($y + 6) . ' Td (' . $this->pdfEsc((string) ($item['descripcion'] ?? '')) . ') Tj ET';
+            $nombreProducto = trim((string) ($item['producto_nombre'] ?? ''));
+            $detalleItem = trim((string) ($item['descripcion'] ?? ''));
+            if ($nombreProducto !== '' && $detalleItem !== '') {
+                $detallePdf = $nombreProducto . ' - ' . $detalleItem;
+            } elseif ($nombreProducto !== '') {
+                $detallePdf = $nombreProducto;
+            } else {
+                $detallePdf = $detalleItem;
+            }
+            $c[] = 'BT /F1 8 Tf 0 0 0 rg 100 ' . ($y + 6) . ' Td (' . $this->pdfEsc($detallePdf) . ') Tj ET';
             $c[] = 'BT /F1 8 Tf 0 0 0 rg 348 ' . ($y + 6) . ' Td (' . $this->pdfEsc(number_format((float) ($item['cantidad'] ?? 0), 2)) . ') Tj ET';
             $c[] = 'BT /F1 8 Tf 0 0 0 rg 392 ' . ($y + 6) . ' Td (' . $this->pdfEsc((string) ($item['unidad'] ?? 'Unidad')) . ') Tj ET';
             $c[] = 'BT /F1 8 Tf 0 0 0 rg 452 ' . ($y + 6) . ' Td ($' . $this->pdfEsc(number_format((float) ($item['precio_unitario'] ?? 0), 0, ',', '.')) . ') Tj ET';

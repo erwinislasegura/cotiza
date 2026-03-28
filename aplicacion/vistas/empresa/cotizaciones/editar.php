@@ -97,6 +97,7 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
                         <th style="min-width: 180px;">Detalle</th>
                         <th>Cantidad</th>
                         <th>Precio</th>
+                        <th style="min-width: 230px;">Lista / ajuste</th>
                         <th>Descuento</th>
                         <th>IVA %</th>
                         <th class="text-end">Subtotal</th>
@@ -122,6 +123,7 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
                             <td><input class="form-control form-control-sm" name="descripcion_item[]" value="<?= e($item['descripcion'] ?? '') ?>"></td>
                             <td><input class="form-control form-control-sm js-cantidad" type="number" step="0.01" min="0" name="cantidad[]" value="<?= e((string) ($item['cantidad'] ?? 1)) ?>"></td>
                             <td><input class="form-control form-control-sm js-precio" type="number" step="0.01" min="0" name="precio_unitario[]" value="<?= e((string) ($item['precio_unitario'] ?? 0)) ?>"></td>
+                            <td class="small text-muted js-lista-ajuste">Sin validar lista</td>
                             <td>
                                 <div class="input-group input-group-sm">
                                     <select class="form-select js-descuento-tipo" name="descuento_tipo_item[]">
@@ -200,6 +202,7 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
         <td><input class="form-control form-control-sm" name="descripcion_item[]" placeholder="Detalle del producto o servicio"></td>
         <td><input class="form-control form-control-sm js-cantidad" type="number" step="0.01" min="0" name="cantidad[]" value="1"></td>
         <td><input class="form-control form-control-sm js-precio" type="number" step="0.01" min="0" name="precio_unitario[]" value="0"></td>
+        <td class="small text-muted js-lista-ajuste">Sin validar lista</td>
         <td>
             <div class="input-group input-group-sm">
                 <select class="form-select js-descuento-tipo" name="descuento_tipo_item[]">
@@ -227,17 +230,51 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
     const btnAgregar = document.getElementById('btn-agregar-linea');
 
     function fmt(v) { return '$' + (Math.round((v + Number.EPSILON) * 100) / 100).toFixed(2); }
+    function renderInfoLista(fila, data = null) {
+        const celda = fila.querySelector('.js-lista-ajuste');
+        if (!celda) { return; }
+        if (!data) {
+            celda.innerHTML = '<span class="text-muted">No aplica lista de precios.</span>';
+            return;
+        }
+
+        const nombreLista = data.lista_precio_nombre || 'Lista automática';
+        const tieneLista = !!data.lista_precio_id;
+        const porcentaje = parseFloat(data.ajuste_porcentaje || '0');
+        const tipo = data.ajuste_tipo === 'descuento' ? 'descuento' : 'incremento';
+        const precioBase = parseFloat(data.precio_base || '0');
+        const precioFinal = parseFloat(data.precio_final || '0');
+        const montoAjuste = Math.abs(precioFinal - precioBase);
+
+        if (!tieneLista) {
+            celda.innerHTML = '<span class="text-muted">Sin lista para este cliente/canal.</span>';
+            return;
+        }
+
+        if (porcentaje <= 0) {
+            celda.innerHTML = `<span class="badge text-bg-secondary mb-1">${nombreLista}</span><div>Lista seleccionada sin ajuste activo.</div>`;
+            return;
+        }
+
+        const tipoBadge = tipo === 'descuento' ? 'text-bg-success' : 'text-bg-warning';
+        const signo = tipo === 'descuento' ? '-' : '+';
+        celda.innerHTML = `<span class="badge ${tipoBadge} mb-1">${nombreLista}</span><div>${tipo} ${signo}${porcentaje.toFixed(2)}%</div><div>Base ${fmt(precioBase)} → Final ${fmt(precioFinal)}</div><div>Monto ajustado: ${fmt(montoAjuste)}</div>`;
+    }
     async function autocompletarPrecioDesdeLista(fila, forzar = false) {
         const selectProducto = fila.querySelector('.js-producto');
         const clienteId = document.querySelector('[name="cliente_id"]')?.value || '';
         const canal = document.getElementById('canal_venta')?.value || '';
         const listaPrecioId = document.getElementById('lista_precio_id')?.value || '';
-        if (!selectProducto || !selectProducto.value || !clienteId) { return; }
+        if (!selectProducto || !selectProducto.value || !clienteId) {
+            renderInfoLista(fila, null);
+            return;
+        }
         try {
             const params = new URLSearchParams({ producto_id: selectProducto.value, cliente_id: clienteId, canal: canal, lista_precio_id: listaPrecioId });
             const resp = await fetch('<?= e(url('/app/listas-precios/precio-producto')) ?>?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
             const data = await resp.json();
             if (data.ok && data.data && typeof data.data.precio_final !== 'undefined') {
+                renderInfoLista(fila, data.data);
                 const inputPrecio = fila.querySelector('.js-precio');
                 const selectDescuento = fila.querySelector('.js-descuento-tipo');
                 const inputDescuento = fila.querySelector('.js-descuento-valor');
@@ -256,8 +293,12 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
                         }
                     }
                 }
+            } else {
+                renderInfoLista(fila, null);
             }
-        } catch (e) { }
+        } catch (e) {
+            renderInfoLista(fila, null);
+        }
     }
     function bindFila(fila) {
         fila.querySelector('.js-eliminar').addEventListener('click', () => {
