@@ -18,7 +18,8 @@ body { margin: 0; padding: 24px; background: #eef2f7; font-family: Arial, Helvet
 .doc h2 { margin: 0 0 8px 0; font-size: 30px; color: #1f4e79; letter-spacing: 1px; }
 .bloque { margin-bottom: 18px; }
 .bloque h3 { margin: 0 0 10px 0; font-size: 16px; color: #1f4e79; border-bottom: 1px solid #d8dee8; padding-bottom: 8px; }
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 28px; }
+.grid-2 { display: flex; flex-wrap: wrap; gap: 0; }
+.grid-2 .dato { width: 50%; padding: 0 14px 8px 0; }
 .dato { font-size: 14px; }
 .dato strong { color: #111827; }
 table { width: 100%; border-collapse: collapse; }
@@ -48,7 +49,7 @@ ul { margin: 8px 0 0 18px; padding: 0; font-size: 14px; line-height: 1.6; }
   .totales { width: 300px; }
   .tabla-items th, .tabla-items td { font-size: 11px; padding: 6px 5px; }
 }
-@media (max-width: 760px) { body { padding: 16px; } .hoja { padding: 22px; } .encabezado, .firmas, .grid-2 { grid-template-columns: 1fr; display: grid; } .doc { text-align: left; } .totales { width: 100%; } }
+@media (max-width: 760px) { body { padding: 16px; } .hoja { padding: 22px; } .encabezado, .firmas { grid-template-columns: 1fr; display: grid; } .grid-2 .dato { width: 100%; padding-right: 0; } .doc { text-align: left; } .totales { width: 100%; } }
 </style>
 
 <div class="no-print">
