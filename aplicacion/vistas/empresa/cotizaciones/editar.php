@@ -348,7 +348,10 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
     }
     function agregarFila() { const fila = template.content.firstElementChild.cloneNode(true); bindFila(fila); cuerpo.appendChild(fila); }
     if (cuerpo.querySelectorAll('tr').length === 0) { agregarFila(); }
-    cuerpo.querySelectorAll('tr').forEach(bindFila);
+    cuerpo.querySelectorAll('tr').forEach((fila) => {
+        bindFila(fila);
+        autocompletarPrecioDesdeLista(fila, true);
+    });
     btnAgregar.addEventListener('click', () => { agregarFila(); recalcular(); });
     document.getElementById('descuento_tipo_total').addEventListener('change', recalcular);
     document.getElementById('descuento_total').addEventListener('input', recalcular);

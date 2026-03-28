@@ -423,19 +423,15 @@ class CotizacionesControlador extends Controlador
             return [$precio, $descuentoTipo, $descuentoValor];
         }
 
-        $precioIngresado = $precio > 0;
-
         $usaDescuentoLista = ($precioCalculado['ajuste_tipo'] ?? '') === 'descuento' && (float) ($precioCalculado['ajuste_porcentaje'] ?? 0) > 0;
-        if ($usaDescuentoLista && !$precioIngresado) {
-            $precio = (float) $precioCalculado['precio_base'];
-        }
-        if ($usaDescuentoLista && $descuentoValor <= 0) {
+        if ($usaDescuentoLista) {
+            $precio = (float) ($precioCalculado['precio_base'] ?? 0);
             $descuentoTipo = 'porcentaje';
             $descuentoValor = (float) $precioCalculado['ajuste_porcentaje'];
-        }
-
-        if (!$usaDescuentoLista && !$precioIngresado) {
-            $precio = (float) $precioCalculado['precio_final'];
+        } else {
+            $precio = (float) ($precioCalculado['precio_final'] ?? 0);
+            $descuentoTipo = 'valor';
+            $descuentoValor = 0;
         }
 
         return [$precio, $descuentoTipo, $descuentoValor];
