@@ -2,6 +2,22 @@ SET NAMES utf8mb4;
 
 SET @db_name = DATABASE();
 
+CREATE TABLE IF NOT EXISTS listas_precios (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  empresa_id BIGINT UNSIGNED NOT NULL,
+  nombre VARCHAR(150) NOT NULL,
+  tipo_lista ENUM('general','cliente','canal','volumen') NOT NULL DEFAULT 'general',
+  moneda VARCHAR(12) NOT NULL DEFAULT 'USD',
+  vigencia_desde DATE NULL,
+  vigencia_hasta DATE NULL,
+  estado ENUM('activo','inactivo') NOT NULL DEFAULT 'activo',
+  reglas_base TEXT NULL,
+  fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  fecha_actualizacion DATETIME NULL,
+  INDEX idx_listas_empresa (empresa_id),
+  CONSTRAINT fk_listas_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id)
+);
+
 SET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=@db_name AND TABLE_NAME='listas_precios' AND COLUMN_NAME='canal_venta') = 0,
   'ALTER TABLE listas_precios ADD COLUMN canal_venta VARCHAR(80) NULL AFTER tipo_lista',
   'SELECT 1'); PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
