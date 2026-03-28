@@ -4,6 +4,7 @@ namespace Aplicacion\Controladores\Publico;
 
 use Aplicacion\Nucleo\Controlador;
 use Aplicacion\Modelos\Plan;
+use Aplicacion\Modelos\Cotizacion;
 use Aplicacion\Servicios\ServicioCorreo;
 
 class PublicoControlador extends Controlador
@@ -68,5 +69,45 @@ class PublicoControlador extends Controlador
             return;
         }
         $this->vista('publico/contratar', ['plan' => $plan], 'publico');
+    }
+
+    public function verCotizacionPublica(string $token): void
+    {
+        $cotizacion = (new Cotizacion())->obtenerPorTokenPublico($token);
+        if (!$cotizacion) {
+            http_response_code(404);
+            require __DIR__ . '/../../vistas/errores/404.php';
+            return;
+        }
+
+        $this->vista('publico/cotizacion_publica', compact('cotizacion', 'token'), 'publico');
+    }
+
+    public function registrarDecisionCotizacion(string $token): void
+    {
+        $cotizacion = (new Cotizacion())->obtenerPorTokenPublico($token);
+        if (!$cotizacion) {
+            http_response_code(404);
+            require __DIR__ . '/../../vistas/errores/404.php';
+            return;
+        }
+
+        $decision = $_POST['decision'] ?? '';
+        if (!in_array($decision, ['aprobada', 'rechazada'], true)) {
+            flash('danger', 'Decisión no válida.');
+            $this->redirigir('/cotizacion/publica/' . $token);
+        }
+
+        (new Cotizacion())->actualizarBasico((int) $cotizacion['empresa_id'], (int) $cotizacion['id'], [
+            'estado' => $decision,
+            'observaciones' => (string) ($cotizacion['observaciones'] ?? ''),
+            'terminos_condiciones' => (string) ($cotizacion['terminos_condiciones'] ?? ''),
+            'fecha_vencimiento' => (string) ($cotizacion['fecha_vencimiento'] ?? date('Y-m-d')),
+        ]);
+
+        flash('success', $decision === 'aprobada'
+            ? 'Has aceptado la cotización correctamente.'
+            : 'Has rechazado la cotización correctamente.');
+        $this->redirigir('/cotizacion/publica/' . $token);
     }
 }
