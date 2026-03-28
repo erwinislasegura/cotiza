@@ -1,0 +1,153 @@
+<?php
+$empresaNombre = trim((string) (($empresa['nombre_comercial'] ?? '') !== '' ? $empresa['nombre_comercial'] : ($empresa['razon_social'] ?? 'Comercial')));
+$clienteNombre = trim((string) (($cotizacion['cliente_razon_social'] ?? '') !== '' ? $cotizacion['cliente_razon_social'] : ($cotizacion['cliente'] ?? '')));
+$moneda = 'CLP';
+$descuentoTexto = (($cotizacion['descuento_tipo'] ?? 'valor') === 'porcentaje')
+    ? number_format((float) ($cotizacion['descuento_valor'] ?? 0), 2) . '%'
+    : '$' . number_format((float) ($cotizacion['descuento'] ?? 0), 0, ',', '.');
+$neto = max(0, (float) ($cotizacion['subtotal'] ?? 0) - (float) ($cotizacion['descuento'] ?? 0));
+?>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; padding: 32px; background: #eef2f7; font-family: Arial, Helvetica, sans-serif; color: #1f2937; }
+.hoja { max-width: 980px; margin: 0 auto; background: #fff; padding: 38px; box-shadow: 0 8px 30px rgba(0,0,0,.08); border-radius: 8px; }
+.encabezado { display: flex; justify-content: space-between; gap: 24px; border-bottom: 2px solid #1f4e79; padding-bottom: 18px; margin-bottom: 24px; }
+.empresa h1 { margin: 0 0 8px 0; color: #1f4e79; font-size: 28px; }
+.empresa p, .doc p { margin: 4px 0; font-size: 14px; }
+.doc { text-align: right; }
+.doc h2 { margin: 0 0 8px 0; font-size: 30px; color: #1f4e79; letter-spacing: 1px; }
+.bloque { margin-bottom: 24px; }
+.bloque h3 { margin: 0 0 10px 0; font-size: 16px; color: #1f4e79; border-bottom: 1px solid #d8dee8; padding-bottom: 8px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 28px; }
+.dato { font-size: 14px; }
+.dato strong { color: #111827; }
+table { width: 100%; border-collapse: collapse; }
+.tabla-items th { background: #1f4e79; color: white; font-weight: 600; font-size: 13px; padding: 10px 8px; text-align: left; }
+.tabla-items td { border: 1px solid #dbe2ea; padding: 10px 8px; font-size: 13px; vertical-align: top; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.totales { width: 380px; margin-left: auto; margin-top: 16px; }
+.totales td { border: 1px solid #dbe2ea; padding: 10px 12px; font-size: 14px; }
+.totales .label { background: #f8fafc; font-weight: 700; }
+.totales .final td { background: #1f4e79; color: white; font-weight: 700; font-size: 15px; }
+.nota { background: #f8fafc; border-left: 4px solid #1f4e79; padding: 12px 14px; font-size: 14px; line-height: 1.5; }
+ul { margin: 8px 0 0 18px; padding: 0; font-size: 14px; line-height: 1.6; }
+.firmas { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 44px; }
+.firma { text-align: center; padding-top: 34px; }
+.linea { border-top: 1px solid #4b5563; margin-bottom: 8px; }
+.pie { margin-top: 24px; border-top: 1px solid #dbe2ea; padding-top: 10px; font-size: 12px; color: #6b7280; text-align: center; }
+.no-print { margin: 0 auto 16px; max-width: 980px; display: flex; gap: 8px; }
+@media print { .no-print { display: none !important; } body { padding: 0; background: #fff; } .hoja { box-shadow: none; border-radius: 0; } }
+@media (max-width: 820px) { body { padding: 16px; } .hoja { padding: 22px; } .encabezado, .firmas, .grid-2 { grid-template-columns: 1fr; display: grid; } .doc { text-align: left; } .totales { width: 100%; } }
+</style>
+
+<div class="no-print">
+  <button class="btn btn-dark btn-sm" type="button" onclick="window.print()">Imprimir / Guardar PDF</button>
+  <a class="btn btn-outline-dark btn-sm" href="<?= e(url('/app/cotizaciones/pdf/' . $cotizacion['id'])) ?>">Descargar PDF</a>
+  <a class="btn btn-outline-secondary btn-sm" href="<?= e(url('/app/cotizaciones/ver/' . $cotizacion['id'])) ?>">Volver</a>
+</div>
+
+<div class="hoja">
+  <div class="encabezado">
+    <div class="empresa">
+      <h1><?= e($empresaNombre) ?></h1>
+      <p><strong>RUT:</strong> <?= e($empresa['identificador_fiscal'] ?? '') ?></p>
+      <p><?= e(trim((string) (($empresa['direccion'] ?? '') . ', ' . ($empresa['ciudad'] ?? ''))) ) ?></p>
+      <p><strong>Teléfono:</strong> <?= e($empresa['telefono'] ?? '') ?></p>
+      <p><strong>Correo:</strong> <?= e($empresa['correo'] ?? '') ?></p>
+      <p><strong>Web:</strong> <?= e($empresa['sitio_web'] ?? '') ?></p>
+    </div>
+    <div class="doc">
+      <h2>COTIZACIÓN</h2>
+      <p><strong>N°:</strong> <?= e($cotizacion['numero'] ?? '') ?></p>
+      <p><strong>Fecha:</strong> <?= e($cotizacion['fecha_emision'] ?? '') ?></p>
+      <p><strong>Validez:</strong> <?= e($cotizacion['fecha_vencimiento'] ?? '') ?></p>
+    </div>
+  </div>
+
+  <div class="bloque">
+    <h3>Datos del cliente</h3>
+    <div class="grid-2">
+      <div class="dato"><strong>Cliente:</strong> <?= e($clienteNombre) ?></div>
+      <div class="dato"><strong>RUT:</strong> <?= e($cotizacion['cliente_identificador_fiscal'] ?? '') ?></div>
+      <div class="dato"><strong>Contacto:</strong> <?= e($cotizacion['cliente'] ?? '') ?></div>
+      <div class="dato"><strong>Correo:</strong> <?= e($cotizacion['cliente_correo'] ?? '') ?></div>
+      <div class="dato"><strong>Teléfono:</strong> <?= e($cotizacion['cliente_telefono'] ?? '') ?></div>
+      <div class="dato"><strong>Dirección:</strong> <?= e(trim((string) (($cotizacion['cliente_direccion'] ?? '') . ', ' . ($cotizacion['cliente_ciudad'] ?? ''))) ) ?></div>
+    </div>
+  </div>
+
+  <div class="bloque">
+    <h3>Detalle de la cotización</h3>
+    <div class="grid-2" style="margin-bottom: 14px;">
+      <div class="dato"><strong>Vendedor:</strong> <?= e($cotizacion['vendedor'] ?? '') ?></div>
+      <div class="dato"><strong>Moneda:</strong> <?= e($moneda) ?></div>
+      <div class="dato"><strong>Forma de pago:</strong> <?= e($cotizacion['forma_pago'] ?? 'Según acuerdo comercial') ?></div>
+      <div class="dato"><strong>Plazo de entrega:</strong> <?= e($cotizacion['plazo_entrega'] ?? 'Según disponibilidad') ?></div>
+    </div>
+
+    <table class="tabla-items">
+      <thead>
+        <tr>
+          <th style="width: 90px;">Código</th>
+          <th>Descripción</th>
+          <th style="width: 80px;" class="text-center">Cant.</th>
+          <th style="width: 90px;" class="text-center">Unidad</th>
+          <th style="width: 130px;" class="text-right">P. Unitario</th>
+          <th style="width: 130px;" class="text-right">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach (($cotizacion['items'] ?? []) as $it): ?>
+          <tr>
+            <td><?= e($it['codigo'] ?? ('ITM-' . (string) ($it['id'] ?? ''))) ?></td>
+            <td><?= e($it['descripcion'] ?? '') ?></td>
+            <td class="text-center"><?= number_format((float) ($it['cantidad'] ?? 0), 2) ?></td>
+            <td class="text-center"><?= e($it['unidad'] ?? 'Unidad') ?></td>
+            <td class="text-right">$<?= number_format((float) ($it['precio_unitario'] ?? 0), 0, ',', '.') ?></td>
+            <td class="text-right">$<?= number_format((float) ($it['total'] ?? 0), 0, ',', '.') ?></td>
+          </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+
+    <table class="totales">
+      <tr><td class="label">Subtotal</td><td class="text-right">$<?= number_format((float) ($cotizacion['subtotal'] ?? 0), 0, ',', '.') ?></td></tr>
+      <tr><td class="label">Descuento</td><td class="text-right">- <?= e($descuentoTexto) ?></td></tr>
+      <tr><td class="label">Neto</td><td class="text-right">$<?= number_format($neto, 0, ',', '.') ?></td></tr>
+      <tr><td class="label">IVA (19%)</td><td class="text-right">$<?= number_format((float) ($cotizacion['impuesto'] ?? 0), 0, ',', '.') ?></td></tr>
+      <tr class="final"><td>Total</td><td class="text-right">$<?= number_format((float) ($cotizacion['total'] ?? 0), 0, ',', '.') ?></td></tr>
+    </table>
+  </div>
+
+  <div class="bloque">
+    <h3>Observaciones</h3>
+    <div class="nota"><?= nl2br(e($cotizacion['observaciones'] ?? '')) ?></div>
+  </div>
+
+  <div class="bloque">
+    <h3>Términos y condiciones</h3>
+    <ul>
+      <?php foreach (preg_split('/\r\n|\r|\n/', trim((string) ($cotizacion['terminos_condiciones'] ?? ''))) as $termino): ?>
+        <?php if (trim($termino) !== ''): ?>
+          <li><?= e($termino) ?></li>
+        <?php endif; ?>
+      <?php endforeach; ?>
+    </ul>
+  </div>
+
+  <div class="firmas">
+    <div class="firma"><div class="linea"></div><strong><?= e($cotizacion['vendedor'] ?? '') ?></strong><br>Ejecutivo Comercial</div>
+    <div class="firma"><div class="linea"></div><strong><?= e($cotizacion['cliente'] ?? '') ?></strong><br>Aceptación cliente</div>
+  </div>
+
+  <div class="pie">Documento generado automáticamente por el sistema de cotizaciones.</div>
+</div>
+
+<?php if (!empty($autoDescargarPdf)): ?>
+<script>
+window.addEventListener('load', () => {
+  setTimeout(() => window.print(), 250);
+});
+</script>
+<?php endif; ?>
