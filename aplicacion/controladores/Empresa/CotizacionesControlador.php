@@ -148,6 +148,7 @@ class CotizacionesControlador extends Controlador
             'total' => $total,
             'observaciones' => trim($_POST['observaciones'] ?? ''),
             'terminos_condiciones' => trim($_POST['terminos_condiciones'] ?? ''),
+            'lista_precio_id' => $listaPrecioId,
             'fecha_emision' => $_POST['fecha_emision'] ?? date('Y-m-d'),
             'fecha_vencimiento' => $_POST['fecha_vencimiento'] ?? date('Y-m-d', strtotime('+15 days')),
         ], $items);
@@ -183,7 +184,7 @@ class CotizacionesControlador extends Controlador
             (int) ($cotizacion['cliente_id'] ?? 0) ?: null,
             null,
             date('Y-m-d'),
-            $listaPrecioId
+            $listaPrecioId ?: ((int) ($cotizacion['lista_precio_id'] ?? 0) ?: null)
         );
         $listasPrecios = (new GestionComercial())->listarListasPreciosActivas($empresaId);
         $this->vista('empresa/cotizaciones/imprimir', compact('cotizacion', 'empresa', 'listaAplicada', 'listasPrecios'), 'impresion');
@@ -210,7 +211,13 @@ class CotizacionesControlador extends Controlador
         $clientes = (new Cliente())->listar($empresaId);
         $productos = (new Producto())->listar($empresaId);
         $listasPrecios = (new GestionComercial())->listarListasPreciosActivas($empresaId);
-        $listaPrecioSeleccionada = (new ServicioPreciosLista())->resolverListaPrecio($empresaId, (int) $cotizacion['cliente_id'], null, date('Y-m-d'));
+        $listaPrecioSeleccionada = (new ServicioPreciosLista())->resolverListaPrecio(
+            $empresaId,
+            (int) $cotizacion['cliente_id'],
+            null,
+            date('Y-m-d'),
+            (int) ($cotizacion['lista_precio_id'] ?? 0) ?: null
+        );
         $this->vista('empresa/cotizaciones/editar', compact('cotizacion', 'clientes', 'productos', 'listasPrecios', 'listaPrecioSeleccionada'), 'empresa');
     }
 
@@ -396,6 +403,7 @@ class CotizacionesControlador extends Controlador
             'total' => $total,
             'observaciones' => trim($_POST['observaciones'] ?? ''),
             'terminos_condiciones' => trim($_POST['terminos_condiciones'] ?? ''),
+            'lista_precio_id' => $listaPrecioId,
             'fecha_emision' => $_POST['fecha_emision'] ?? date('Y-m-d'),
             'fecha_vencimiento' => $_POST['fecha_vencimiento'] ?? date('Y-m-d'),
         ], $items);

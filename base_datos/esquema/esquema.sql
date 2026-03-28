@@ -253,6 +253,7 @@ CREATE TABLE cotizaciones (
   total DECIMAL(12,2) NOT NULL,
   observaciones TEXT NULL,
   terminos_condiciones TEXT NULL,
+  lista_precio_id BIGINT UNSIGNED NULL,
   token_publico CHAR(64) NULL,
   fecha_emision DATE NOT NULL,
   fecha_vencimiento DATE NOT NULL,
