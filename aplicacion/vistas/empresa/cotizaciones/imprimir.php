@@ -9,14 +9,14 @@ $neto = max(0, (float) ($cotizacion['subtotal'] ?? 0) - (float) ($cotizacion['de
 ?>
 <style>
 * { box-sizing: border-box; }
-body { margin: 0; padding: 32px; background: #eef2f7; font-family: Arial, Helvetica, sans-serif; color: #1f2937; }
-.hoja { max-width: 980px; margin: 0 auto; background: #fff; padding: 38px; box-shadow: 0 8px 30px rgba(0,0,0,.08); border-radius: 8px; }
+body { margin: 0; padding: 24px; background: #eef2f7; font-family: Arial, Helvetica, sans-serif; color: #1f2937; }
+.hoja { max-width: 860px; margin: 0 auto; background: #fff; padding: 28px; box-shadow: 0 8px 24px rgba(0,0,0,.08); border-radius: 8px; }
 .encabezado { display: flex; justify-content: space-between; gap: 24px; border-bottom: 2px solid #1f4e79; padding-bottom: 18px; margin-bottom: 24px; }
 .empresa h1 { margin: 0 0 8px 0; color: #1f4e79; font-size: 28px; }
 .empresa p, .doc p { margin: 4px 0; font-size: 14px; }
 .doc { text-align: right; }
 .doc h2 { margin: 0 0 8px 0; font-size: 30px; color: #1f4e79; letter-spacing: 1px; }
-.bloque { margin-bottom: 24px; }
+.bloque { margin-bottom: 18px; }
 .bloque h3 { margin: 0 0 10px 0; font-size: 16px; color: #1f4e79; border-bottom: 1px solid #d8dee8; padding-bottom: 8px; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 28px; }
 .dato { font-size: 14px; }
@@ -26,19 +26,29 @@ table { width: 100%; border-collapse: collapse; }
 .tabla-items td { border: 1px solid #dbe2ea; padding: 10px 8px; font-size: 13px; vertical-align: top; }
 .text-center { text-align: center; }
 .text-right { text-align: right; }
-.totales { width: 380px; margin-left: auto; margin-top: 16px; }
+.totales { width: 320px; margin-left: auto; margin-top: 12px; }
 .totales td { border: 1px solid #dbe2ea; padding: 10px 12px; font-size: 14px; }
 .totales .label { background: #f8fafc; font-weight: 700; }
 .totales .final td { background: #1f4e79; color: white; font-weight: 700; font-size: 15px; }
 .nota { background: #f8fafc; border-left: 4px solid #1f4e79; padding: 12px 14px; font-size: 14px; line-height: 1.5; }
 ul { margin: 8px 0 0 18px; padding: 0; font-size: 14px; line-height: 1.6; }
-.firmas { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 44px; }
+.firmas { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 34px; }
 .firma { text-align: center; padding-top: 34px; }
 .linea { border-top: 1px solid #4b5563; margin-bottom: 8px; }
 .pie { margin-top: 24px; border-top: 1px solid #dbe2ea; padding-top: 10px; font-size: 12px; color: #6b7280; text-align: center; }
 .no-print { margin: 0 auto 16px; max-width: 980px; display: flex; gap: 8px; }
-@media print { .no-print { display: none !important; } body { padding: 0; background: #fff; } .hoja { box-shadow: none; border-radius: 0; } }
-@media (max-width: 820px) { body { padding: 16px; } .hoja { padding: 22px; } .encabezado, .firmas, .grid-2 { grid-template-columns: 1fr; display: grid; } .doc { text-align: left; } .totales { width: 100%; } }
+@page { size: letter; margin: 10mm; }
+@media print {
+  .no-print { display: none !important; }
+  html, body { width: 100%; height: auto; }
+  body { padding: 0; background: #fff; }
+  .hoja { max-width: none; width: 100%; box-shadow: none; border-radius: 0; padding: 8px; }
+  .encabezado { margin-bottom: 14px; padding-bottom: 10px; }
+  .bloque { margin-bottom: 14px; }
+  .totales { width: 300px; }
+  .tabla-items th, .tabla-items td { font-size: 11px; padding: 6px 5px; }
+}
+@media (max-width: 760px) { body { padding: 16px; } .hoja { padding: 22px; } .encabezado, .firmas, .grid-2 { grid-template-columns: 1fr; display: grid; } .doc { text-align: left; } .totales { width: 100%; } }
 </style>
 
 <div class="no-print">
