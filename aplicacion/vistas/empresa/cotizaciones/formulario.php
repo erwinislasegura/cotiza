@@ -58,6 +58,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
                         <option value="<?= (int) $lista['id'] ?>"><?= e($lista['nombre']) ?></option>
                     <?php endforeach; ?>
                 </select>
+                <div class="form-text" id="indicador_lista_estado">Selecciona cliente y producto para validar lista.</div>
             </div>
 
             <div class="col-md-3">
@@ -97,6 +98,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
                         <th style="min-width: 180px;">Descripción</th>
                         <th>Cantidad</th>
                         <th>Precio</th>
+                        <th style="min-width: 230px;">Lista / ajuste</th>
                         <th>Descuento</th>
                         <th>IVA %</th>
                         <th class="text-end">Subtotal</th>
@@ -157,15 +159,16 @@ $puedeGuardar = $hayClientes && $hayProductos;
                 <select class="form-select js-producto" name="producto_id[]">
                     <option value="">Seleccionar</option>
                     <?php foreach ($productos as $p): ?>
-                        <option value="<?= $p['id'] ?>"><?= e($p['nombre']) ?></option>
+                        <option value="<?= $p['id'] ?>" data-nombre="<?= e($p['nombre']) ?>" data-descripcion="<?= e($p['descripcion'] ?? '') ?>"><?= e($p['nombre']) ?></option>
                     <?php endforeach; ?>
                 </select>
                 <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalProducto">+</button>
             </div>
         </td>
-        <td><input class="form-control form-control-sm" name="descripcion_item[]" placeholder="Descripción"></td>
+        <td><input class="form-control form-control-sm" name="descripcion_item[]" placeholder="Detalle del producto o servicio"></td>
         <td><input class="form-control form-control-sm js-cantidad" type="number" step="0.01" min="0" name="cantidad[]" value="1"></td>
         <td><input class="form-control form-control-sm js-precio" type="number" step="0.01" min="0" name="precio_unitario[]" value="0"></td>
+        <td class="small text-muted js-lista-ajuste">Sin validar lista</td>
         <td>
             <div class="input-group input-group-sm">
                 <select class="form-select js-descuento-tipo" name="descuento_tipo_item[]">
@@ -252,6 +255,58 @@ $puedeGuardar = $hayClientes && $hayProductos;
         return '$' + (Math.round((valor + Number.EPSILON) * 100) / 100).toFixed(2);
     }
 
+    function actualizarIndicadorLista() {
+        const indicador = document.getElementById('indicador_lista_estado');
+        if (!indicador) { return; }
+        const filas = Array.from(cuerpo.querySelectorAll('tr'));
+        const aplicadas = filas.filter((fila) => fila.dataset.listaAplicada === 'si').length;
+        if (aplicadas > 0) {
+            indicador.innerHTML = `<span style="color:#3f8f62;">Se aplica descuento/lista en ${aplicadas} de ${filas.length} líneas.</span>`;
+            return;
+        }
+        indicador.innerHTML = '<span class="text-muted">La lista no aplica a las líneas actuales.</span>';
+    }
+
+    function renderInfoLista(fila, data = null) {
+        const celda = fila.querySelector('.js-lista-ajuste');
+        if (!celda) { return; }
+        if (!data) {
+            fila.dataset.listaAplicada = 'no';
+            celda.innerHTML = '<span class="text-muted">No aplica lista.</span>';
+            actualizarIndicadorLista();
+            return;
+        }
+
+        const nombreLista = data.lista_precio_nombre || 'Lista automática';
+        const porcentaje = parseFloat(data.ajuste_porcentaje || '0');
+        const tipo = data.ajuste_tipo === 'descuento' ? 'descuento' : 'incremento';
+        const precioBase = parseFloat(data.precio_base || '0');
+        const precioFinal = parseFloat(data.precio_final || '0');
+        const montoAjuste = Math.abs(precioFinal - precioBase);
+
+        if (!data.lista_precio_id) {
+            fila.dataset.listaAplicada = 'no';
+            celda.innerHTML = '<span class="text-muted">Sin lista para cliente/canal.</span>';
+            actualizarIndicadorLista();
+            return;
+        }
+
+        if (porcentaje <= 0) {
+            fila.dataset.listaAplicada = 'si';
+            celda.innerHTML = `<span class="badge text-bg-secondary mb-1">${nombreLista}</span><div>Lista activa sin ajuste.</div>`;
+            actualizarIndicadorLista();
+            return;
+        }
+
+        const esDescuento = tipo === 'descuento';
+        const colorSuave = esDescuento ? 'style="color:#3f8f62;"' : '';
+        const signo = esDescuento ? '-' : '+';
+        const etiqueta = esDescuento ? 'Descuento por lista' : 'Incremento por lista';
+        fila.dataset.listaAplicada = 'si';
+        celda.innerHTML = `<span class="badge ${esDescuento ? 'text-bg-success' : 'text-bg-warning'} mb-1">${nombreLista}</span><div ${colorSuave}><strong>${etiqueta}</strong>: ${signo}${porcentaje.toFixed(2)}% (${signo}${fmt(montoAjuste)})</div><div>Base ${fmt(precioBase)} → Final ${fmt(precioFinal)}</div>`;
+        actualizarIndicadorLista();
+    }
+
     async function autocompletarPrecioDesdeLista(fila, forzar = false) {
         const selectProducto = fila.querySelector('.js-producto');
         const clienteId = document.querySelector('[name="cliente_id"]')?.value || '';
@@ -259,6 +314,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
         const listaPrecioId = document.getElementById('lista_precio_id')?.value || '';
 
         if (!selectProducto || !selectProducto.value || !clienteId) {
+            renderInfoLista(fila, null);
             return;
         }
 
@@ -274,6 +330,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
             });
             const data = await resp.json();
             if (data.ok && data.data && typeof data.data.precio_final !== 'undefined') {
+                renderInfoLista(fila, data.data);
                 const inputPrecio = fila.querySelector('.js-precio');
                 const selectDescuento = fila.querySelector('.js-descuento-tipo');
                 const inputDescuento = fila.querySelector('.js-descuento-valor');
@@ -296,9 +353,12 @@ $puedeGuardar = $hayClientes && $hayProductos;
                         }
                     }
                 }
+            } else {
+                renderInfoLista(fila, null);
             }
         } catch (e) {
             // Ignorar para no interrumpir la cotización manual
+            renderInfoLista(fila, null);
         }
     }
 
@@ -341,6 +401,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
         document.getElementById('resumen_iva').textContent = fmt(iva);
         document.getElementById('resumen_descuento').textContent = fmt(descuentoTotal);
         document.getElementById('resumen_total').textContent = fmt(Math.max(0, baseTotal - descuentoTotal));
+        actualizarIndicadorLista();
     }
 
     function agregarFila() {
@@ -357,13 +418,26 @@ $puedeGuardar = $hayClientes && $hayProductos;
         });
 
         const selectProducto = fila.querySelector('.js-producto');
+        const inputDescripcion = fila.querySelector('[name="descripcion_item[]"]');
         if (selectProducto) {
             selectProducto.addEventListener('change', async () => {
+                const opcion = selectProducto.options[selectProducto.selectedIndex];
+                const detalleProducto = opcion?.dataset?.descripcion || opcion?.dataset?.nombre || '';
+                if (inputDescripcion && inputDescripcion.value.trim() === '') {
+                    inputDescripcion.value = detalleProducto;
+                }
                 await autocompletarPrecioDesdeLista(fila, true);
                 recalcular();
             });
         }
         cuerpo.appendChild(fila);
+    }
+
+    async function aplicarListaATodasLineas(forzar = true) {
+        const filas = Array.from(cuerpo.querySelectorAll('tr'));
+        await Promise.all(filas.map((fila) => autocompletarPrecioDesdeLista(fila, forzar)));
+        recalcular();
+        actualizarIndicadorLista();
     }
 
     btnAgregar.addEventListener('click', () => {
@@ -374,9 +448,9 @@ $puedeGuardar = $hayClientes && $hayProductos;
     agregarFila();
     document.getElementById('descuento_tipo_total').addEventListener('change', recalcular);
     document.getElementById('descuento_total').addEventListener('input', recalcular);
-    document.querySelector('[name="cliente_id"]')?.addEventListener('change', () => { cuerpo.querySelectorAll('tr').forEach((fila) => autocompletarPrecioDesdeLista(fila, true)); recalcular(); });
-    document.getElementById('canal_venta')?.addEventListener('change', () => { cuerpo.querySelectorAll('tr').forEach((fila) => autocompletarPrecioDesdeLista(fila, true)); recalcular(); });
-    document.getElementById('lista_precio_id')?.addEventListener('change', () => { cuerpo.querySelectorAll('tr').forEach((fila) => autocompletarPrecioDesdeLista(fila, true)); recalcular(); });
-    recalcular();
+    document.querySelector('[name="cliente_id"]')?.addEventListener('change', () => { aplicarListaATodasLineas(true); });
+    document.getElementById('canal_venta')?.addEventListener('change', () => { aplicarListaATodasLineas(true); });
+    document.getElementById('lista_precio_id')?.addEventListener('change', () => { aplicarListaATodasLineas(true); });
+    aplicarListaATodasLineas(true);
 })();
 </script>
