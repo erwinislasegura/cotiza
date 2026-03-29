@@ -495,6 +495,93 @@ class GestionComercialControlador extends Controlador
         $this->redirigir('/app/' . $modulo);
     }
 
+    public function seguimiento(): void
+    {
+        $empresaId = empresa_actual_id();
+        $buscar = trim($_GET['q'] ?? '');
+        $estadoCotizacion = trim($_GET['estado_cotizacion'] ?? '');
+        $estadosPermitidos = ['borrador', 'enviada', 'aprobada', 'rechazada', 'vencida', 'anulada'];
+        if (!in_array($estadoCotizacion, $estadosPermitidos, true)) {
+            $estadoCotizacion = '';
+        }
+
+        $registros = $this->modelo->listarSeguimientoCotizaciones($empresaId, $buscar, $estadoCotizacion, 80);
+        $clientes = $this->obtenerClientesActivos($empresaId);
+        $cotizaciones = (new Cotizacion())->listar($empresaId);
+        $usuarios = (new Usuario())->listarPorEmpresa($empresaId);
+
+        $this->vista('empresa/modulos/seguimiento', compact('registros', 'clientes', 'cotizaciones', 'usuarios', 'buscar', 'estadoCotizacion'), 'empresa');
+    }
+
+    public function guardarSeguimiento(): void
+    {
+        validar_csrf();
+        $empresaId = empresa_actual_id();
+        $cotizacionId = (int) ($_POST['cotizacion_id'] ?? 0);
+        $clienteId = (int) ($_POST['cliente_id'] ?? 0);
+        $responsable = trim($_POST['responsable'] ?? '');
+        $estadosPermitidos = ['borrador', 'enviada', 'aprobada', 'rechazada', 'vencida', 'anulada'];
+
+        if ($cotizacionId <= 0) {
+            flash('danger', 'Debes seleccionar una cotización para registrar seguimiento.');
+            $this->redirigir('/app/seguimiento');
+        }
+
+        $cotizacion = (new Cotizacion())->obtenerPorId($empresaId, $cotizacionId);
+        if (!$cotizacion) {
+            flash('danger', 'La cotización seleccionada no existe o no pertenece a tu empresa.');
+            $this->redirigir('/app/seguimiento');
+        }
+
+        if ($clienteId <= 0) {
+            $clienteId = (int) ($cotizacion['cliente_id'] ?? 0);
+        }
+
+        if ($clienteId <= 0) {
+            flash('danger', 'No fue posible determinar el cliente asociado al seguimiento.');
+            $this->redirigir('/app/seguimiento');
+        }
+
+        if ($responsable === '') {
+            $responsable = (string) (usuario_actual()['nombre'] ?? 'Sin responsable');
+        }
+
+        $probabilidad = (int) ($_POST['probabilidad_cierre'] ?? 0);
+        if ($probabilidad < 0) {
+            $probabilidad = 0;
+        }
+        if ($probabilidad > 100) {
+            $probabilidad = 100;
+        }
+
+        $this->modelo->crear('seguimientos_comerciales', [
+            'empresa_id' => $empresaId,
+            'cotizacion_id' => $cotizacionId,
+            'cliente_id' => $clienteId,
+            'responsable' => $responsable,
+            'proxima_accion' => trim($_POST['proxima_accion'] ?? ''),
+            'fecha_seguimiento' => $_POST['fecha_seguimiento'] ?: null,
+            'comentarios' => trim($_POST['comentarios'] ?? ''),
+            'estado_comercial' => trim($_POST['estado_comercial'] ?? 'abierto'),
+            'probabilidad_cierre' => $probabilidad,
+            'fecha_creacion' => date('Y-m-d H:i:s'),
+        ]);
+
+        $nuevoEstado = trim($_POST['nuevo_estado_cotizacion'] ?? '');
+        if ($nuevoEstado !== '' && in_array($nuevoEstado, $estadosPermitidos, true) && $nuevoEstado !== (string) ($cotizacion['estado'] ?? '')) {
+            (new Cotizacion())->actualizarEstadoConHistorial(
+                $empresaId,
+                $cotizacionId,
+                $nuevoEstado,
+                (int) (usuario_actual()['id'] ?? 0),
+                trim($_POST['comentarios'] ?? '')
+            );
+        }
+
+        flash('success', 'Seguimiento guardado correctamente.');
+        $this->redirigir('/app/seguimiento');
+    }
+
     public function reportes(): void
     {
         $empresaId = empresa_actual_id();
