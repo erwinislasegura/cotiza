@@ -94,8 +94,8 @@ $enrutador->agregar('GET', '/app/seguimiento/ver/{id}', fn($id) => (new GestionC
 $enrutador->agregar('GET', '/app/seguimiento/editar/{id}', fn($id) => (new GestionComercialControlador())->editarRegistro('seguimiento', (int) $id), $mwEmpresa);
 $enrutador->agregar('POST', '/app/seguimiento/editar/{id}', fn($id) => (new GestionComercialControlador())->actualizarRegistro('seguimiento', (int) $id), $mwEmpresa);
 $enrutador->agregar('POST', '/app/seguimiento/eliminar/{id}', fn($id) => (new GestionComercialControlador())->eliminarRegistro('seguimiento', (int) $id), $mwEmpresa);
-$enrutador->agregar('GET', '/app/aprobaciones', fn() => (new GestionComercialControlador())->moduloBase('aprobaciones'), $mwEmpresa);
-$enrutador->agregar('POST', '/app/aprobaciones', fn() => (new GestionComercialControlador())->guardarModuloBase('aprobaciones'), $mwEmpresa);
+$enrutador->agregar('GET', '/app/aprobaciones', [GestionComercialControlador::class, 'aprobaciones'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/aprobaciones', [GestionComercialControlador::class, 'guardarAprobacion'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/aprobaciones/ver/{id}', fn($id) => (new GestionComercialControlador())->verRegistro('aprobaciones', (int) $id), $mwEmpresa);
 $enrutador->agregar('GET', '/app/aprobaciones/editar/{id}', fn($id) => (new GestionComercialControlador())->editarRegistro('aprobaciones', (int) $id), $mwEmpresa);
 $enrutador->agregar('POST', '/app/aprobaciones/editar/{id}', fn($id) => (new GestionComercialControlador())->actualizarRegistro('aprobaciones', (int) $id), $mwEmpresa);
