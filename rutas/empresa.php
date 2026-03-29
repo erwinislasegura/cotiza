@@ -39,6 +39,7 @@ $enrutador->agregar('GET', '/app/productos/carga-masiva/plantilla/productos', [P
 $enrutador->agregar('GET', '/app/productos/carga-masiva/plantilla/categorias', [ProductosControlador::class, 'descargarPlantillaCategoriasExcel'], $mwEmpresa);
 
 $enrutador->agregar('GET', '/app/cotizaciones', [CotizacionesControlador::class, 'index'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/cotizaciones/exportar-excel', [CotizacionesControlador::class, 'exportarExcel'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/cotizaciones/crear', [CotizacionesControlador::class, 'crear'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/cotizaciones/crear', [CotizacionesControlador::class, 'guardar'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/cotizaciones/editar/{id}', [CotizacionesControlador::class, 'editar'], $mwEmpresa);

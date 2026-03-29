@@ -141,17 +141,17 @@
               <td><?= e($c['telefono']) ?></td>
               <td><?= e($c['ciudad'] ?? '') ?></td>
               <td>
-                <?php $listaId = (int) ($mapaListasPorCliente[(int) $c['id']] ?? 0); ?>
-                <?php if ($listaId === 0): ?>
-                  <span class="text-muted">General</span>
+                <?php $listaIds = array_map('intval', (array) ($mapaListasPorCliente[(int) $c['id']] ?? [])); ?>
+                <?php if ($listaIds === []): ?>
+                  <span class="text-muted">Sin lista</span>
                 <?php else: ?>
                   <?php
-                    $nombreLista = 'General';
+                    $nombres = [];
                     foreach ($listasPrecios as $lp) {
-                        if ((int) $lp['id'] === $listaId) { $nombreLista = (string) $lp['nombre']; break; }
+                        if (in_array((int) $lp['id'], $listaIds, true)) { $nombres[] = (string) $lp['nombre']; }
                     }
                   ?>
-                  <?= e($nombreLista) ?>
+                  <?= e(implode(', ', $nombres)) ?>
                 <?php endif; ?>
               </td>
               <td>

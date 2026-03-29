@@ -8,6 +8,7 @@ use Aplicacion\Modelos\Cliente;
 use Aplicacion\Modelos\Producto;
 use Aplicacion\Modelos\Empresa;
 use Aplicacion\Modelos\GestionComercial;
+use Aplicacion\Servicios\ExcelExpoFormato;
 use Aplicacion\Servicios\ServicioPlan;
 use Aplicacion\Servicios\ServicioPreciosLista;
 use Aplicacion\Servicios\ServicioCorreo;
@@ -16,15 +17,60 @@ class CotizacionesControlador extends Controlador
 {
     public function index(): void
     {
+        $empresaId = empresa_actual_id();
         $buscar = trim($_GET['q'] ?? '');
-        $cotizaciones = (new Cotizacion())->listar(empresa_actual_id());
-        if ($buscar !== '') {
-            $cotizaciones = array_values(array_filter($cotizaciones, static function (array $cotizacion) use ($buscar): bool {
-                return str_contains(strtolower($cotizacion['numero']), strtolower($buscar))
-                    || str_contains(strtolower($cotizacion['cliente']), strtolower($buscar));
-            }));
+        $estado = trim($_GET['estado'] ?? '');
+        $clienteId = (int) ($_GET['cliente_id'] ?? 0) ?: null;
+        $fechaDesde = trim($_GET['fecha_desde'] ?? '');
+        $fechaHasta = trim($_GET['fecha_hasta'] ?? '');
+
+        $cotizaciones = (new Cotizacion())->listar($empresaId);
+        $cotizaciones = $this->filtrarCotizaciones($cotizaciones, $buscar, $estado, $clienteId, $fechaDesde, $fechaHasta);
+        $clientes = (new Cliente())->listar($empresaId);
+
+        $this->vista('empresa/cotizaciones/index', compact('cotizaciones', 'buscar', 'estado', 'clienteId', 'fechaDesde', 'fechaHasta', 'clientes'), 'empresa');
+    }
+
+    public function exportarExcel(): void
+    {
+        $empresaId = empresa_actual_id();
+        $buscar = trim($_GET['q'] ?? '');
+        $estado = trim($_GET['estado'] ?? '');
+        $clienteId = (int) ($_GET['cliente_id'] ?? 0) ?: null;
+        $fechaDesde = trim($_GET['fecha_desde'] ?? '');
+        $fechaHasta = trim($_GET['fecha_hasta'] ?? '');
+
+        $cotizaciones = (new Cotizacion())->listar($empresaId);
+        $cotizaciones = $this->filtrarCotizaciones($cotizaciones, $buscar, $estado, $clienteId, $fechaDesde, $fechaHasta);
+
+        $nombreArchivo = 'cotizaciones_' . date('Ymd_His') . '.xls';
+        header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $nombreArchivo . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        echo "\xEF\xBB\xBF";
+        echo '<html><head><meta charset="UTF-8"></head><body>';
+        echo '<table border="1" cellspacing="0" cellpadding="4" style="' . ExcelExpoFormato::TABLA_ESTILO . '">';
+        echo '<tr style="' . ExcelExpoFormato::ENCABEZADO_ESTILO . '">';
+        echo '<th>Número</th><th>Cliente</th><th>Emisión</th><th>Vencimiento</th><th>Vendedor</th><th>Subtotal</th><th>Impuesto</th><th>Total</th><th>Estado</th>';
+        echo '</tr>';
+
+        foreach ($cotizaciones as $c) {
+            echo '<tr>';
+            echo '<td style="' . ExcelExpoFormato::CELDA_TEXTO_EXCEL . '">' . $this->escapeExcelHtml($c['numero'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($c['cliente'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($c['fecha_emision'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($c['fecha_vencimiento'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($c['vendedor'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml(number_format((float) ($c['subtotal'] ?? 0), 2)) . '</td>';
+            echo '<td>' . $this->escapeExcelHtml(number_format((float) ($c['impuesto'] ?? 0), 2)) . '</td>';
+            echo '<td>' . $this->escapeExcelHtml(number_format((float) ($c['total'] ?? 0), 2)) . '</td>';
+            echo '<td>' . $this->escapeExcelHtml((string) ($c['estado'] ?? '')) . '</td>';
+            echo '</tr>';
         }
-        $this->vista('empresa/cotizaciones/index', compact('cotizaciones', 'buscar'), 'empresa');
+        echo '</table></body></html>';
+        exit;
     }
 
     public function crear(): void
@@ -32,9 +78,14 @@ class CotizacionesControlador extends Controlador
         $empresaId = empresa_actual_id();
         $clientes = (new Cliente())->listar($empresaId);
         $productos = (new Producto())->listar($empresaId);
-        $listasPrecios = (new GestionComercial())->listarListasPreciosActivas($empresaId);
+        $gestion = new GestionComercial();
+        $listasPrecios = $gestion->listarListasPreciosActivas($empresaId);
+        $listasPreciosPorCliente = [];
+        foreach ($clientes as $cliente) {
+            $listasPreciosPorCliente[(int) $cliente['id']] = $gestion->obtenerListasPrecioCliente($empresaId, (int) $cliente['id']);
+        }
         $siguienteNumero = (new Cotizacion())->siguienteNumero($empresaId);
-        $this->vista('empresa/cotizaciones/formulario', compact('clientes', 'productos', 'siguienteNumero', 'listasPrecios'), 'empresa');
+        $this->vista('empresa/cotizaciones/formulario', compact('clientes', 'productos', 'siguienteNumero', 'listasPrecios', 'listasPreciosPorCliente'), 'empresa');
     }
 
     public function guardar(): void
@@ -53,7 +104,6 @@ class CotizacionesControlador extends Controlador
         $impuestos = $_POST['impuesto_item'] ?? [];
         $descuentoTiposLinea = $_POST['descuento_tipo_item'] ?? [];
         $descuentoValoresLinea = $_POST['descuento_item'] ?? [];
-        $canalVenta = trim((string) ($_POST['canal_venta'] ?? ''));
         $clienteIdSeleccionado = (int) ($_POST['cliente_id'] ?? 0) ?: null;
         $listaPrecioId = (int) ($_POST['lista_precio_id'] ?? 0) ?: null;
         $servicioPrecios = new ServicioPreciosLista();
@@ -82,7 +132,6 @@ class CotizacionesControlador extends Controlador
                 $empresaId,
                 $productoId,
                 $clienteIdSeleccionado,
-                $canalVenta !== '' ? $canalVenta : null,
                 $listaPrecioId,
                 $precio,
                 $descuentoTipo,
@@ -210,7 +259,12 @@ class CotizacionesControlador extends Controlador
         }
         $clientes = (new Cliente())->listar($empresaId);
         $productos = (new Producto())->listar($empresaId);
-        $listasPrecios = (new GestionComercial())->listarListasPreciosActivas($empresaId);
+        $gestion = new GestionComercial();
+        $listasPrecios = $gestion->listarListasPreciosActivas($empresaId);
+        $listasPreciosPorCliente = [];
+        foreach ($clientes as $cliente) {
+            $listasPreciosPorCliente[(int) $cliente['id']] = $gestion->obtenerListasPrecioCliente($empresaId, (int) $cliente['id']);
+        }
         $listaPrecioSeleccionada = (new ServicioPreciosLista())->resolverListaPrecio(
             $empresaId,
             (int) $cotizacion['cliente_id'],
@@ -218,7 +272,7 @@ class CotizacionesControlador extends Controlador
             date('Y-m-d'),
             (int) ($cotizacion['lista_precio_id'] ?? 0) ?: null
         );
-        $this->vista('empresa/cotizaciones/editar', compact('cotizacion', 'clientes', 'productos', 'listasPrecios', 'listaPrecioSeleccionada'), 'empresa');
+        $this->vista('empresa/cotizaciones/editar', compact('cotizacion', 'clientes', 'productos', 'listasPrecios', 'listaPrecioSeleccionada', 'listasPreciosPorCliente'), 'empresa');
     }
 
     public function enviar(int $id): void
@@ -316,7 +370,6 @@ class CotizacionesControlador extends Controlador
         $impuestos = $_POST['impuesto_item'] ?? [];
         $descuentoTiposLinea = $_POST['descuento_tipo_item'] ?? [];
         $descuentoValoresLinea = $_POST['descuento_item'] ?? [];
-        $canalVenta = trim((string) ($_POST['canal_venta'] ?? ''));
         $clienteIdSeleccionado = (int) ($_POST['cliente_id'] ?? 0) ?: null;
         $listaPrecioId = (int) ($_POST['lista_precio_id'] ?? 0) ?: null;
         $servicioPrecios = new ServicioPreciosLista();
@@ -345,7 +398,6 @@ class CotizacionesControlador extends Controlador
                 empresa_actual_id(),
                 $productoId,
                 $clienteIdSeleccionado,
-                $canalVenta !== '' ? $canalVenta : null,
                 $listaPrecioId,
                 $precio,
                 $descuentoTipo,
@@ -416,7 +468,6 @@ class CotizacionesControlador extends Controlador
         int $empresaId,
         ?int $productoId,
         ?int $clienteId,
-        ?string $canalVenta,
         ?int $listaPrecioId,
         float $precio,
         string $descuentoTipo,
@@ -426,7 +477,7 @@ class CotizacionesControlador extends Controlador
             return [$precio, $descuentoTipo, $descuentoValor];
         }
 
-        $precioCalculado = $servicioPrecios->calcularPrecioProducto($empresaId, $productoId, $clienteId, $canalVenta, date('Y-m-d'), $listaPrecioId);
+        $precioCalculado = $servicioPrecios->calcularPrecioProducto($empresaId, $productoId, $clienteId, null, date('Y-m-d'), $listaPrecioId);
         if (!$precioCalculado) {
             return [$precio, $descuentoTipo, $descuentoValor];
         }
@@ -451,6 +502,48 @@ class CotizacionesControlador extends Controlador
             $this->redirigir($rutaMantener);
         }
         $this->redirigir($rutaSalir);
+    }
+
+    private function filtrarCotizaciones(array $cotizaciones, string $buscar, string $estado, ?int $clienteId, string $fechaDesde, string $fechaHasta): array
+    {
+        return array_values(array_filter($cotizaciones, static function (array $cotizacion) use ($buscar, $estado, $clienteId, $fechaDesde, $fechaHasta): bool {
+            if ($buscar !== '') {
+                $texto = strtolower($buscar);
+                $matchBuscar = str_contains(strtolower((string) ($cotizacion['numero'] ?? '')), $texto)
+                    || str_contains(strtolower((string) ($cotizacion['cliente'] ?? '')), $texto)
+                    || str_contains(strtolower((string) ($cotizacion['vendedor'] ?? '')), $texto);
+                if (!$matchBuscar) {
+                    return false;
+                }
+            }
+
+            if ($estado !== '' && strtolower((string) ($cotizacion['estado'] ?? '')) !== strtolower($estado)) {
+                return false;
+            }
+
+            if ($clienteId !== null && (int) ($cotizacion['cliente_id'] ?? 0) !== $clienteId) {
+                return false;
+            }
+
+            $fechaEmision = (string) ($cotizacion['fecha_emision'] ?? '');
+            if ($fechaDesde !== '' && $fechaEmision !== '' && $fechaEmision < $fechaDesde) {
+                return false;
+            }
+            if ($fechaHasta !== '' && $fechaEmision !== '' && $fechaEmision > $fechaHasta) {
+                return false;
+            }
+
+            return true;
+        }));
+    }
+
+    private function escapeExcelHtml(mixed $valor): string
+    {
+        $texto = trim(str_replace(["\r\n", "\r", "\n", "\t"], ' ', (string) $valor));
+        if ($texto !== '' && preg_match('/^[=+\-@]/', $texto) === 1) {
+            $texto = "'" . $texto;
+        }
+        return htmlspecialchars($texto, ENT_QUOTES, 'UTF-8');
     }
 
     private function construirPlantillaCorreoCotizacion(array $cotizacion, array $empresa, string $urlPublica, string $urlPdf, string $clienteNombre = ''): string
@@ -507,10 +600,26 @@ HTML;
     {
         $clienteNombre = trim((string) (($cotizacion['cliente_razon_social'] ?? '') !== '' ? $cotizacion['cliente_razon_social'] : ($cotizacion['cliente'] ?? '')));
         $items = $cotizacion['items'] ?? [];
+        $descuentoMontoTotal = (float) ($cotizacion['descuento'] ?? 0);
         $descuentoTexto = (($cotizacion['descuento_tipo'] ?? 'valor') === 'porcentaje')
-            ? number_format((float) ($cotizacion['descuento_valor'] ?? 0), 2) . '%'
-            : '$' . number_format((float) ($cotizacion['descuento'] ?? 0), 0, ',', '.');
-        $neto = max(0, (float) ($cotizacion['subtotal'] ?? 0) - (float) ($cotizacion['descuento'] ?? 0));
+            ? number_format((float) ($cotizacion['descuento_valor'] ?? 0), 2) . '% ($' . number_format($descuentoMontoTotal, 0, ',', '.') . ')'
+            : '$' . number_format($descuentoMontoTotal, 0, ',', '.');
+        $descuentoListaMonto = 0.0;
+        foreach ($items as $itemDescuento) {
+            $descuentoListaMonto += (float) ($itemDescuento['descuento_monto'] ?? 0);
+        }
+        $listaNombre = trim((string) ($cotizacion['lista_precio_nombre'] ?? ''));
+        if ($listaNombre === '' && (int) ($cotizacion['lista_precio_id'] ?? 0) > 0) {
+            $lista = (new ServicioPreciosLista())->resolverListaPrecio(
+                (int) ($cotizacion['empresa_id'] ?? empresa_actual_id()),
+                (int) ($cotizacion['cliente_id'] ?? 0) ?: null,
+                null,
+                (string) ($cotizacion['fecha_emision'] ?? date('Y-m-d')),
+                (int) $cotizacion['lista_precio_id']
+            );
+            $listaNombre = trim((string) ($lista['nombre'] ?? ''));
+        }
+        $neto = max(0, (float) ($cotizacion['subtotal'] ?? 0) - $descuentoMontoTotal);
 
         $c = [];
         $c[] = '0.95 0.96 0.98 rg 0 0 612 792 re f';
@@ -535,6 +644,9 @@ HTML;
         $c[] = 'BT /F1 9 Tf 0 0 0 rg 300 638 Td (Correo: ' . $this->pdfEsc((string) ($cotizacion['cliente_correo'] ?? '')) . ') Tj ET';
         $c[] = 'BT /F1 9 Tf 0 0 0 rg 40 624 Td (Telefono: ' . $this->pdfEsc((string) ($cotizacion['cliente_telefono'] ?? '')) . ') Tj ET';
         $c[] = 'BT /F1 9 Tf 0 0 0 rg 300 624 Td (Direccion: ' . $this->pdfEsc(trim((string) (($cotizacion['cliente_direccion'] ?? '') . ', ' . ($cotizacion['cliente_ciudad'] ?? '')))) . ') Tj ET';
+        if ($listaNombre !== '' && $descuentoListaMonto > 0) {
+            $c[] = 'BT /F1 9 Tf 0.18 0.55 0.35 rg 40 608 Td (Descuento por lista aplicado: ' . $this->pdfEsc($listaNombre) . ' - $' . $this->pdfEsc(number_format($descuentoListaMonto, 0, ',', '.')) . ') Tj ET';
+        }
 
         $c[] = '0.12 0.31 0.47 rg 40 594 532 18 re f';
         $headers = [['Codigo', 44], ['Descripcion', 100], ['Cant.', 345], ['Unidad', 390], ['P. Unitario', 450], ['Total', 520]];
@@ -573,6 +685,9 @@ HTML;
             ['Neto', '$' . number_format($neto, 0, ',', '.')],
             ['IVA (19%)', '$' . number_format((float) ($cotizacion['impuesto'] ?? 0), 0, ',', '.')],
         ];
+        if ($listaNombre !== '' && $descuentoListaMonto > 0) {
+            array_splice($rows, 2, 0, [['Desc. por lista', '- $' . number_format($descuentoListaMonto, 0, ',', '.')]]);
+        }
         foreach ($rows as $i => [$label, $value]) {
             $yy = $totY - ($i * 20);
             $c[] = '0.86 0.89 0.92 RG 0.5 w 330 ' . $yy . ' 242 20 re S';
