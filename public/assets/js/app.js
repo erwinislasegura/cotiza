@@ -30,4 +30,40 @@
       }
     });
   });
+
+  // UX transversal de formularios: marca campos requeridos y evita doble envío.
+  document.querySelectorAll('form').forEach((form) => {
+    form.querySelectorAll('[required]').forEach((campo) => {
+      const id = campo.getAttribute('id');
+      if (!id) return;
+      const label = form.querySelector(`label[for="${id}"]`);
+      if (!label) return;
+      if (label.querySelector('.campo-requerido')) return;
+      const marcador = document.createElement('span');
+      marcador.className = 'campo-requerido';
+      marcador.textContent = '*';
+      label.appendChild(marcador);
+    });
+
+    form.addEventListener('submit', () => {
+      if (!form.checkValidity()) {
+        return;
+      }
+
+      form.classList.add('form-enviando');
+      form.querySelectorAll('button[type="submit"], input[type="submit"]').forEach((btn) => {
+        if (btn.dataset.locked === '1') return;
+        btn.dataset.locked = '1';
+        if (!btn.dataset.originalText) {
+          btn.dataset.originalText = btn.tagName === 'INPUT' ? (btn.value || '') : (btn.innerHTML || '');
+        }
+        if (btn.tagName === 'INPUT') {
+          btn.value = 'Guardando...';
+        } else {
+          btn.innerHTML = 'Guardando...';
+        }
+        btn.disabled = true;
+      });
+    });
+  });
 })();
