@@ -512,10 +512,26 @@ HTML;
     {
         $clienteNombre = trim((string) (($cotizacion['cliente_razon_social'] ?? '') !== '' ? $cotizacion['cliente_razon_social'] : ($cotizacion['cliente'] ?? '')));
         $items = $cotizacion['items'] ?? [];
+        $descuentoMontoTotal = (float) ($cotizacion['descuento'] ?? 0);
         $descuentoTexto = (($cotizacion['descuento_tipo'] ?? 'valor') === 'porcentaje')
-            ? number_format((float) ($cotizacion['descuento_valor'] ?? 0), 2) . '%'
-            : '$' . number_format((float) ($cotizacion['descuento'] ?? 0), 0, ',', '.');
-        $neto = max(0, (float) ($cotizacion['subtotal'] ?? 0) - (float) ($cotizacion['descuento'] ?? 0));
+            ? number_format((float) ($cotizacion['descuento_valor'] ?? 0), 2) . '% ($' . number_format($descuentoMontoTotal, 0, ',', '.') . ')'
+            : '$' . number_format($descuentoMontoTotal, 0, ',', '.');
+        $descuentoListaMonto = 0.0;
+        foreach ($items as $itemDescuento) {
+            $descuentoListaMonto += (float) ($itemDescuento['descuento_monto'] ?? 0);
+        }
+        $listaNombre = trim((string) ($cotizacion['lista_precio_nombre'] ?? ''));
+        if ($listaNombre === '' && (int) ($cotizacion['lista_precio_id'] ?? 0) > 0) {
+            $lista = (new ServicioPreciosLista())->resolverListaPrecio(
+                (int) ($cotizacion['empresa_id'] ?? empresa_actual_id()),
+                (int) ($cotizacion['cliente_id'] ?? 0) ?: null,
+                null,
+                (string) ($cotizacion['fecha_emision'] ?? date('Y-m-d')),
+                (int) $cotizacion['lista_precio_id']
+            );
+            $listaNombre = trim((string) ($lista['nombre'] ?? ''));
+        }
+        $neto = max(0, (float) ($cotizacion['subtotal'] ?? 0) - $descuentoMontoTotal);
 
         $c = [];
         $c[] = '0.95 0.96 0.98 rg 0 0 612 792 re f';
@@ -540,6 +556,9 @@ HTML;
         $c[] = 'BT /F1 9 Tf 0 0 0 rg 300 638 Td (Correo: ' . $this->pdfEsc((string) ($cotizacion['cliente_correo'] ?? '')) . ') Tj ET';
         $c[] = 'BT /F1 9 Tf 0 0 0 rg 40 624 Td (Telefono: ' . $this->pdfEsc((string) ($cotizacion['cliente_telefono'] ?? '')) . ') Tj ET';
         $c[] = 'BT /F1 9 Tf 0 0 0 rg 300 624 Td (Direccion: ' . $this->pdfEsc(trim((string) (($cotizacion['cliente_direccion'] ?? '') . ', ' . ($cotizacion['cliente_ciudad'] ?? '')))) . ') Tj ET';
+        if ($listaNombre !== '' && $descuentoListaMonto > 0) {
+            $c[] = 'BT /F1 9 Tf 0.18 0.55 0.35 rg 40 608 Td (Descuento por lista aplicado: ' . $this->pdfEsc($listaNombre) . ' - $' . $this->pdfEsc(number_format($descuentoListaMonto, 0, ',', '.')) . ') Tj ET';
+        }
 
         $c[] = '0.12 0.31 0.47 rg 40 594 532 18 re f';
         $headers = [['Codigo', 44], ['Descripcion', 100], ['Cant.', 345], ['Unidad', 390], ['P. Unitario', 450], ['Total', 520]];
@@ -578,6 +597,9 @@ HTML;
             ['Neto', '$' . number_format($neto, 0, ',', '.')],
             ['IVA (19%)', '$' . number_format((float) ($cotizacion['impuesto'] ?? 0), 0, ',', '.')],
         ];
+        if ($listaNombre !== '' && $descuentoListaMonto > 0) {
+            array_splice($rows, 2, 0, [['Desc. por lista', '- $' . number_format($descuentoListaMonto, 0, ',', '.')]]);
+        }
         foreach ($rows as $i => [$label, $value]) {
             $yy = $totY - ($i * 20);
             $c[] = '0.86 0.89 0.92 RG 0.5 w 330 ' . $yy . ' 242 20 re S';

@@ -7,10 +7,18 @@ $descuentoMonto = (float) ($cotizacion['descuento'] ?? 0);
 $descuentoTexto = (($cotizacion['descuento_tipo'] ?? 'valor') === 'porcentaje')
     ? number_format((float) ($cotizacion['descuento_valor'] ?? 0), 2) . '%'
     : '$' . number_format($descuentoMonto, 0, ',', '.');
+$descuentoDetalle = (($cotizacion['descuento_tipo'] ?? 'valor') === 'porcentaje')
+    ? $descuentoTexto . ' ($' . number_format($descuentoMonto, 0, ',', '.') . ')'
+    : '$' . number_format($descuentoMonto, 0, ',', '.');
 $neto = max(0, (float) ($cotizacion['subtotal'] ?? 0) - $descuentoMonto);
 $fechaEmision = !empty($cotizacion['fecha_emision']) ? date('d-m-Y', strtotime((string) $cotizacion['fecha_emision'])) : '';
 $fechaVencimiento = !empty($cotizacion['fecha_vencimiento']) ? date('d-m-Y', strtotime((string) $cotizacion['fecha_vencimiento'])) : '';
 $listaNombre = trim((string) ($listaAplicada['nombre'] ?? ''));
+$descuentoListaMonto = 0.0;
+foreach (($cotizacion['items'] ?? []) as $it) {
+    $descuentoListaMonto += (float) ($it['descuento_monto'] ?? 0);
+}
+$mostrarTarjetaLista = $listaNombre !== '' && $descuentoListaMonto > 0;
 ?>
 <style>
   * { box-sizing: border-box; }
@@ -67,6 +75,15 @@ $listaNombre = trim((string) ($listaAplicada['nombre'] ?? ''));
     border-left: 4px solid #1f4e79;
     padding: 8px 10px;
     font-size: 13px;
+  }
+  .tarjeta-lista {
+    margin: 0 0 14px;
+    background: #ecfdf3;
+    border: 1px solid #b7efcf;
+    border-left: 4px solid #2f9e62;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: #1f5137;
   }
   .bloque { margin-bottom: 14px; }
   .bloque h3 {
@@ -207,6 +224,12 @@ $listaNombre = trim((string) ($listaAplicada['nombre'] ?? ''));
     <strong>Lista de precios aplicada:</strong>
     <?= e($listaNombre !== '' ? $listaNombre : 'Sin lista de precios específica (precio base).') ?>
   </div>
+  <?php if ($mostrarTarjetaLista): ?>
+    <div class="tarjeta-lista">
+      <strong>Descuento por lista aplicado:</strong>
+      <?= e($listaNombre) ?> · <strong>$<?= number_format($descuentoListaMonto, 0, ',', '.') ?></strong>
+    </div>
+  <?php endif; ?>
 
   <div class="bloque">
     <h3>Datos del cliente</h3>
@@ -233,7 +256,7 @@ $listaNombre = trim((string) ($listaAplicada['nombre'] ?? ''));
       <thead>
         <tr>
           <th style="width: 90px;">Código</th>
-          <th>Descripción</th>
+          <th>Producto / Descripción</th>
           <th style="width: 75px;" class="text-center">Cant.</th>
           <th style="width: 85px;" class="text-center">Unidad</th>
           <th style="width: 120px;" class="text-right">P. Unitario</th>
@@ -244,7 +267,10 @@ $listaNombre = trim((string) ($listaAplicada['nombre'] ?? ''));
         <?php foreach (($cotizacion['items'] ?? []) as $it): ?>
           <tr>
             <td><?= e($it['codigo'] ?? ('ITM-' . (string) ($it['id'] ?? ''))) ?></td>
-            <td><?= e($it['descripcion'] ?? '') ?></td>
+            <td>
+              <strong><?= e((string) ($it['producto_nombre'] ?? 'Producto')) ?></strong><br>
+              <span><?= e($it['descripcion'] ?? '') ?></span>
+            </td>
             <td class="text-center"><?= number_format((float) ($it['cantidad'] ?? 0), 2) ?></td>
             <td class="text-center"><?= e($it['unidad'] ?? 'Unidad') ?></td>
             <td class="text-right">$<?= number_format((float) ($it['precio_unitario'] ?? 0), 0, ',', '.') ?></td>
@@ -256,7 +282,10 @@ $listaNombre = trim((string) ($listaAplicada['nombre'] ?? ''));
 
     <table class="totales">
       <tr><td class="label">Subtotal</td><td class="text-right">$<?= number_format((float) ($cotizacion['subtotal'] ?? 0), 0, ',', '.') ?></td></tr>
-      <tr><td class="label">Descuento</td><td class="text-right">- <?= e($descuentoTexto) ?></td></tr>
+      <tr><td class="label">Descuento</td><td class="text-right">- <?= e($descuentoDetalle) ?></td></tr>
+      <?php if ($mostrarTarjetaLista): ?>
+        <tr><td class="label">Descuento por lista</td><td class="text-right">- $<?= number_format($descuentoListaMonto, 0, ',', '.') ?></td></tr>
+      <?php endif; ?>
       <tr><td class="label">Neto</td><td class="text-right">$<?= number_format($neto, 0, ',', '.') ?></td></tr>
       <tr><td class="label">IVA (19%)</td><td class="text-right">$<?= number_format((float) ($cotizacion['impuesto'] ?? 0), 0, ',', '.') ?></td></tr>
       <tr class="final"><td>Total</td><td class="text-right">$<?= number_format((float) ($cotizacion['total'] ?? 0), 0, ',', '.') ?></td></tr>
