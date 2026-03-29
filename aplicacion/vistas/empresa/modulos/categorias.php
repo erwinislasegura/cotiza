@@ -6,8 +6,8 @@ require __DIR__ . '/_tabla_simple.php';
 
 $formularioCategorias = <<<'HTML'
 <div class="col-md-5">
-    <label class="form-label">Nombre</label>
-    <input name="nombre" class="form-control" maxlength="120" placeholder="Ej. Electrónica" required>
+    <label class="form-label" for="categoria_nombre">Nombre</label>
+    <input id="categoria_nombre" name="nombre" class="form-control" maxlength="120" placeholder="Ej. Electrónica" required>
 </div>
 <div class="col-md-5">
     <label class="form-label">Descripción</label>
@@ -32,6 +32,15 @@ $accionesListado = sprintf(
     e(ExcelExpoFormato::BOTON_ESTILO),
     e(ExcelExpoFormato::BOTON_TEXTO)
 );
+
+echo '<div class="alert alert-info info-modulo mb-3">'
+    . '<div class="fw-semibold mb-1">Uso recomendado de categorías</div>'
+    . '<ul class="mb-0 small ps-3">'
+    . '<li>Define categorías por línea de negocio para mejorar orden y búsquedas.</li>'
+    . '<li>Usa descripciones cortas para alinear criterios entre ventas y operación.</li>'
+    . '<li>Mantén inactivas las categorías obsoletas para no perder historial.</li>'
+    . '</ul>'
+    . '</div>';
 
 render_modulo_simple(
     'Categorías',
