@@ -31,7 +31,27 @@ class Usuario extends Modelo
 
     public function listarRolesEmpresa(): array
     {
-        return $this->db->query("SELECT id, nombre FROM roles WHERE codigo IN ('admin_empresa','vendedor','visor') ORDER BY nombre")->fetchAll();
+        $sql = "SELECT id, nombre, codigo FROM roles WHERE codigo IN (
+            'administrador_empresa',
+            'vendedor',
+            'administrativo',
+            'contabilidad',
+            'supervisor_comercial',
+            'operaciones',
+            'usuario_empresa'
+        )
+        ORDER BY FIELD(
+            codigo,
+            'administrador_empresa',
+            'vendedor',
+            'administrativo',
+            'contabilidad',
+            'supervisor_comercial',
+            'operaciones',
+            'usuario_empresa'
+        )";
+
+        return $this->db->query($sql)->fetchAll();
     }
 
     public function obtenerPorIdEmpresa(int $empresaId, int $id): ?array
