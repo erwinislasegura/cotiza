@@ -3,11 +3,11 @@
 </section>
 
 <div class="alert alert-info info-modulo mb-3">
-  <div class="fw-semibold mb-1">Información para el cliente y equipo comercial</div>
+  <div class="fw-semibold mb-1">Uso y buenas prácticas para productos</div>
   <ul class="mb-0 small ps-3">
-    <li>Usa nombres y descripciones claras para que el cliente entienda rápidamente qué está comprando.</li>
-    <li>Mantén precio, impuesto y unidad correctamente definidos para evitar inconsistencias en cotizaciones.</li>
-    <li>Completa SKU/código interno para agilizar búsquedas y soporte postventa.</li>
+    <li>Incluye datos completos para que la cotización sea más clara para el cliente.</li>
+    <li>Usa <strong>stock mínimo</strong> y <strong>stock de aviso</strong> para anticipar reposición.</li>
+    <li>Si el ítem no se ofrece temporalmente, cambia estado a <strong>inactivo</strong>.</li>
   </ul>
 </div>
 
