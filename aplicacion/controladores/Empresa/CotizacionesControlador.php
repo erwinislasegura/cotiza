@@ -8,6 +8,7 @@ use Aplicacion\Modelos\Cliente;
 use Aplicacion\Modelos\Producto;
 use Aplicacion\Modelos\Empresa;
 use Aplicacion\Modelos\GestionComercial;
+use Aplicacion\Servicios\ExcelExpoFormato;
 use Aplicacion\Servicios\ServicioPlan;
 use Aplicacion\Servicios\ServicioPreciosLista;
 use Aplicacion\Servicios\ServicioCorreo;
@@ -16,15 +17,60 @@ class CotizacionesControlador extends Controlador
 {
     public function index(): void
     {
+        $empresaId = empresa_actual_id();
         $buscar = trim($_GET['q'] ?? '');
-        $cotizaciones = (new Cotizacion())->listar(empresa_actual_id());
-        if ($buscar !== '') {
-            $cotizaciones = array_values(array_filter($cotizaciones, static function (array $cotizacion) use ($buscar): bool {
-                return str_contains(strtolower($cotizacion['numero']), strtolower($buscar))
-                    || str_contains(strtolower($cotizacion['cliente']), strtolower($buscar));
-            }));
+        $estado = trim($_GET['estado'] ?? '');
+        $clienteId = (int) ($_GET['cliente_id'] ?? 0) ?: null;
+        $fechaDesde = trim($_GET['fecha_desde'] ?? '');
+        $fechaHasta = trim($_GET['fecha_hasta'] ?? '');
+
+        $cotizaciones = (new Cotizacion())->listar($empresaId);
+        $cotizaciones = $this->filtrarCotizaciones($cotizaciones, $buscar, $estado, $clienteId, $fechaDesde, $fechaHasta);
+        $clientes = (new Cliente())->listar($empresaId);
+
+        $this->vista('empresa/cotizaciones/index', compact('cotizaciones', 'buscar', 'estado', 'clienteId', 'fechaDesde', 'fechaHasta', 'clientes'), 'empresa');
+    }
+
+    public function exportarExcel(): void
+    {
+        $empresaId = empresa_actual_id();
+        $buscar = trim($_GET['q'] ?? '');
+        $estado = trim($_GET['estado'] ?? '');
+        $clienteId = (int) ($_GET['cliente_id'] ?? 0) ?: null;
+        $fechaDesde = trim($_GET['fecha_desde'] ?? '');
+        $fechaHasta = trim($_GET['fecha_hasta'] ?? '');
+
+        $cotizaciones = (new Cotizacion())->listar($empresaId);
+        $cotizaciones = $this->filtrarCotizaciones($cotizaciones, $buscar, $estado, $clienteId, $fechaDesde, $fechaHasta);
+
+        $nombreArchivo = 'cotizaciones_' . date('Ymd_His') . '.xls';
+        header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $nombreArchivo . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        echo "\xEF\xBB\xBF";
+        echo '<html><head><meta charset="UTF-8"></head><body>';
+        echo '<table border="1" cellspacing="0" cellpadding="4" style="' . ExcelExpoFormato::TABLA_ESTILO . '">';
+        echo '<tr style="' . ExcelExpoFormato::ENCABEZADO_ESTILO . '">';
+        echo '<th>Número</th><th>Cliente</th><th>Emisión</th><th>Vencimiento</th><th>Vendedor</th><th>Subtotal</th><th>Impuesto</th><th>Total</th><th>Estado</th>';
+        echo '</tr>';
+
+        foreach ($cotizaciones as $c) {
+            echo '<tr>';
+            echo '<td style="' . ExcelExpoFormato::CELDA_TEXTO_EXCEL . '">' . $this->escapeExcelHtml($c['numero'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($c['cliente'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($c['fecha_emision'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($c['fecha_vencimiento'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($c['vendedor'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml(number_format((float) ($c['subtotal'] ?? 0), 2)) . '</td>';
+            echo '<td>' . $this->escapeExcelHtml(number_format((float) ($c['impuesto'] ?? 0), 2)) . '</td>';
+            echo '<td>' . $this->escapeExcelHtml(number_format((float) ($c['total'] ?? 0), 2)) . '</td>';
+            echo '<td>' . $this->escapeExcelHtml((string) ($c['estado'] ?? '')) . '</td>';
+            echo '</tr>';
         }
-        $this->vista('empresa/cotizaciones/index', compact('cotizaciones', 'buscar'), 'empresa');
+        echo '</table></body></html>';
+        exit;
     }
 
     public function crear(): void
@@ -456,6 +502,48 @@ class CotizacionesControlador extends Controlador
             $this->redirigir($rutaMantener);
         }
         $this->redirigir($rutaSalir);
+    }
+
+    private function filtrarCotizaciones(array $cotizaciones, string $buscar, string $estado, ?int $clienteId, string $fechaDesde, string $fechaHasta): array
+    {
+        return array_values(array_filter($cotizaciones, static function (array $cotizacion) use ($buscar, $estado, $clienteId, $fechaDesde, $fechaHasta): bool {
+            if ($buscar !== '') {
+                $texto = strtolower($buscar);
+                $matchBuscar = str_contains(strtolower((string) ($cotizacion['numero'] ?? '')), $texto)
+                    || str_contains(strtolower((string) ($cotizacion['cliente'] ?? '')), $texto)
+                    || str_contains(strtolower((string) ($cotizacion['vendedor'] ?? '')), $texto);
+                if (!$matchBuscar) {
+                    return false;
+                }
+            }
+
+            if ($estado !== '' && strtolower((string) ($cotizacion['estado'] ?? '')) !== strtolower($estado)) {
+                return false;
+            }
+
+            if ($clienteId !== null && (int) ($cotizacion['cliente_id'] ?? 0) !== $clienteId) {
+                return false;
+            }
+
+            $fechaEmision = (string) ($cotizacion['fecha_emision'] ?? '');
+            if ($fechaDesde !== '' && $fechaEmision !== '' && $fechaEmision < $fechaDesde) {
+                return false;
+            }
+            if ($fechaHasta !== '' && $fechaEmision !== '' && $fechaEmision > $fechaHasta) {
+                return false;
+            }
+
+            return true;
+        }));
+    }
+
+    private function escapeExcelHtml(mixed $valor): string
+    {
+        $texto = trim(str_replace(["\r\n", "\r", "\n", "\t"], ' ', (string) $valor));
+        if ($texto !== '' && preg_match('/^[=+\-@]/', $texto) === 1) {
+            $texto = "'" . $texto;
+        }
+        return htmlspecialchars($texto, ENT_QUOTES, 'UTF-8');
     }
 
     private function construirPlantillaCorreoCotizacion(array $cotizacion, array $empresa, string $urlPublica, string $urlPdf, string $clienteNombre = ''): string
