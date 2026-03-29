@@ -264,6 +264,16 @@ class CotizacionesControlador extends Controlador
             flash('danger', 'Cotización no encontrada.');
             $this->redirigir('/app/cotizaciones');
         }
+
+        $tokenPublico = trim((string) ($cotizacion['token_publico'] ?? ''));
+        if ($tokenPublico === '' || !preg_match('/^[a-f0-9]{64}$/', $tokenPublico)) {
+            $tokenPublico = bin2hex(random_bytes(32));
+            (new Cotizacion())->actualizarTokenPublico($empresaId, $id, $tokenPublico);
+            $cotizacion['token_publico'] = $tokenPublico;
+        }
+
+        $linkAprobacionCliente = url('/cotizacion/publica/' . $tokenPublico);
+
         $clientes = (new Cliente())->listar($empresaId);
         $productos = (new Producto())->listar($empresaId);
         $gestion = new GestionComercial();
@@ -279,7 +289,7 @@ class CotizacionesControlador extends Controlador
             date('Y-m-d'),
             (int) ($cotizacion['lista_precio_id'] ?? 0) ?: null
         );
-        $this->vista('empresa/cotizaciones/editar', compact('cotizacion', 'clientes', 'productos', 'listasPrecios', 'listaPrecioSeleccionada', 'listasPreciosPorCliente'), 'empresa');
+        $this->vista('empresa/cotizaciones/editar', compact('cotizacion', 'clientes', 'productos', 'listasPrecios', 'listaPrecioSeleccionada', 'listasPreciosPorCliente', 'linkAprobacionCliente'), 'empresa');
     }
 
     public function enviar(int $id): void

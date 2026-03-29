@@ -78,14 +78,13 @@ $puedeGuardar = $hayClientes && $hayProductos;
             </div>
 
             <div class="col-12">
-                <label class="small">Enlace de aprobación para cliente</label>
                 <?php $linkAprobacion = url('/cotizacion/publica/' . ($tokenPrevisualizacion ?? '')); ?>
-                <div class="input-group">
+                <label class="small text-muted">Enlace generado para cliente (previsualización)</label>
+                <div class="input-group input-group-sm">
                     <input type="text" readonly class="form-control" id="link_aprobacion" value="<?= e($linkAprobacion) ?>">
-                    <a class="btn btn-outline-primary" id="link_aprobacion_anchor" href="<?= e($linkAprobacion) ?>" target="_blank" rel="noopener">Abrir enlace</a>
                     <button class="btn btn-outline-secondary" type="button" id="copiar_link_aprobacion">Copiar</button>
                 </div>
-                <div class="form-text">Este enlace es el que se envía al cliente para revisar y aprobar la cotización.</div>
+                <div class="form-text">Puedes compartirlo cuando la cotización quede guardada.</div>
             </div>
 
             <div class="col-md-6">
