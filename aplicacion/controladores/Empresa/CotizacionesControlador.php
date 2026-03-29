@@ -85,7 +85,8 @@ class CotizacionesControlador extends Controlador
             $listasPreciosPorCliente[(int) $cliente['id']] = $gestion->obtenerListasPrecioCliente($empresaId, (int) $cliente['id']);
         }
         $siguienteNumero = (new Cotizacion())->siguienteNumero($empresaId);
-        $this->vista('empresa/cotizaciones/formulario', compact('clientes', 'productos', 'siguienteNumero', 'listasPrecios', 'listasPreciosPorCliente'), 'empresa');
+        $tokenPrevisualizacion = bin2hex(random_bytes(32));
+        $this->vista('empresa/cotizaciones/formulario', compact('clientes', 'productos', 'siguienteNumero', 'listasPrecios', 'listasPreciosPorCliente', 'tokenPrevisualizacion'), 'empresa');
     }
 
     public function guardar(): void
@@ -182,6 +183,11 @@ class CotizacionesControlador extends Controlador
         $numero = $modelo->siguienteNumero($empresaId);
         $consecutivo = (int) preg_replace('/^.*-/', '', $numero);
 
+        $tokenPublico = trim((string) ($_POST['token_publico'] ?? ''));
+        if (!preg_match('/^[a-f0-9]{64}$/', $tokenPublico)) {
+            $tokenPublico = bin2hex(random_bytes(32));
+        }
+
         $cotizacionId = $modelo->crearConItems([
             'empresa_id' => $empresaId,
             'cliente_id' => (int) $_POST['cliente_id'],
@@ -198,6 +204,7 @@ class CotizacionesControlador extends Controlador
             'observaciones' => trim($_POST['observaciones'] ?? ''),
             'terminos_condiciones' => trim($_POST['terminos_condiciones'] ?? ''),
             'lista_precio_id' => $listaPrecioId,
+            'token_publico' => $tokenPublico,
             'fecha_emision' => $_POST['fecha_emision'] ?? date('Y-m-d'),
             'fecha_vencimiento' => $_POST['fecha_vencimiento'] ?? date('Y-m-d', strtotime('+15 days')),
         ], $items);

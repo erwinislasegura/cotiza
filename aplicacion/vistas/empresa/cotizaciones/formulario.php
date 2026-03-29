@@ -16,6 +16,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
 
 <form method="POST" class="d-grid gap-3" id="form-cotizacion">
     <?= csrf_campo() ?>
+    <input type="hidden" name="token_publico" id="token_publico" value="<?= e($tokenPrevisualizacion ?? '') ?>">
 
     <div class="card">
         <div class="card-header">Datos cotización</div>
@@ -74,6 +75,17 @@ $puedeGuardar = $hayClientes && $hayProductos;
             <div class="col-md-3">
                 <label class="small">Fecha vencimiento</label>
                 <input class="form-control" type="date" name="fecha_vencimiento" value="<?= date('Y-m-d', strtotime('+15 days')) ?>">
+            </div>
+
+            <div class="col-12">
+                <label class="small">Enlace de aprobación para cliente</label>
+                <?php $linkAprobacion = url('/cotizacion/publica/' . ($tokenPrevisualizacion ?? '')); ?>
+                <div class="input-group">
+                    <input type="text" readonly class="form-control" id="link_aprobacion" value="<?= e($linkAprobacion) ?>">
+                    <a class="btn btn-outline-primary" id="link_aprobacion_anchor" href="<?= e($linkAprobacion) ?>" target="_blank" rel="noopener">Abrir enlace</a>
+                    <button class="btn btn-outline-secondary" type="button" id="copiar_link_aprobacion">Copiar</button>
+                </div>
+                <div class="form-text">Este enlace es el que se envía al cliente para revisar y aprobar la cotización.</div>
             </div>
 
             <div class="col-md-6">
@@ -258,6 +270,21 @@ $puedeGuardar = $hayClientes && $hayProductos;
     const selectCliente = document.querySelector('[name="cliente_id"]');
     const selectLista = document.getElementById('lista_precio_id');
     const todasLasListas = <?= json_encode($listasPrecios ?? [], JSON_UNESCAPED_UNICODE) ?>;
+    const btnCopiarLink = document.getElementById('copiar_link_aprobacion');
+    const inputLinkAprobacion = document.getElementById('link_aprobacion');
+
+    if (btnCopiarLink && inputLinkAprobacion) {
+        btnCopiarLink.addEventListener('click', async function () {
+            try {
+                await navigator.clipboard.writeText(inputLinkAprobacion.value);
+                btnCopiarLink.textContent = 'Copiado';
+                setTimeout(function () { btnCopiarLink.textContent = 'Copiar'; }, 1200);
+            } catch (error) {
+                inputLinkAprobacion.select();
+                document.execCommand('copy');
+            }
+        });
+    }
     const listasPorCliente = <?= json_encode($listasPreciosPorCliente ?? [], JSON_UNESCAPED_UNICODE) ?>;
     const clientes = <?= json_encode($clientes ?? [], JSON_UNESCAPED_UNICODE) ?>;
 
