@@ -5,6 +5,8 @@ namespace Aplicacion\Controladores\Publico;
 use Aplicacion\Nucleo\Controlador;
 use Aplicacion\Modelos\Plan;
 use Aplicacion\Modelos\Cotizacion;
+use Aplicacion\Modelos\Empresa;
+use Aplicacion\Modelos\GestionComercial;
 use Aplicacion\Servicios\ServicioCorreo;
 
 class PublicoControlador extends Controlador
@@ -83,6 +85,21 @@ class PublicoControlador extends Controlador
         $this->vista('publico/cotizacion_publica', compact('cotizacion', 'token'), 'publico');
     }
 
+    public function imprimirCotizacionPublica(string $token): void
+    {
+        $cotizacion = (new Cotizacion())->obtenerPorTokenPublico($token);
+        if (!$cotizacion) {
+            http_response_code(404);
+            require __DIR__ . '/../../vistas/errores/404.php';
+            return;
+        }
+
+        $empresa = (new Empresa())->buscar((int) ($cotizacion['empresa_id'] ?? 0));
+        $listaAplicada = [];
+        $esVistaPublica = true;
+        $this->vista('empresa/cotizaciones/imprimir', compact('cotizacion', 'empresa', 'listaAplicada', 'esVistaPublica', 'token'), 'impresion');
+    }
+
     public function registrarDecisionCotizacion(string $token): void
     {
         $cotizacion = (new Cotizacion())->obtenerPorTokenPublico($token);
@@ -125,6 +142,26 @@ class PublicoControlador extends Controlador
             'nombre_firmante_cliente' => $nombreFirmante,
             'fecha_aprobacion_cliente' => $decision === 'aprobada' ? date('Y-m-d H:i:s') : null,
         ]);
+
+        $gestion = new GestionComercial();
+        $empresaId = (int) ($cotizacion['empresa_id'] ?? 0);
+        $cotizacionId = (int) ($cotizacion['id'] ?? 0);
+        if (!$gestion->existeAprobacionRegistrada($empresaId, $cotizacionId, $decision)) {
+            $gestion->crear('aprobaciones_cotizacion', [
+                'empresa_id' => $empresaId,
+                'cotizacion_id' => $cotizacionId,
+                'monto' => (float) ($cotizacion['total'] ?? 0),
+                'motivo' => $decision === 'aprobada' ? 'Aprobación desde enlace público' : 'Rechazo desde enlace público',
+                'solicitante' => $decision === 'aprobada' ? $nombreFirmante : ((string) ($cotizacion['cliente'] ?? 'Cliente')),
+                'aprobador' => 'Cliente (portal público)',
+                'estado' => $decision,
+                'fecha_aprobacion' => date('Y-m-d'),
+                'observaciones' => $decision === 'aprobada'
+                    ? 'Cliente aprobó desde enlace público con firma digital.'
+                    : 'Cliente rechazó desde enlace público.',
+                'fecha_creacion' => date('Y-m-d H:i:s'),
+            ]);
+        }
 
         flash('success', $decision === 'aprobada'
             ? 'Has aceptado la cotización correctamente y registrado tu firma.'

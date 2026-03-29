@@ -11,6 +11,10 @@ $puedeDecidir = in_array($estado, ['enviada', 'borrador'], true);
       <span class="badge text-bg-<?= e($badge) ?> text-uppercase"><?= e($estado) ?></span>
     </div>
 
+    <div class="d-flex gap-2 mb-3">
+      <a class="btn btn-outline-secondary btn-sm" href="<?= e(url('/cotizacion/publica/' . $token . '/imprimir')) ?>" target="_blank" rel="noopener">Imprimir cotización</a>
+    </div>
+
     <?php if ($flash): ?>
       <div class="alert alert-<?= e($flash['tipo']) ?>"><?= e($flash['mensaje']) ?></div>
     <?php endif; ?>
@@ -22,6 +26,9 @@ $puedeDecidir = in_array($estado, ['enviada', 'borrador'], true);
         <div class="col-md-3"><strong>Vencimiento:</strong> <?= e($cotizacion['fecha_vencimiento'] ?? '') ?></div>
         <div class="col-md-6"><strong>Vendedor:</strong> <?= e($cotizacion['vendedor'] ?? '') ?></div>
         <div class="col-md-6"><strong>Correo de contacto:</strong> <?= e($cotizacion['cliente_correo'] ?? '') ?></div>
+        <div class="col-md-6"><strong>Teléfono cliente:</strong> <?= e($cotizacion['cliente_telefono'] ?? '') ?></div>
+        <div class="col-md-6"><strong>Dirección cliente:</strong> <?= e(trim((string) (($cotizacion['cliente_direccion'] ?? '') . ' ' . ($cotizacion['cliente_ciudad'] ?? '')))) ?></div>
+        <div class="col-md-6"><strong>Identificador fiscal:</strong> <?= e($cotizacion['cliente_identificador_fiscal'] ?? '') ?></div>
       </div>
     </div>
 
@@ -61,6 +68,14 @@ $puedeDecidir = in_array($estado, ['enviada', 'borrador'], true);
         <div class="d-flex justify-content-between"><span>IVA</span><strong>$<?= e(number_format((float) ($cotizacion['impuesto'] ?? 0), 2)) ?></strong></div>
         <hr>
         <div class="d-flex justify-content-between h5 mb-0"><span>Total</span><strong>$<?= e(number_format((float) ($cotizacion['total'] ?? 0), 2)) ?></strong></div>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-header">Condiciones comerciales</div>
+      <div class="card-body">
+        <div class="mb-2"><strong>Observaciones:</strong><br><?= nl2br(e((string) ($cotizacion['observaciones'] ?? 'Sin observaciones'))) ?></div>
+        <div><strong>Términos y condiciones:</strong><br><?= nl2br(e((string) ($cotizacion['terminos_condiciones'] ?? 'Sin términos definidos'))) ?></div>
       </div>
     </div>
 

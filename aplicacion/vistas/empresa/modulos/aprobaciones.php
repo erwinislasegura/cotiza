@@ -137,12 +137,14 @@ $estadosCotizacion = ['borrador', 'enviada', 'aprobada', 'rechazada', 'vencida',
                     <th>Estado aprobación</th>
                     <th>Solicitante</th>
                     <th>Aprobador</th>
+                    <th>Motivo</th>
+                    <th>Observaciones</th>
                     <th class="text-end">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($registros)): ?>
-                    <tr><td colspan="9" class="text-center text-muted py-4">No hay aprobaciones para mostrar.</td></tr>
+                    <tr><td colspan="11" class="text-center text-muted py-4">No hay aprobaciones para mostrar.</td></tr>
                 <?php else: ?>
                     <?php foreach ($registros as $fila): ?>
                         <tr>
@@ -154,6 +156,8 @@ $estadosCotizacion = ['borrador', 'enviada', 'aprobada', 'rechazada', 'vencida',
                             <td><?= e((string) ($fila['estado'] ?? '')) ?></td>
                             <td><?= e((string) ($fila['solicitante'] ?? '')) ?></td>
                             <td><?= e((string) ($fila['aprobador'] ?? '')) ?></td>
+                            <td><?= e((string) ($fila['motivo'] ?? '')) ?></td>
+                            <td class="small"><?= e((string) ($fila['observaciones'] ?? '')) ?></td>
                             <td class="text-end">
                                 <div class="dropdown">
                                     <button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">Acciones</button>
