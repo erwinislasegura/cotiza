@@ -1,10 +1,11 @@
 <h1 class="h4 mb-3">Editar lista de precios</h1>
 
 <div class="alert alert-info border-0 mb-3">
-    <h2 class="h6 mb-2">Mantén consistencia con la configuración inicial</h2>
+    <h2 class="h6 mb-2">Guía rápida para editar la lista correctamente</h2>
     <ul class="mb-0 small">
-        <li>Conserva la estructura de reglas para que sea reutilizable en productos y cotizaciones.</li>
-        <li>Verifica vigencias para evitar aplicar precios fuera de fecha.</li>
+        <li>Conserva nombres claros para identificar el escenario comercial de la lista.</li>
+        <li>Verifica el <strong>canal de venta</strong> antes de guardar para evitar aplicar precios al canal incorrecto.</li>
+        <li>Confirma vigencias para evitar aplicar precios fuera de fecha.</li>
         <li>Usa estado <strong>activo</strong> solo en listas listas para operar.</li>
     </ul>
 </div>
@@ -46,26 +47,28 @@
             </div>
 
             <div class="col-md-2">
-                <label class="form-label">Tipo</label>
+                <label class="form-label">Tipo de lista</label>
                 <input
                     name="tipo_lista"
                     class="form-control"
                     placeholder="general / mayorista / campaña"
                     value="<?= e((string) ($registro['tipo_lista'] ?? 'general')) ?>"
                 >
+                <div class="form-text">Ejemplo: General, Mayorista, Promoción.</div>
             </div>
             <div class="col-md-2">
-                <label class="form-label">Canal</label>
+                <label class="form-label">Canal de venta</label>
                 <select name="canal_venta" class="form-select">
                     <option value="" <?= (($registro['canal_venta'] ?? '') === '') ? 'selected' : '' ?>>Todos</option>
                     <option value="local" <?= ($registro['canal_venta'] ?? '') === 'local' ? 'selected' : '' ?>>Local</option>
                     <option value="delivery" <?= ($registro['canal_venta'] ?? '') === 'delivery' ? 'selected' : '' ?>>Delivery</option>
                     <option value="ecommerce" <?= ($registro['canal_venta'] ?? '') === 'ecommerce' ? 'selected' : '' ?>>E-commerce</option>
                 </select>
+                <div class="form-text">Si aplica en todos los canales, deja "Todos".</div>
             </div>
 
             <div class="col-md-3">
-                <label class="form-label">Estado</label>
+                <label class="form-label">Estado de la lista</label>
                 <select name="estado" class="form-select">
                     <option value="activo" <?= ($registro['estado'] ?? 'activo') === 'activo' ? 'selected' : '' ?>>Activo</option>
                     <option value="inactivo" <?= ($registro['estado'] ?? '') === 'inactivo' ? 'selected' : '' ?>>Inactivo</option>
@@ -73,7 +76,7 @@
             </div>
 
             <div class="col-md-2">
-                <label class="form-label">Tipo ajuste</label>
+                <label class="form-label">Tipo de ajuste</label>
                 <select name="ajuste_tipo" class="form-select">
                     <option value="incremento" <?= ($registro['ajuste_tipo'] ?? 'incremento') === 'incremento' ? 'selected' : '' ?>>Incremento</option>
                     <option value="descuento" <?= ($registro['ajuste_tipo'] ?? '') === 'descuento' ? 'selected' : '' ?>>Descuento</option>
@@ -81,7 +84,7 @@
             </div>
 
             <div class="col-md-2">
-                <label class="form-label">% ajuste</label>
+                <label class="form-label">Porcentaje de ajuste (%)</label>
                 <input
                     type="number"
                     min="0"
@@ -90,6 +93,7 @@
                     class="form-control"
                     value="<?= e((string) ($registro['ajuste_porcentaje'] ?? '0')) ?>"
                 >
+                <div class="form-text">Ejemplo: 10 = 10%.</div>
             </div>
 
             <div class="col-12">
