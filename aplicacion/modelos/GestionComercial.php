@@ -310,16 +310,20 @@ class GestionComercial extends Modelo
         $stmt->execute();
         $tieneIndiceCompuesto = (int) $stmt->fetchColumn() > 0;
         if (!$tieneIndiceCompuesto) {
-            $stmtIndice = $this->db->prepare('SELECT COUNT(*)
-                FROM information_schema.STATISTICS
-                WHERE TABLE_SCHEMA = DATABASE()
-                  AND TABLE_NAME = "clientes_listas_precios"
-                  AND INDEX_NAME = "uniq_cliente_lista"');
-            $stmtIndice->execute();
-            if ((int) $stmtIndice->fetchColumn() > 0) {
-                $this->db->exec('ALTER TABLE clientes_listas_precios DROP INDEX uniq_cliente_lista');
+            try {
+                $stmtIndice = $this->db->prepare('SELECT COUNT(*)
+                    FROM information_schema.STATISTICS
+                    WHERE TABLE_SCHEMA = DATABASE()
+                      AND TABLE_NAME = "clientes_listas_precios"
+                      AND INDEX_NAME = "uniq_cliente_lista"');
+                $stmtIndice->execute();
+                if ((int) $stmtIndice->fetchColumn() > 0) {
+                    $this->db->exec('ALTER TABLE clientes_listas_precios DROP INDEX uniq_cliente_lista');
+                }
+                $this->db->exec('ALTER TABLE clientes_listas_precios ADD UNIQUE KEY uniq_cliente_lista (empresa_id, cliente_id, lista_precio_id)');
+            } catch (\Throwable $e) {
+                // Si la base no permite ALTER en runtime, mantener operación sin bloquear el flujo.
             }
-            $this->db->exec('ALTER TABLE clientes_listas_precios ADD UNIQUE KEY uniq_cliente_lista (empresa_id, cliente_id, lista_precio_id)');
         }
     }
 
