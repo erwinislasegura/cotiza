@@ -32,9 +32,14 @@ class CotizacionesControlador extends Controlador
         $empresaId = empresa_actual_id();
         $clientes = (new Cliente())->listar($empresaId);
         $productos = (new Producto())->listar($empresaId);
-        $listasPrecios = (new GestionComercial())->listarListasPreciosActivas($empresaId);
+        $gestion = new GestionComercial();
+        $listasPrecios = $gestion->listarListasPreciosActivas($empresaId);
+        $listasPreciosPorCliente = [];
+        foreach ($clientes as $cliente) {
+            $listasPreciosPorCliente[(int) $cliente['id']] = $gestion->obtenerListasPrecioCliente($empresaId, (int) $cliente['id']);
+        }
         $siguienteNumero = (new Cotizacion())->siguienteNumero($empresaId);
-        $this->vista('empresa/cotizaciones/formulario', compact('clientes', 'productos', 'siguienteNumero', 'listasPrecios'), 'empresa');
+        $this->vista('empresa/cotizaciones/formulario', compact('clientes', 'productos', 'siguienteNumero', 'listasPrecios', 'listasPreciosPorCliente'), 'empresa');
     }
 
     public function guardar(): void
@@ -210,7 +215,12 @@ class CotizacionesControlador extends Controlador
         }
         $clientes = (new Cliente())->listar($empresaId);
         $productos = (new Producto())->listar($empresaId);
-        $listasPrecios = (new GestionComercial())->listarListasPreciosActivas($empresaId);
+        $gestion = new GestionComercial();
+        $listasPrecios = $gestion->listarListasPreciosActivas($empresaId);
+        $listasPreciosPorCliente = [];
+        foreach ($clientes as $cliente) {
+            $listasPreciosPorCliente[(int) $cliente['id']] = $gestion->obtenerListasPrecioCliente($empresaId, (int) $cliente['id']);
+        }
         $listaPrecioSeleccionada = (new ServicioPreciosLista())->resolverListaPrecio(
             $empresaId,
             (int) $cotizacion['cliente_id'],
@@ -218,7 +228,7 @@ class CotizacionesControlador extends Controlador
             date('Y-m-d'),
             (int) ($cotizacion['lista_precio_id'] ?? 0) ?: null
         );
-        $this->vista('empresa/cotizaciones/editar', compact('cotizacion', 'clientes', 'productos', 'listasPrecios', 'listaPrecioSeleccionada'), 'empresa');
+        $this->vista('empresa/cotizaciones/editar', compact('cotizacion', 'clientes', 'productos', 'listasPrecios', 'listaPrecioSeleccionada', 'listasPreciosPorCliente'), 'empresa');
     }
 
     public function enviar(int $id): void

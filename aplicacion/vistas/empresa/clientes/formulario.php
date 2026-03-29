@@ -35,13 +35,13 @@
         </select>
       </div>
       <div class="col-md-4">
-        <label class="form-label">Lista de precios</label>
-        <select name="lista_precio_id" class="form-select">
-          <option value="">General</option>
+        <label class="form-label">Listas de precios</label>
+        <select name="lista_precio_ids[]" class="form-select" multiple size="4">
           <?php foreach (($listasPrecios ?? []) as $lp): ?>
             <option value="<?= (int) $lp['id'] ?>"><?= e($lp['nombre']) ?></option>
           <?php endforeach; ?>
         </select>
+        <div class="form-text">Puedes asociar una o más listas. Si no seleccionas ninguna, se cotiza sin lista.</div>
       </div>
       <div class="col-md-8">
         <label class="form-label">Dirección</label>
