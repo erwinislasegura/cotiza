@@ -2,8 +2,13 @@ USE cotiza_saas;
 
 INSERT INTO roles (id, nombre, codigo) VALUES
 (1, 'Superadministrador', 'superadministrador'),
-(2, 'Administrador de Empresa', 'administrador_empresa'),
-(3, 'Usuario de Empresa', 'usuario_empresa');
+(2, 'Administrador', 'administrador_empresa'),
+(3, 'Vendedor', 'vendedor'),
+(4, 'Administrativo', 'administrativo'),
+(5, 'Contabilidad', 'contabilidad'),
+(6, 'Supervisor Comercial', 'supervisor_comercial'),
+(7, 'Operaciones', 'operaciones'),
+(8, 'Usuario de Empresa', 'usuario_empresa');
 
 INSERT INTO permisos (nombre, codigo) VALUES
 ('Acceso panel admin', 'panel_admin'),

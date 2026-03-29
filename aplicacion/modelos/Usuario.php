@@ -31,7 +31,27 @@ class Usuario extends Modelo
 
     public function listarRolesEmpresa(): array
     {
-        return $this->db->query("SELECT id, nombre FROM roles WHERE codigo IN ('admin_empresa','vendedor','visor') ORDER BY nombre")->fetchAll();
+        $sql = "SELECT id, nombre, codigo FROM roles WHERE codigo IN (
+            'administrador_empresa',
+            'vendedor',
+            'administrativo',
+            'contabilidad',
+            'supervisor_comercial',
+            'operaciones',
+            'usuario_empresa'
+        )
+        ORDER BY FIELD(
+            codigo,
+            'administrador_empresa',
+            'vendedor',
+            'administrativo',
+            'contabilidad',
+            'supervisor_comercial',
+            'operaciones',
+            'usuario_empresa'
+        )";
+
+        return $this->db->query($sql)->fetchAll();
     }
 
     public function obtenerPorIdEmpresa(int $empresaId, int $id): ?array
@@ -43,7 +63,13 @@ class Usuario extends Modelo
 
     public function actualizarEmpresa(int $empresaId, int $id, array $data): void
     {
-        $sql = 'UPDATE usuarios SET nombre=:nombre, correo=:correo, rol_id=:rol_id, estado=:estado, fecha_actualizacion=NOW() WHERE empresa_id=:empresa_id AND id=:id AND fecha_eliminacion IS NULL';
+        $campos = 'nombre=:nombre, correo=:correo, rol_id=:rol_id, estado=:estado';
+
+        if (isset($data['password'])) {
+            $campos .= ', password=:password';
+        }
+
+        $sql = 'UPDATE usuarios SET ' . $campos . ', fecha_actualizacion=NOW() WHERE empresa_id=:empresa_id AND id=:id AND fecha_eliminacion IS NULL';
         $data['empresa_id'] = $empresaId;
         $data['id'] = $id;
         $this->db->prepare($sql)->execute($data);
