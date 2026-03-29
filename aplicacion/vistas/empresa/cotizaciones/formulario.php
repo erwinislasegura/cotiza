@@ -19,7 +19,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
             <div class="col-md-5">
                 <label class="small">Cliente</label>
                 <div class="input-group">
-                    <select class="form-select" name="cliente_id" required>
+                    <select class="form-select" name="cliente_id" id="cliente_id" required>
                         <?php if (!$hayClientes): ?>
                             <option value="">No hay clientes registrados</option>
                         <?php endif; ?>
@@ -28,6 +28,11 @@ $puedeGuardar = $hayClientes && $hayProductos;
                         <?php endforeach; ?>
                     </select>
                     <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalCliente">Dato fijo cliente</button>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="border rounded p-2 bg-light" id="resumen_cliente">
+                    <div class="small text-muted">Selecciona un cliente para ver su información.</div>
                 </div>
             </div>
 
@@ -41,24 +46,15 @@ $puedeGuardar = $hayClientes && $hayProductos;
                 </select>
             </div>
 
-            <div class="col-md-2">
-                <label class="small">Canal venta</label>
-                <select class="form-select" name="canal_venta" id="canal_venta">
-                    <option value="">General</option>
-                    <option value="local">Local</option>
-                    <option value="delivery">Delivery</option>
-                    <option value="ecommerce">E-commerce</option>
-                </select>
-            </div>
             <div class="col-md-4">
                 <label class="small">Lista de precios aplicada</label>
                 <select class="form-select" name="lista_precio_id" id="lista_precio_id">
-                    <option value="">Automática por cliente/canal</option>
+                    <option value="">No aplicar lista</option>
                     <?php foreach (($listasPrecios ?? []) as $lista): ?>
                         <option value="<?= (int) $lista['id'] ?>"><?= e($lista['nombre']) ?></option>
                     <?php endforeach; ?>
                 </select>
-                <div class="form-text" id="indicador_lista_estado">Selecciona cliente y producto para validar lista.</div>
+                <div class="form-text" id="indicador_lista_estado">Selecciona cliente y lista para aplicar ajustes.</div>
             </div>
 
             <div class="col-md-3">
@@ -86,7 +82,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span>Detalle de cotización</span>
-            <small class="text-muted">El precio y descuento se aplican automáticamente según la lista del cliente/canal.</small>
+            <small class="text-muted">El precio y descuento se aplican según la lista seleccionada (o sin lista).</small>
             <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-linea">Agregar línea</button>
         </div>
         <div class="card-body">
@@ -250,9 +246,24 @@ $puedeGuardar = $hayClientes && $hayProductos;
     const cuerpo = document.getElementById('cuerpo-items');
     const template = document.getElementById('fila-item-template');
     const btnAgregar = document.getElementById('btn-agregar-linea');
+    const selectCliente = document.querySelector('[name="cliente_id"]');
+    const selectLista = document.getElementById('lista_precio_id');
+    const todasLasListas = <?= json_encode($listasPrecios ?? [], JSON_UNESCAPED_UNICODE) ?>;
+    const listasPorCliente = <?= json_encode($listasPreciosPorCliente ?? [], JSON_UNESCAPED_UNICODE) ?>;
+    const clientes = <?= json_encode($clientes ?? [], JSON_UNESCAPED_UNICODE) ?>;
 
     function fmt(valor) {
         return '$' + (Math.round((valor + Number.EPSILON) * 100) / 100).toFixed(2);
+    }
+
+    function esc(valor) {
+        return String(valor ?? '').replace(/[&<>"']/g, (c) => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        }[c] || c));
     }
 
     function actualizarIndicadorLista() {
@@ -260,6 +271,10 @@ $puedeGuardar = $hayClientes && $hayProductos;
         if (!indicador) { return; }
         const filas = Array.from(cuerpo.querySelectorAll('tr'));
         const aplicadas = filas.filter((fila) => fila.dataset.listaAplicada === 'si').length;
+        if (!selectLista || !selectLista.value) {
+            indicador.innerHTML = '<span style="color:#6c757d;">Sin lista de precios aplicada.</span>';
+            return;
+        }
         if (aplicadas > 0) {
             indicador.innerHTML = `<span style="color:#3f8f62;">Se aplica descuento/lista en ${aplicadas} de ${filas.length} líneas.</span>`;
             return;
@@ -286,7 +301,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
 
         if (!data.lista_precio_id) {
             fila.dataset.listaAplicada = 'no';
-            celda.innerHTML = '<span style="color:#b94a48;">Sin lista para cliente/canal.</span>';
+            celda.innerHTML = '<span style="color:#b94a48;">Sin lista para este cliente.</span>';
             actualizarIndicadorLista();
             return;
         }
@@ -309,9 +324,8 @@ $puedeGuardar = $hayClientes && $hayProductos;
 
     async function autocompletarPrecioDesdeLista(fila, forzar = false) {
         const selectProducto = fila.querySelector('.js-producto');
-        const clienteId = document.querySelector('[name="cliente_id"]')?.value || '';
-        const canal = document.getElementById('canal_venta')?.value || '';
-        const listaPrecioId = document.getElementById('lista_precio_id')?.value || '';
+        const clienteId = selectCliente?.value || '';
+        const listaPrecioId = selectLista?.value || '';
 
         if (!selectProducto || !selectProducto.value || !clienteId) {
             renderInfoLista(fila, null);
@@ -322,7 +336,6 @@ $puedeGuardar = $hayClientes && $hayProductos;
             const params = new URLSearchParams({
                 producto_id: selectProducto.value,
                 cliente_id: clienteId,
-                canal: canal,
                 lista_precio_id: listaPrecioId
             });
             const resp = await fetch('<?= e(url('/app/listas-precios/precio-producto')) ?>?' + params.toString(), {
@@ -433,6 +446,63 @@ $puedeGuardar = $hayClientes && $hayProductos;
         cuerpo.appendChild(fila);
     }
 
+    function renderResumenCliente() {
+        const contenedor = document.getElementById('resumen_cliente');
+        if (!contenedor) { return; }
+
+        const clienteId = parseInt(selectCliente?.value || '0', 10);
+        const cliente = clientes.find((c) => parseInt(c.id || 0, 10) === clienteId);
+        if (!cliente) {
+            contenedor.innerHTML = '<div class="small text-muted">Selecciona un cliente para ver su información.</div>';
+            return;
+        }
+
+        const razon = (cliente.razon_social || cliente.nombre || '').trim();
+        const nombreComercial = (cliente.nombre_comercial || '').trim();
+        const correo = (cliente.correo || '').trim() || '—';
+        const telefono = (cliente.telefono || '').trim() || '—';
+        const ciudad = (cliente.ciudad || '').trim() || '—';
+        const direccion = (cliente.direccion || '').trim() || '—';
+
+        contenedor.innerHTML = `
+            <div class="row g-2 small">
+                <div class="col-md-4"><strong>Cliente:</strong> ${esc(razon || '—')}</div>
+                <div class="col-md-4"><strong>Nombre comercial:</strong> ${esc(nombreComercial || '—')}</div>
+                <div class="col-md-4"><strong>Correo:</strong> ${esc(correo)}</div>
+                <div class="col-md-4"><strong>Teléfono:</strong> ${esc(telefono)}</div>
+                <div class="col-md-4"><strong>Ciudad:</strong> ${esc(ciudad)}</div>
+                <div class="col-md-4"><strong>Dirección:</strong> ${esc(direccion)}</div>
+            </div>`;
+    }
+
+    function actualizarOpcionesListaCliente() {
+        if (!selectLista) { return; }
+        const clienteId = parseInt(selectCliente?.value || '0', 10);
+        const permitidas = new Set((listasPorCliente[String(clienteId)] || []).map((id) => parseInt(id, 10)));
+        const valorActual = selectLista.value;
+
+        selectLista.innerHTML = '';
+        const opcionNinguna = document.createElement('option');
+        opcionNinguna.value = '';
+        opcionNinguna.textContent = 'No aplicar lista';
+        selectLista.appendChild(opcionNinguna);
+
+        todasLasListas.forEach((lista) => {
+            const idLista = parseInt(lista.id || 0, 10);
+            if (!permitidas.has(idLista)) { return; }
+            const option = document.createElement('option');
+            option.value = String(idLista);
+            option.textContent = String(lista.nombre || ('Lista #' + idLista));
+            selectLista.appendChild(option);
+        });
+
+        if (valorActual !== '' && permitidas.has(parseInt(valorActual, 10))) {
+            selectLista.value = valorActual;
+        } else {
+            selectLista.value = '';
+        }
+    }
+
     async function aplicarListaATodasLineas(forzar = true) {
         const filas = Array.from(cuerpo.querySelectorAll('tr'));
         await Promise.all(filas.map((fila) => autocompletarPrecioDesdeLista(fila, forzar)));
@@ -448,8 +518,13 @@ $puedeGuardar = $hayClientes && $hayProductos;
     agregarFila();
     document.getElementById('descuento_tipo_total').addEventListener('change', recalcular);
     document.getElementById('descuento_total').addEventListener('input', recalcular);
-    document.querySelector('[name="cliente_id"]')?.addEventListener('change', () => { aplicarListaATodasLineas(true); });
-    document.getElementById('canal_venta')?.addEventListener('change', () => { aplicarListaATodasLineas(true); });
+    actualizarOpcionesListaCliente();
+    renderResumenCliente();
+    document.querySelector('[name="cliente_id"]')?.addEventListener('change', () => {
+        renderResumenCliente();
+        actualizarOpcionesListaCliente();
+        aplicarListaATodasLineas(true);
+    });
     document.getElementById('lista_precio_id')?.addEventListener('change', () => { aplicarListaATodasLineas(true); });
     aplicarListaATodasLineas(true);
 })();

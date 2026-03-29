@@ -41,12 +41,18 @@ CREATE TABLE IF NOT EXISTS clientes_listas_precios (
   lista_precio_id BIGINT UNSIGNED NOT NULL,
   fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   fecha_actualizacion DATETIME NULL,
-  UNIQUE KEY uniq_cliente_lista (empresa_id, cliente_id),
+  UNIQUE KEY uniq_cliente_lista (empresa_id, cliente_id, lista_precio_id),
   INDEX idx_clientes_listas_lista (lista_precio_id),
   CONSTRAINT fk_clientes_listas_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
   CONSTRAINT fk_clientes_listas_cliente FOREIGN KEY (cliente_id) REFERENCES clientes(id),
   CONSTRAINT fk_clientes_listas_lista FOREIGN KEY (lista_precio_id) REFERENCES listas_precios(id)
 );
+
+SET @sql = IF(
+  (SELECT COUNT(*) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=@db_name AND TABLE_NAME='clientes_listas_precios' AND INDEX_NAME='uniq_cliente_lista' AND SEQ_IN_INDEX=3) = 0,
+  'ALTER TABLE clientes_listas_precios DROP INDEX uniq_cliente_lista, ADD UNIQUE KEY uniq_cliente_lista (empresa_id, cliente_id, lista_precio_id)',
+  'SELECT 1'
+); PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 CREATE TABLE IF NOT EXISTS listas_precios_reglas (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
