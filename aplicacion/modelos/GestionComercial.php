@@ -211,38 +211,78 @@ class GestionComercial extends Modelo
 
     public function obtenerListaPrecioCliente(int $empresaId, int $clienteId): ?int
     {
+        $listas = $this->obtenerListasPrecioCliente($empresaId, $clienteId);
+        return $listas[0] ?? null;
+    }
+
+    public function obtenerListasPrecioCliente(int $empresaId, int $clienteId): array
+    {
         $this->asegurarTablaClientesListas();
 
         $stmt = $this->db->prepare('SELECT lista_precio_id
             FROM clientes_listas_precios
             WHERE empresa_id = :empresa_id AND cliente_id = :cliente_id
-            ORDER BY id DESC
-            LIMIT 1');
+            ORDER BY id DESC');
         $stmt->execute(['empresa_id' => $empresaId, 'cliente_id' => $clienteId]);
-        $valor = $stmt->fetchColumn();
-        return $valor !== false ? (int) $valor : null;
+        $ids = [];
+        foreach ($stmt->fetchAll(\PDO::FETCH_COLUMN) as $valor) {
+            $ids[] = (int) $valor;
+        }
+        return $ids;
     }
 
     public function asignarListaPrecioCliente(int $empresaId, int $clienteId, ?int $listaPrecioId): void
     {
+        $this->asignarListasPrecioCliente($empresaId, $clienteId, $listaPrecioId !== null ? [$listaPrecioId] : []);
+    }
+
+    public function asignarListasPrecioCliente(int $empresaId, int $clienteId, array $listaPrecioIds): void
+    {
         $this->asegurarTablaClientesListas();
 
-        if ($listaPrecioId === null || $listaPrecioId <= 0) {
-            $stmtDelete = $this->db->prepare('DELETE FROM clientes_listas_precios WHERE empresa_id = :empresa_id AND cliente_id = :cliente_id');
-            $stmtDelete->execute(['empresa_id' => $empresaId, 'cliente_id' => $clienteId]);
+        $idsLimpios = [];
+        foreach ($listaPrecioIds as $listaPrecioId) {
+            $id = (int) $listaPrecioId;
+            if ($id > 0) {
+                $idsLimpios[$id] = $id;
+            }
+        }
+
+        $stmtDelete = $this->db->prepare('DELETE FROM clientes_listas_precios WHERE empresa_id = :empresa_id AND cliente_id = :cliente_id');
+        $stmtDelete->execute(['empresa_id' => $empresaId, 'cliente_id' => $clienteId]);
+
+        if ($idsLimpios === []) {
             return;
         }
 
         $stmt = $this->db->prepare('INSERT INTO clientes_listas_precios (empresa_id, cliente_id, lista_precio_id, fecha_creacion)
-            VALUES (:empresa_id, :cliente_id, :lista_precio_id, NOW())
-            ON DUPLICATE KEY UPDATE
-                lista_precio_id = VALUES(lista_precio_id),
-                fecha_actualizacion = NOW()');
+            VALUES (:empresa_id, :cliente_id, :lista_precio_id, NOW())');
+        foreach ($idsLimpios as $listaPrecioId) {
+            $stmt->execute([
+                'empresa_id' => $empresaId,
+                'cliente_id' => $clienteId,
+                'lista_precio_id' => $listaPrecioId,
+            ]);
+        }
+    }
+
+    public function clienteTieneListaPrecio(int $empresaId, int $clienteId, int $listaPrecioId): bool
+    {
+        if ($listaPrecioId <= 0) {
+            return false;
+        }
+
+        $this->asegurarTablaClientesListas();
+        $stmt = $this->db->prepare('SELECT 1
+            FROM clientes_listas_precios
+            WHERE empresa_id = :empresa_id AND cliente_id = :cliente_id AND lista_precio_id = :lista_precio_id
+            LIMIT 1');
         $stmt->execute([
             'empresa_id' => $empresaId,
             'cliente_id' => $clienteId,
             'lista_precio_id' => $listaPrecioId,
         ]);
+        return (bool) $stmt->fetchColumn();
     }
 
     private function asegurarTablaClientesListas(): void
@@ -254,12 +294,33 @@ class GestionComercial extends Modelo
             lista_precio_id BIGINT UNSIGNED NOT NULL,
             fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             fecha_actualizacion DATETIME NULL,
-            UNIQUE KEY uniq_cliente_lista (empresa_id, cliente_id),
+            UNIQUE KEY uniq_cliente_lista (empresa_id, cliente_id, lista_precio_id),
             INDEX idx_clientes_listas_lista (lista_precio_id),
             CONSTRAINT fk_clientes_listas_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id),
             CONSTRAINT fk_clientes_listas_cliente FOREIGN KEY (cliente_id) REFERENCES clientes(id),
             CONSTRAINT fk_clientes_listas_lista FOREIGN KEY (lista_precio_id) REFERENCES listas_precios(id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+
+        $stmt = $this->db->prepare('SELECT COUNT(*)
+            FROM information_schema.STATISTICS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = "clientes_listas_precios"
+              AND INDEX_NAME = "uniq_cliente_lista"
+              AND SEQ_IN_INDEX = 3');
+        $stmt->execute();
+        $tieneIndiceCompuesto = (int) $stmt->fetchColumn() > 0;
+        if (!$tieneIndiceCompuesto) {
+            $stmtIndice = $this->db->prepare('SELECT COUNT(*)
+                FROM information_schema.STATISTICS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = "clientes_listas_precios"
+                  AND INDEX_NAME = "uniq_cliente_lista"');
+            $stmtIndice->execute();
+            if ((int) $stmtIndice->fetchColumn() > 0) {
+                $this->db->exec('ALTER TABLE clientes_listas_precios DROP INDEX uniq_cliente_lista');
+            }
+            $this->db->exec('ALTER TABLE clientes_listas_precios ADD UNIQUE KEY uniq_cliente_lista (empresa_id, cliente_id, lista_precio_id)');
+        }
     }
 
     private function tablaExiste(string $tabla): bool

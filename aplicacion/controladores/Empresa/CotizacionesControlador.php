@@ -32,9 +32,14 @@ class CotizacionesControlador extends Controlador
         $empresaId = empresa_actual_id();
         $clientes = (new Cliente())->listar($empresaId);
         $productos = (new Producto())->listar($empresaId);
-        $listasPrecios = (new GestionComercial())->listarListasPreciosActivas($empresaId);
+        $gestion = new GestionComercial();
+        $listasPrecios = $gestion->listarListasPreciosActivas($empresaId);
+        $listasPreciosPorCliente = [];
+        foreach ($clientes as $cliente) {
+            $listasPreciosPorCliente[(int) $cliente['id']] = $gestion->obtenerListasPrecioCliente($empresaId, (int) $cliente['id']);
+        }
         $siguienteNumero = (new Cotizacion())->siguienteNumero($empresaId);
-        $this->vista('empresa/cotizaciones/formulario', compact('clientes', 'productos', 'siguienteNumero', 'listasPrecios'), 'empresa');
+        $this->vista('empresa/cotizaciones/formulario', compact('clientes', 'productos', 'siguienteNumero', 'listasPrecios', 'listasPreciosPorCliente'), 'empresa');
     }
 
     public function guardar(): void
@@ -53,7 +58,6 @@ class CotizacionesControlador extends Controlador
         $impuestos = $_POST['impuesto_item'] ?? [];
         $descuentoTiposLinea = $_POST['descuento_tipo_item'] ?? [];
         $descuentoValoresLinea = $_POST['descuento_item'] ?? [];
-        $canalVenta = trim((string) ($_POST['canal_venta'] ?? ''));
         $clienteIdSeleccionado = (int) ($_POST['cliente_id'] ?? 0) ?: null;
         $listaPrecioId = (int) ($_POST['lista_precio_id'] ?? 0) ?: null;
         $servicioPrecios = new ServicioPreciosLista();
@@ -82,7 +86,6 @@ class CotizacionesControlador extends Controlador
                 $empresaId,
                 $productoId,
                 $clienteIdSeleccionado,
-                $canalVenta !== '' ? $canalVenta : null,
                 $listaPrecioId,
                 $precio,
                 $descuentoTipo,
@@ -210,7 +213,12 @@ class CotizacionesControlador extends Controlador
         }
         $clientes = (new Cliente())->listar($empresaId);
         $productos = (new Producto())->listar($empresaId);
-        $listasPrecios = (new GestionComercial())->listarListasPreciosActivas($empresaId);
+        $gestion = new GestionComercial();
+        $listasPrecios = $gestion->listarListasPreciosActivas($empresaId);
+        $listasPreciosPorCliente = [];
+        foreach ($clientes as $cliente) {
+            $listasPreciosPorCliente[(int) $cliente['id']] = $gestion->obtenerListasPrecioCliente($empresaId, (int) $cliente['id']);
+        }
         $listaPrecioSeleccionada = (new ServicioPreciosLista())->resolverListaPrecio(
             $empresaId,
             (int) $cotizacion['cliente_id'],
@@ -218,7 +226,7 @@ class CotizacionesControlador extends Controlador
             date('Y-m-d'),
             (int) ($cotizacion['lista_precio_id'] ?? 0) ?: null
         );
-        $this->vista('empresa/cotizaciones/editar', compact('cotizacion', 'clientes', 'productos', 'listasPrecios', 'listaPrecioSeleccionada'), 'empresa');
+        $this->vista('empresa/cotizaciones/editar', compact('cotizacion', 'clientes', 'productos', 'listasPrecios', 'listaPrecioSeleccionada', 'listasPreciosPorCliente'), 'empresa');
     }
 
     public function enviar(int $id): void
@@ -316,7 +324,6 @@ class CotizacionesControlador extends Controlador
         $impuestos = $_POST['impuesto_item'] ?? [];
         $descuentoTiposLinea = $_POST['descuento_tipo_item'] ?? [];
         $descuentoValoresLinea = $_POST['descuento_item'] ?? [];
-        $canalVenta = trim((string) ($_POST['canal_venta'] ?? ''));
         $clienteIdSeleccionado = (int) ($_POST['cliente_id'] ?? 0) ?: null;
         $listaPrecioId = (int) ($_POST['lista_precio_id'] ?? 0) ?: null;
         $servicioPrecios = new ServicioPreciosLista();
@@ -345,7 +352,6 @@ class CotizacionesControlador extends Controlador
                 empresa_actual_id(),
                 $productoId,
                 $clienteIdSeleccionado,
-                $canalVenta !== '' ? $canalVenta : null,
                 $listaPrecioId,
                 $precio,
                 $descuentoTipo,
@@ -416,7 +422,6 @@ class CotizacionesControlador extends Controlador
         int $empresaId,
         ?int $productoId,
         ?int $clienteId,
-        ?string $canalVenta,
         ?int $listaPrecioId,
         float $precio,
         string $descuentoTipo,
@@ -426,7 +431,7 @@ class CotizacionesControlador extends Controlador
             return [$precio, $descuentoTipo, $descuentoValor];
         }
 
-        $precioCalculado = $servicioPrecios->calcularPrecioProducto($empresaId, $productoId, $clienteId, $canalVenta, date('Y-m-d'), $listaPrecioId);
+        $precioCalculado = $servicioPrecios->calcularPrecioProducto($empresaId, $productoId, $clienteId, null, date('Y-m-d'), $listaPrecioId);
         if (!$precioCalculado) {
             return [$precio, $descuentoTipo, $descuentoValor];
         }
