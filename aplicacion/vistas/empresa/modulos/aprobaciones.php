@@ -6,7 +6,7 @@ $estadosCotizacion = ['borrador', 'enviada', 'aprobada', 'rechazada', 'vencida',
     <h1 class="h4 mb-0">Aprobaciones de cotizaciones</h1>
 </div>
 
-<div class="alert alert-light border mb-3">
+<div class="alert alert-info info-modulo mb-3">
     <div class="fw-semibold mb-1">Guía rápida para aprobaciones</div>
     <ul class="mb-0 small ps-3">
         <li>Selecciona la cotización para autocompletar monto y solicitante.</li>

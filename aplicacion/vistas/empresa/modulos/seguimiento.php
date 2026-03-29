@@ -6,7 +6,7 @@ $estadosComerciales = ['abierto', 'contactado', 'en negociacion', 'pendiente cli
     <h1 class="h4 mb-0">Seguimiento de cotizaciones</h1>
 </div>
 
-<div class="alert alert-light border mb-3">
+<div class="alert alert-info info-modulo mb-3">
     <div class="fw-semibold mb-1">Guía rápida para el equipo comercial</div>
     <ul class="mb-0 small ps-3">
         <li>Selecciona una cotización para autocompletar cliente y responsable.</li>
