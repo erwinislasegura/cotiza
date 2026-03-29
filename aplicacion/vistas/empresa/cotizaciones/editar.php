@@ -6,6 +6,10 @@ $itemsExistentes = $cotizacion['items'] ?? [];
 $descuentoTipoTotal = $cotizacion['descuento_tipo'] ?? 'valor';
 $descuentoTotalValor = $cotizacion['descuento_valor'] ?? $cotizacion['descuento'] ?? 0;
 $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
+$listaPrecioCotizacionId = (int) ($cotizacion['lista_precio_id'] ?? 0);
+if ($listaPrecioCotizacionId > 0) {
+    $listaPrecioIdSeleccionada = $listaPrecioCotizacionId;
+}
 ?>
 <h1 class="h4 mb-3">Editar cotización</h1>
 
@@ -41,24 +45,15 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
                 </select>
             </div>
 
-            <div class="col-md-2">
-                <label class="small">Canal venta</label>
-                <select class="form-select" name="canal_venta" id="canal_venta">
-                    <option value="">General</option>
-                    <option value="local">Local</option>
-                    <option value="delivery">Delivery</option>
-                    <option value="ecommerce">E-commerce</option>
-                </select>
-            </div>
             <div class="col-md-4">
                 <label class="small">Lista de precios aplicada</label>
                 <select class="form-select" name="lista_precio_id" id="lista_precio_id">
-                    <option value="">Automática por cliente/canal</option>
+                    <option value="">No aplicar lista</option>
                     <?php foreach (($listasPrecios ?? []) as $lista): ?>
                         <option value="<?= (int) $lista['id'] ?>" <?= $listaPrecioIdSeleccionada === (int) $lista['id'] ? 'selected' : '' ?>><?= e($lista['nombre']) ?></option>
                     <?php endforeach; ?>
                 </select>
-                <div class="form-text" id="indicador_lista_estado">Selecciona cliente/productos para calcular la lista.</div>
+                <div class="form-text" id="indicador_lista_estado">Selecciona cliente y lista para aplicar ajustes.</div>
             </div>
 
             <div class="col-md-3">
@@ -86,7 +81,7 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span>Detalle de cotización</span>
-            <small class="text-muted">Precio y descuento se recalculan con la lista del cliente/canal.</small>
+            <small class="text-muted">Precio y descuento se recalculan con la lista seleccionada (o sin lista).</small>
             <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-linea">Agregar línea</button>
         </div>
         <div class="card-body">
@@ -229,6 +224,10 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
     const cuerpo = document.getElementById('cuerpo-items');
     const template = document.getElementById('fila-item-template');
     const btnAgregar = document.getElementById('btn-agregar-linea');
+    const selectCliente = document.querySelector('[name="cliente_id"]');
+    const selectLista = document.getElementById('lista_precio_id');
+    const todasLasListas = <?= json_encode($listasPrecios ?? [], JSON_UNESCAPED_UNICODE) ?>;
+    const listasPorCliente = <?= json_encode($listasPreciosPorCliente ?? [], JSON_UNESCAPED_UNICODE) ?>;
 
     function fmt(v) { return '$' + (Math.round((v + Number.EPSILON) * 100) / 100).toFixed(2); }
     function actualizarIndicadorLista() {
@@ -237,6 +236,10 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
         const filas = Array.from(cuerpo.querySelectorAll('tr'));
         if (filas.length === 0) {
             indicador.innerHTML = 'Sin líneas para validar lista de precios.';
+            return;
+        }
+        if (!selectLista || !selectLista.value) {
+            indicador.innerHTML = '<span style="color:#6c757d;">Sin lista de precios aplicada.</span>';
             return;
         }
         const aplicadas = filas.filter((fila) => fila.dataset.listaAplicada === 'si').length;
@@ -256,7 +259,7 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
             return;
         }
 
-        const nombreLista = data.lista_precio_nombre || 'Lista automática';
+        const nombreLista = data.lista_precio_nombre || 'Lista';
         const tieneLista = !!data.lista_precio_id;
         const porcentaje = parseFloat(data.ajuste_porcentaje || '0');
         const tipo = data.ajuste_tipo === 'descuento' ? 'descuento' : 'incremento';
@@ -266,7 +269,7 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
 
         if (!tieneLista) {
             fila.dataset.listaAplicada = 'no';
-            celda.innerHTML = '<span style="color:#b94a48;">Sin lista para este cliente/canal.</span>';
+            celda.innerHTML = '<span style="color:#b94a48;">Sin lista para este cliente.</span>';
             actualizarIndicadorLista();
             return;
         }
@@ -289,15 +292,14 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
     }
     async function autocompletarPrecioDesdeLista(fila, forzar = false) {
         const selectProducto = fila.querySelector('.js-producto');
-        const clienteId = document.querySelector('[name="cliente_id"]')?.value || '';
-        const canal = document.getElementById('canal_venta')?.value || '';
-        const listaPrecioId = document.getElementById('lista_precio_id')?.value || '';
+        const clienteId = selectCliente?.value || '';
+        const listaPrecioId = selectLista?.value || '';
         if (!selectProducto || !selectProducto.value || !clienteId) {
             renderInfoLista(fila, null);
             return;
         }
         try {
-            const params = new URLSearchParams({ producto_id: selectProducto.value, cliente_id: clienteId, canal: canal, lista_precio_id: listaPrecioId });
+            const params = new URLSearchParams({ producto_id: selectProducto.value, cliente_id: clienteId, lista_precio_id: listaPrecioId });
             const resp = await fetch('<?= e(url('/app/listas-precios/precio-producto')) ?>?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
             const data = await resp.json();
             if (data.ok && data.data && typeof data.data.precio_final !== 'undefined') {
@@ -375,6 +377,33 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
         actualizarIndicadorLista();
     }
     function agregarFila() { const fila = template.content.firstElementChild.cloneNode(true); bindFila(fila); cuerpo.appendChild(fila); }
+    function actualizarOpcionesListaCliente() {
+        if (!selectLista) { return; }
+        const clienteId = parseInt(selectCliente?.value || '0', 10);
+        const permitidas = new Set((listasPorCliente[String(clienteId)] || []).map((id) => parseInt(id, 10)));
+        const valorActual = selectLista.value;
+
+        selectLista.innerHTML = '';
+        const opcionNinguna = document.createElement('option');
+        opcionNinguna.value = '';
+        opcionNinguna.textContent = 'No aplicar lista';
+        selectLista.appendChild(opcionNinguna);
+
+        todasLasListas.forEach((lista) => {
+            const idLista = parseInt(lista.id || 0, 10);
+            if (!permitidas.has(idLista)) { return; }
+            const option = document.createElement('option');
+            option.value = String(idLista);
+            option.textContent = String(lista.nombre || ('Lista #' + idLista));
+            selectLista.appendChild(option);
+        });
+
+        if (valorActual !== '' && permitidas.has(parseInt(valorActual, 10))) {
+            selectLista.value = valorActual;
+        } else {
+            selectLista.value = '';
+        }
+    }
     async function aplicarListaATodasLineas(forzar = true) {
         const filas = Array.from(cuerpo.querySelectorAll('tr'));
         await Promise.all(filas.map((fila) => autocompletarPrecioDesdeLista(fila, forzar)));
@@ -386,8 +415,11 @@ $listaPrecioIdSeleccionada = (int) ($listaPrecioSeleccionada['id'] ?? 0);
     btnAgregar.addEventListener('click', () => { agregarFila(); recalcular(); });
     document.getElementById('descuento_tipo_total').addEventListener('change', recalcular);
     document.getElementById('descuento_total').addEventListener('input', recalcular);
-    document.querySelector('[name="cliente_id"]')?.addEventListener('change', () => { aplicarListaATodasLineas(true); });
-    document.getElementById('canal_venta')?.addEventListener('change', () => { aplicarListaATodasLineas(true); });
+    actualizarOpcionesListaCliente();
+    document.querySelector('[name="cliente_id"]')?.addEventListener('change', () => {
+        actualizarOpcionesListaCliente();
+        aplicarListaATodasLineas(true);
+    });
     document.getElementById('lista_precio_id')?.addEventListener('change', () => { aplicarListaATodasLineas(true); });
     aplicarListaATodasLineas(true);
 })();
