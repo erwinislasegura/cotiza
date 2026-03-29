@@ -98,15 +98,36 @@ class PublicoControlador extends Controlador
             $this->redirigir('/cotizacion/publica/' . $token);
         }
 
-        (new Cotizacion())->actualizarBasico((int) $cotizacion['empresa_id'], (int) $cotizacion['id'], [
+        $nombreFirmante = trim((string) ($_POST['nombre_firmante_cliente'] ?? ''));
+        $firmaCliente = trim((string) ($_POST['firma_cliente'] ?? ''));
+
+        if ($decision === 'aprobada') {
+            if ($nombreFirmante === '' || $firmaCliente === '') {
+                flash('danger', 'Para aprobar debes ingresar el nombre y la firma del cliente.');
+                $this->redirigir('/cotizacion/publica/' . $token);
+            }
+
+            if (strpos($firmaCliente, 'data:image/png;base64,') !== 0) {
+                flash('danger', 'La firma enviada no tiene un formato válido.');
+                $this->redirigir('/cotizacion/publica/' . $token);
+            }
+        } else {
+            $nombreFirmante = null;
+            $firmaCliente = null;
+        }
+
+        (new Cotizacion())->actualizarDecisionPublica((int) $cotizacion['empresa_id'], (int) $cotizacion['id'], [
             'estado' => $decision,
             'observaciones' => (string) ($cotizacion['observaciones'] ?? ''),
             'terminos_condiciones' => (string) ($cotizacion['terminos_condiciones'] ?? ''),
             'fecha_vencimiento' => (string) ($cotizacion['fecha_vencimiento'] ?? date('Y-m-d')),
+            'firma_cliente' => $firmaCliente,
+            'nombre_firmante_cliente' => $nombreFirmante,
+            'fecha_aprobacion_cliente' => $decision === 'aprobada' ? date('Y-m-d H:i:s') : null,
         ]);
 
         flash('success', $decision === 'aprobada'
-            ? 'Has aceptado la cotización correctamente.'
+            ? 'Has aceptado la cotización correctamente y registrado tu firma.'
             : 'Has rechazado la cotización correctamente.');
         $this->redirigir('/cotizacion/publica/' . $token);
     }

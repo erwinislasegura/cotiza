@@ -40,7 +40,7 @@ class Cotizacion extends Modelo
     {
         $this->db->beginTransaction();
         try {
-            $sql = 'INSERT INTO cotizaciones (empresa_id, cliente_id, usuario_id, numero, consecutivo, estado, subtotal, descuento_tipo, descuento_valor, descuento, impuesto, total, observaciones, terminos_condiciones, lista_precio_id, fecha_emision, fecha_vencimiento, fecha_creacion) VALUES (:empresa_id,:cliente_id,:usuario_id,:numero,:consecutivo,:estado,:subtotal,:descuento_tipo,:descuento_valor,:descuento,:impuesto,:total,:observaciones,:terminos_condiciones,:lista_precio_id,:fecha_emision,:fecha_vencimiento,NOW())';
+            $sql = 'INSERT INTO cotizaciones (empresa_id, cliente_id, usuario_id, numero, consecutivo, estado, subtotal, descuento_tipo, descuento_valor, descuento, impuesto, total, observaciones, terminos_condiciones, lista_precio_id, token_publico, fecha_emision, fecha_vencimiento, fecha_creacion) VALUES (:empresa_id,:cliente_id,:usuario_id,:numero,:consecutivo,:estado,:subtotal,:descuento_tipo,:descuento_valor,:descuento,:impuesto,:total,:observaciones,:terminos_condiciones,:lista_precio_id,:token_publico,:fecha_emision,:fecha_vencimiento,NOW())';
             $this->db->prepare($sql)->execute($cotizacion);
             $cotizacionId = (int) $this->db->lastInsertId();
 
@@ -142,6 +142,24 @@ class Cotizacion extends Modelo
     public function actualizarBasico(int $empresaId, int $id, array $data): void
     {
         $sql = 'UPDATE cotizaciones SET estado=:estado, observaciones=:observaciones, terminos_condiciones=:terminos_condiciones, fecha_vencimiento=:fecha_vencimiento, fecha_actualizacion=NOW() WHERE empresa_id=:empresa_id AND id=:id AND fecha_eliminacion IS NULL';
+        $data['empresa_id'] = $empresaId;
+        $data['id'] = $id;
+        $this->db->prepare($sql)->execute($data);
+    }
+
+    public function actualizarDecisionPublica(int $empresaId, int $id, array $data): void
+    {
+        $sql = 'UPDATE cotizaciones SET
+            estado=:estado,
+            observaciones=:observaciones,
+            terminos_condiciones=:terminos_condiciones,
+            fecha_vencimiento=:fecha_vencimiento,
+            firma_cliente=:firma_cliente,
+            nombre_firmante_cliente=:nombre_firmante_cliente,
+            fecha_aprobacion_cliente=:fecha_aprobacion_cliente,
+            fecha_actualizacion=NOW()
+            WHERE empresa_id=:empresa_id AND id=:id AND fecha_eliminacion IS NULL';
+
         $data['empresa_id'] = $empresaId;
         $data['id'] = $id;
         $this->db->prepare($sql)->execute($data);
