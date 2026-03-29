@@ -3,6 +3,15 @@
     <a href="<?= e(url('/app/clientes')) ?>" class="btn btn-outline-primary btn-sm">Volver a clientes</a>
 </div>
 
+<div class="alert alert-info info-modulo mb-3">
+    <div class="fw-semibold mb-1">Uso recomendado de contactos</div>
+    <ul class="mb-0 small ps-3">
+        <li>Marca un contacto principal para priorizar comunicaciones y seguimientos.</li>
+        <li>Mantén cargo, correo y teléfonos actualizados para mejorar la respuesta comercial.</li>
+        <li>Asocia cada contacto al cliente correcto para trazabilidad en cotizaciones.</li>
+    </ul>
+</div>
+
 <div class="card mb-3">
     <div class="card-header">Nuevo contacto</div>
     <div class="card-body">
