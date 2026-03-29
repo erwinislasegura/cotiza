@@ -6,12 +6,12 @@ $usuarios = $usuarios ?? [];
 $usuarioSeleccionado = (int) ($vendedor['usuario_id'] ?? 0);
 ?>
 <div class="col-md-4">
-    <label class="form-label">Nombre completo</label>
-    <input name="nombre" class="form-control" maxlength="120" required placeholder="Ej. Laura García" value="<?= e((string) ($vendedor['nombre'] ?? '')) ?>">
+    <label class="form-label" for="vendedor_nombre">Nombre completo</label>
+    <input id="vendedor_nombre" name="nombre" class="form-control" maxlength="120" required placeholder="Ej. Laura García" value="<?= e((string) ($vendedor['nombre'] ?? '')) ?>">
 </div>
 <div class="col-md-4">
-    <label class="form-label">Correo corporativo</label>
-    <input name="correo" class="form-control" type="email" maxlength="120" placeholder="vendedor@empresa.com" value="<?= e((string) ($vendedor['correo'] ?? '')) ?>">
+    <label class="form-label" for="vendedor_correo">Correo corporativo</label>
+    <input id="vendedor_correo" name="correo" class="form-control" type="email" maxlength="120" placeholder="vendedor@empresa.com" value="<?= e((string) ($vendedor['correo'] ?? '')) ?>">
 </div>
 <div class="col-md-2">
     <label class="form-label">Teléfono</label>

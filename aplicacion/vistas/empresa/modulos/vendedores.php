@@ -17,6 +17,15 @@ $accionesListado = sprintf(
     e(ExcelExpoFormato::BOTON_TEXTO)
 );
 
+echo '<div class="alert alert-info info-modulo mb-3">'
+    . '<div class="fw-semibold mb-1">Buenas prácticas para gestionar vendedores</div>'
+    . '<ul class="mb-0 small ps-3">'
+    . '<li>Asigna comisión y estado actual para reflejar correctamente el desempeño comercial.</li>'
+    . '<li>Vincula usuario asociado para trazabilidad de acciones por vendedor.</li>'
+    . '<li>Mantén correo y teléfono actualizados para coordinación con clientes.</li>'
+    . '</ul>'
+    . '</div>';
+
 render_modulo_simple(
     'Vendedores',
     '/app/vendedores',

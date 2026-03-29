@@ -2,6 +2,15 @@
   <h1 class="h4 mb-0">Servicios / Productos</h1>
 </section>
 
+<div class="alert alert-info info-modulo mb-3">
+  <div class="fw-semibold mb-1">Uso y buenas prácticas para productos</div>
+  <ul class="mb-0 small ps-3">
+    <li>Incluye datos completos para que la cotización sea más clara para el cliente.</li>
+    <li>Usa <strong>stock mínimo</strong> y <strong>stock de aviso</strong> para anticipar reposición.</li>
+    <li>Si el ítem no se ofrece temporalmente, cambia estado a <strong>inactivo</strong>.</li>
+  </ul>
+</div>
+
 <div class="card mb-3">
   <div class="card-header">Nuevo ítem comercial</div>
   <div class="card-body">
