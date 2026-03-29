@@ -1,6 +1,13 @@
 <h1 class="h4 mb-3">Editar cliente</h1>
+<div class="alert alert-info info-modulo mb-3">
+  <div class="fw-semibold mb-1">Recomendaciones de actualización</div>
+  <ul class="mb-0 small ps-3">
+    <li>Verifica estado y listas de precios para reflejar las condiciones vigentes del cliente.</li>
+    <li>Actualiza observaciones para mantener continuidad entre ventas, soporte y postventa.</li>
+  </ul>
+</div>
 <div class="card"><div class="card-body"><form method="POST" class="row g-2"><?= csrf_campo() ?>
-<div class="col-md-3"><label class="form-label">Razón social</label><input name="razon_social" class="form-control" value="<?= e($cliente['razon_social']) ?>"></div>
+<div class="col-md-3"><label class="form-label" for="editar_cliente_razon_social">Razón social</label><input id="editar_cliente_razon_social" name="razon_social" class="form-control" value="<?= e($cliente['razon_social']) ?>"></div>
 <div class="col-md-3"><label class="form-label">Nombre comercial</label><input name="nombre_comercial" class="form-control" value="<?= e($cliente['nombre_comercial']) ?>"></div>
 <div class="col-md-2"><label class="form-label">ID fiscal</label><input name="identificador_fiscal" class="form-control" value="<?= e($cliente['identificador_fiscal']) ?>"></div>
 <div class="col-md-2"><label class="form-label">Giro</label><input name="giro" class="form-control" value="<?= e($cliente['giro']) ?>"></div>
