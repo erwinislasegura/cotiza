@@ -1,6 +1,6 @@
 <?php require __DIR__ . '/_tabla_simple.php'; ?>
 
-<div class="alert alert-info border-0 mb-3">
+<div class="alert alert-info info-modulo mb-3">
     <h2 class="h6 mb-2">¿Cómo usar listas de precios para productos y futuras cotizaciones?</h2>
     <ul class="mb-0 small">
         <li>Crea una lista por escenario comercial: <strong>General</strong>, <strong>Mayorista</strong>, <strong>Campaña</strong>, etc.</li>
