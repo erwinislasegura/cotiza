@@ -1,7 +1,7 @@
 <?php require __DIR__ . '/_tabla_simple.php'; ?>
 
-<div class="alert alert-info border-0 mb-3">
-    <h2 class="h6 mb-2">¿Cómo completar una lista de precios sin errores?</h2>
+<div class="alert alert-info info-modulo mb-3">
+    <h2 class="h6 mb-2">¿Cómo usar listas de precios para productos y futuras cotizaciones?</h2>
     <ul class="mb-0 small">
         <li>Usa un <strong>nombre descriptivo</strong> para identificar rápido cuándo aplicar la lista.</li>
         <li>Selecciona <strong>canal de venta</strong> para separar precios de tienda física, delivery o e-commerce.</li>
