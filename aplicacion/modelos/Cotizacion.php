@@ -176,4 +176,38 @@ class Cotizacion extends Modelo
         $stmt = $this->db->prepare('UPDATE cotizaciones SET fecha_eliminacion = NOW(), estado = "anulada" WHERE empresa_id = :empresa_id AND id = :id AND fecha_eliminacion IS NULL');
         $stmt->execute(['empresa_id' => $empresaId, 'id' => $id]);
     }
+
+    public function actualizarEstadoConHistorial(int $empresaId, int $id, string $estado, int $usuarioId, string $observaciones = ''): void
+    {
+        $this->db->beginTransaction();
+        try {
+            $stmtCotizacion = $this->db->prepare('SELECT id, estado FROM cotizaciones WHERE empresa_id = :empresa_id AND id = :id AND fecha_eliminacion IS NULL LIMIT 1');
+            $stmtCotizacion->execute(['empresa_id' => $empresaId, 'id' => $id]);
+            $cotizacion = $stmtCotizacion->fetch();
+            if (!$cotizacion) {
+                $this->db->rollBack();
+                return;
+            }
+
+            $stmtUpdate = $this->db->prepare('UPDATE cotizaciones SET estado = :estado, fecha_actualizacion = NOW() WHERE empresa_id = :empresa_id AND id = :id AND fecha_eliminacion IS NULL');
+            $stmtUpdate->execute([
+                'estado' => $estado,
+                'empresa_id' => $empresaId,
+                'id' => $id,
+            ]);
+
+            $stmtHistorial = $this->db->prepare('INSERT INTO historial_estados_cotizacion (cotizacion_id, estado, observaciones, usuario_id, fecha_creacion) VALUES (:cotizacion_id, :estado, :observaciones, :usuario_id, NOW())');
+            $stmtHistorial->execute([
+                'cotizacion_id' => $id,
+                'estado' => $estado,
+                'observaciones' => $observaciones !== '' ? $observaciones : 'Cambio de estado desde seguimiento comercial',
+                'usuario_id' => $usuarioId,
+            ]);
+
+            $this->db->commit();
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
 }
