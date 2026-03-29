@@ -27,12 +27,17 @@ if ($listaPrecioCotizacionId > 0) {
             <div class="col-md-5">
                 <label class="small">Cliente</label>
                 <div class="input-group">
-                    <select class="form-select" name="cliente_id" required>
+                    <select class="form-select" name="cliente_id" id="cliente_id" required>
                         <?php foreach ($clientes as $c): ?>
                             <option value="<?= $c['id'] ?>" <?= (int) $cotizacion['cliente_id'] === (int) $c['id'] ? 'selected' : '' ?>><?= e($c['nombre']) ?></option>
                         <?php endforeach; ?>
                     </select>
                     <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalCliente">Dato fijo cliente</button>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="border rounded p-2 bg-light" id="resumen_cliente">
+                    <div class="small text-muted">Selecciona un cliente para ver su información.</div>
                 </div>
             </div>
 
@@ -228,8 +233,18 @@ if ($listaPrecioCotizacionId > 0) {
     const selectLista = document.getElementById('lista_precio_id');
     const todasLasListas = <?= json_encode($listasPrecios ?? [], JSON_UNESCAPED_UNICODE) ?>;
     const listasPorCliente = <?= json_encode($listasPreciosPorCliente ?? [], JSON_UNESCAPED_UNICODE) ?>;
+    const clientes = <?= json_encode($clientes ?? [], JSON_UNESCAPED_UNICODE) ?>;
 
     function fmt(v) { return '$' + (Math.round((v + Number.EPSILON) * 100) / 100).toFixed(2); }
+    function esc(valor) {
+        return String(valor ?? '').replace(/[&<>"']/g, (c) => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        }[c] || c));
+    }
     function actualizarIndicadorLista() {
         const indicador = document.getElementById('indicador_lista_estado');
         if (!indicador) { return; }
@@ -377,6 +392,34 @@ if ($listaPrecioCotizacionId > 0) {
         actualizarIndicadorLista();
     }
     function agregarFila() { const fila = template.content.firstElementChild.cloneNode(true); bindFila(fila); cuerpo.appendChild(fila); }
+    function renderResumenCliente() {
+        const contenedor = document.getElementById('resumen_cliente');
+        if (!contenedor) { return; }
+
+        const clienteId = parseInt(selectCliente?.value || '0', 10);
+        const cliente = clientes.find((c) => parseInt(c.id || 0, 10) === clienteId);
+        if (!cliente) {
+            contenedor.innerHTML = '<div class="small text-muted">Selecciona un cliente para ver su información.</div>';
+            return;
+        }
+
+        const razon = (cliente.razon_social || cliente.nombre || '').trim();
+        const nombreComercial = (cliente.nombre_comercial || '').trim();
+        const correo = (cliente.correo || '').trim() || '—';
+        const telefono = (cliente.telefono || '').trim() || '—';
+        const ciudad = (cliente.ciudad || '').trim() || '—';
+        const direccion = (cliente.direccion || '').trim() || '—';
+
+        contenedor.innerHTML = `
+            <div class="row g-2 small">
+                <div class="col-md-4"><strong>Cliente:</strong> ${esc(razon || '—')}</div>
+                <div class="col-md-4"><strong>Nombre comercial:</strong> ${esc(nombreComercial || '—')}</div>
+                <div class="col-md-4"><strong>Correo:</strong> ${esc(correo)}</div>
+                <div class="col-md-4"><strong>Teléfono:</strong> ${esc(telefono)}</div>
+                <div class="col-md-4"><strong>Ciudad:</strong> ${esc(ciudad)}</div>
+                <div class="col-md-4"><strong>Dirección:</strong> ${esc(direccion)}</div>
+            </div>`;
+    }
     function actualizarOpcionesListaCliente() {
         if (!selectLista) { return; }
         const clienteId = parseInt(selectCliente?.value || '0', 10);
@@ -416,7 +459,9 @@ if ($listaPrecioCotizacionId > 0) {
     document.getElementById('descuento_tipo_total').addEventListener('change', recalcular);
     document.getElementById('descuento_total').addEventListener('input', recalcular);
     actualizarOpcionesListaCliente();
+    renderResumenCliente();
     document.querySelector('[name="cliente_id"]')?.addEventListener('change', () => {
+        renderResumenCliente();
         actualizarOpcionesListaCliente();
         aplicarListaATodasLineas(true);
     });

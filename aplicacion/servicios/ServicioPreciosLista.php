@@ -190,21 +190,4 @@ class ServicioPreciosLista
         return (bool) $stmt->fetchColumn();
     }
 
-    private function clienteTieneListaPrecio(int $empresaId, int $clienteId, int $listaPrecioId): bool
-    {
-        if (!$this->tablaExiste('clientes_listas_precios')) {
-            return false;
-        }
-
-        $stmt = $this->db->prepare('SELECT 1
-            FROM clientes_listas_precios
-            WHERE empresa_id = :empresa_id AND cliente_id = :cliente_id AND lista_precio_id = :lista_precio_id
-            LIMIT 1');
-        $stmt->execute([
-            'empresa_id' => $empresaId,
-            'cliente_id' => $clienteId,
-            'lista_precio_id' => $listaPrecioId,
-        ]);
-        return (bool) $stmt->fetchColumn();
-    }
 }
