@@ -22,6 +22,32 @@ textarea.form-control{height:auto;min-height:68px}
 .modulo-head{padding-bottom:.2rem;border-bottom:1px solid #dde4ec}
 .dropdown-menu{font-size:.82rem}
 
+/* Bloques de información (estilo unificado tipo listas de precios) */
+.alert.alert-info,
+.info-modulo{
+  background:linear-gradient(180deg,#eef6ff 0%, #e6f1ff 100%);
+  border:1px solid #cfe2ff !important;
+  color:#1f3f66;
+  border-radius:.55rem;
+}
+.alert.alert-info h1,
+.alert.alert-info h2,
+.alert.alert-info h3,
+.alert.alert-info h4,
+.alert.alert-info h5,
+.alert.alert-info h6,
+.info-modulo h1,
+.info-modulo h2,
+.info-modulo h3,
+.info-modulo h4,
+.info-modulo h5,
+.info-modulo h6{color:#133a63}
+
+/* Mejoras transversales de formularios */
+form .campo-requerido{color:#b42318;font-weight:700;margin-left:.18rem}
+form.form-enviando{opacity:.92}
+form.form-enviando .btn{pointer-events:none}
+
 /* Public site: conversion and mobile clarity */
 .public-page .lead{font-size:1rem;line-height:1.6}
 .public-page h1,.public-page h2,.public-page h3{letter-spacing:-.01em}
