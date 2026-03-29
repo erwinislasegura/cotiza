@@ -81,48 +81,11 @@ class ServicioPreciosLista
             if ($listaManual) {
                 return $listaManual;
             }
+
+            return null;
         }
 
-        if ($clienteId && $this->tablaExiste('clientes_listas_precios')) {
-            $sqlCliente = 'SELECT lp.*
-                FROM clientes_listas_precios clp
-                INNER JOIN listas_precios lp ON lp.id = clp.lista_precio_id
-                WHERE clp.empresa_id = :empresa_id
-                  AND clp.cliente_id = :cliente_id
-                  AND lp.estado = "activo"
-                  AND (lp.vigencia_desde IS NULL OR lp.vigencia_desde <= :fecha_ref)
-                  AND (lp.vigencia_hasta IS NULL OR lp.vigencia_hasta >= :fecha_ref)
-                ORDER BY clp.id DESC
-                LIMIT 1';
-            $stmtCliente = $this->db->prepare($sqlCliente);
-            $stmtCliente->execute([
-                'empresa_id' => $empresaId,
-                'cliente_id' => $clienteId,
-                'fecha_ref' => $fechaRef,
-            ]);
-            $listaCliente = $stmtCliente->fetch();
-            if ($listaCliente) {
-                return $listaCliente;
-            }
-        }
-
-        $sql = 'SELECT * FROM listas_precios
-            WHERE empresa_id = :empresa_id
-              AND estado = "activo"
-              AND (vigencia_desde IS NULL OR vigencia_desde <= :fecha_ref)
-              AND (vigencia_hasta IS NULL OR vigencia_hasta >= :fecha_ref)';
-        $params = ['empresa_id' => $empresaId, 'fecha_ref' => $fechaRef];
-
-        if ($canal !== null && $canal !== '' && $this->columnaExiste('listas_precios', 'canal_venta')) {
-            $sql .= ' AND (canal_venta IS NULL OR canal_venta = "" OR canal_venta = :canal)';
-            $params['canal'] = $canal;
-        }
-
-        $sql .= ' ORDER BY CASE WHEN tipo_lista = "general" THEN 2 ELSE 1 END, id DESC LIMIT 1';
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetch() ?: null;
+        return null;
     }
 
     private function resolverRegla(int $empresaId, int $listaId, int $productoId, int $categoriaId): ?array
@@ -222,4 +185,5 @@ class ServicioPreciosLista
         $stmt->execute(['tabla' => $tabla, 'columna' => $columna]);
         return (bool) $stmt->fetchColumn();
     }
+
 }
