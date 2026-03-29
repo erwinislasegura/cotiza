@@ -2,6 +2,15 @@
   <h1 class="h4 mb-0">Servicios / Productos</h1>
 </section>
 
+<div class="alert alert-info info-modulo mb-3">
+  <div class="fw-semibold mb-1">Información para el cliente y equipo comercial</div>
+  <ul class="mb-0 small ps-3">
+    <li>Usa nombres y descripciones claras para que el cliente entienda rápidamente qué está comprando.</li>
+    <li>Mantén precio, impuesto y unidad correctamente definidos para evitar inconsistencias en cotizaciones.</li>
+    <li>Completa SKU/código interno para agilizar búsquedas y soporte postventa.</li>
+  </ul>
+</div>
+
 <div class="card mb-3">
   <div class="card-header">Nuevo ítem comercial</div>
   <div class="card-body">
