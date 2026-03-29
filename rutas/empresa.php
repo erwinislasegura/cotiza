@@ -88,8 +88,8 @@ $enrutador->agregar('GET', '/app/listas-precios/ver/{id}', fn($id) => (new Gesti
 $enrutador->agregar('GET', '/app/listas-precios/editar/{id}', fn($id) => (new GestionComercialControlador())->editarRegistro('listas-precios', (int) $id), $mwEmpresa);
 $enrutador->agregar('POST', '/app/listas-precios/editar/{id}', fn($id) => (new GestionComercialControlador())->actualizarRegistro('listas-precios', (int) $id), $mwEmpresa);
 $enrutador->agregar('POST', '/app/listas-precios/eliminar/{id}', fn($id) => (new GestionComercialControlador())->eliminarRegistro('listas-precios', (int) $id), $mwEmpresa);
-$enrutador->agregar('GET', '/app/seguimiento', fn() => (new GestionComercialControlador())->moduloBase('seguimiento'), $mwEmpresa);
-$enrutador->agregar('POST', '/app/seguimiento', fn() => (new GestionComercialControlador())->guardarModuloBase('seguimiento'), $mwEmpresa);
+$enrutador->agregar('GET', '/app/seguimiento', [GestionComercialControlador::class, 'seguimiento'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/seguimiento', [GestionComercialControlador::class, 'guardarSeguimiento'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/seguimiento/ver/{id}', fn($id) => (new GestionComercialControlador())->verRegistro('seguimiento', (int) $id), $mwEmpresa);
 $enrutador->agregar('GET', '/app/seguimiento/editar/{id}', fn($id) => (new GestionComercialControlador())->editarRegistro('seguimiento', (int) $id), $mwEmpresa);
 $enrutador->agregar('POST', '/app/seguimiento/editar/{id}', fn($id) => (new GestionComercialControlador())->actualizarRegistro('seguimiento', (int) $id), $mwEmpresa);

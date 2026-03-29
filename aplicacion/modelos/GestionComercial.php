@@ -97,6 +97,45 @@ class GestionComercial extends Modelo
         return $stmt->fetchAll();
     }
 
+    public function listarSeguimientoCotizaciones(int $empresaId, string $buscar = '', string $estadoCotizacion = '', int $limite = 60): array
+    {
+        $sql = 'SELECT sc.*, c.numero AS cotizacion_numero, c.estado AS cotizacion_estado,
+                COALESCE(NULLIF(cl.razon_social, ""), NULLIF(cl.nombre_comercial, ""), cl.nombre) AS cliente_nombre
+            FROM seguimientos_comerciales sc
+            LEFT JOIN cotizaciones c ON c.id = sc.cotizacion_id AND c.empresa_id = sc.empresa_id AND c.fecha_eliminacion IS NULL
+            LEFT JOIN clientes cl ON cl.id = sc.cliente_id AND cl.empresa_id = sc.empresa_id AND cl.fecha_eliminacion IS NULL
+            WHERE sc.empresa_id = :empresa_id';
+        $params = ['empresa_id' => $empresaId];
+
+        if ($buscar !== '') {
+            $sql .= ' AND (
+                sc.responsable LIKE :buscar
+                OR sc.proxima_accion LIKE :buscar
+                OR sc.estado_comercial LIKE :buscar
+                OR sc.comentarios LIKE :buscar
+                OR c.numero LIKE :buscar
+                OR cl.nombre LIKE :buscar
+                OR cl.razon_social LIKE :buscar
+            )';
+            $params['buscar'] = "%{$buscar}%";
+        }
+
+        if ($estadoCotizacion !== '') {
+            $sql .= ' AND c.estado = :estado_cotizacion';
+            $params['estado_cotizacion'] = $estadoCotizacion;
+        }
+
+        $sql .= ' ORDER BY COALESCE(sc.fecha_seguimiento, DATE(sc.fecha_creacion)) DESC, sc.id DESC LIMIT :limite';
+        $stmt = $this->db->prepare($sql);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue(':' . $k, $v);
+        }
+        $stmt->bindValue(':limite', $limite, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
     public function crear(string $tabla, array $data): int
     {
         if (!in_array($tabla, $this->tablasPermitidas, true)) {
