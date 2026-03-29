@@ -1,7 +1,7 @@
 <?php require __DIR__ . '/_tabla_simple.php'; ?>
 
-<div class="alert alert-info info-modulo mb-3">
-    <h2 class="h6 mb-2">¿Cómo usar listas de precios para productos y futuras cotizaciones?</h2>
+<div class="alert alert-info border-0 mb-3">
+    <h2 class="h6 mb-2">¿Cómo completar una lista de precios sin errores?</h2>
     <ul class="mb-0 small">
         <li>Usa un <strong>nombre descriptivo</strong> para identificar rápido cuándo aplicar la lista.</li>
         <li>Selecciona <strong>canal de venta</strong> para separar precios de tienda física, delivery o e-commerce.</li>
@@ -55,8 +55,8 @@ $formulario = '
 </div>
 <div class="col-md-2">
     <label class="form-label">Porcentaje de ajuste (%)</label>
-    <input type="number" min="0" step="0.0001" name="ajuste_porcentaje" class="form-control" value="0">
-    <div class="form-text">Ejemplo: 10 = 10%.</div>
+    <input type="number" min="0" step="1" name="ajuste_porcentaje" class="form-control" value="0">
+    <div class="form-text">Ingresa solo enteros. Ejemplo: 10 = 10%.</div>
 </div>
 <div class="col-12">
     <label class="form-label">Reglas base (recomendado para productos y cotizaciones)</label>
@@ -64,11 +64,19 @@ $formulario = '
     <div class="form-text">Tip: escribe reglas claras por categoría/SKU para reutilizarlas en futuros cálculos de cotización.</div>
 </div>';
 
+$registrosListado = array_map(static function (array $fila): array {
+    if (isset($fila['ajuste_porcentaje']) && $fila['ajuste_porcentaje'] !== '') {
+        $fila['ajuste_porcentaje'] = (string) round((float) $fila['ajuste_porcentaje']) . '%';
+    }
+
+    return $fila;
+}, $registros);
+
 render_modulo_simple(
     'Listas de precios',
     '/app/listas-precios',
     ['nombre', 'vigencia_desde', 'vigencia_hasta', 'tipo_lista', 'canal_venta', 'ajuste_tipo', 'ajuste_porcentaje', 'estado'],
-    $registros,
+    $registrosListado,
     $formulario,
     $buscar,
     '',

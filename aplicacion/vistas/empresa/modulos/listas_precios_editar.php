@@ -88,12 +88,12 @@
                 <input
                     type="number"
                     min="0"
-                    step="0.0001"
+                    step="1"
                     name="ajuste_porcentaje"
                     class="form-control"
                     value="<?= e((string) ($registro['ajuste_porcentaje'] ?? '0')) ?>"
                 >
-                <div class="form-text">Ejemplo: 10 = 10%.</div>
+                <div class="form-text">Ingresa solo enteros. Ejemplo: 10 = 10%.</div>
             </div>
 
             <div class="col-12">
