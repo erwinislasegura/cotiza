@@ -13,6 +13,13 @@ if ($listaPrecioCotizacionId > 0) {
 ?>
 <h1 class="h4 mb-3">Editar cotización</h1>
 
+<div class="small text-muted mb-3">
+    Link generado para cliente:
+    <a href="<?= e($linkAprobacionCliente ?? '') ?>" target="_blank" rel="noopener" class="text-decoration-none">ver enlace de aprobación</a>
+    <button type="button" class="btn btn-link btn-sm p-0 ms-2 align-baseline" id="copiar_link_aprobacion_cliente">copiar</button>
+    <input type="hidden" id="link_aprobacion_cliente" value="<?= e($linkAprobacionCliente ?? '') ?>">
+</div>
+
 <form method="POST" class="d-grid gap-3" id="form-cotizacion-editar">
     <?= csrf_campo() ?>
 
@@ -468,4 +475,23 @@ if ($listaPrecioCotizacionId > 0) {
     document.getElementById('lista_precio_id')?.addEventListener('change', () => { aplicarListaATodasLineas(true); });
     aplicarListaATodasLineas(true);
 })();
+
+    const btnCopiarLinkAprobacion = document.getElementById('copiar_link_aprobacion_cliente');
+    const inputLinkAprobacionCliente = document.getElementById('link_aprobacion_cliente');
+    if (btnCopiarLinkAprobacion && inputLinkAprobacionCliente) {
+        btnCopiarLinkAprobacion.addEventListener('click', async function () {
+            try {
+                await navigator.clipboard.writeText(inputLinkAprobacionCliente.value);
+                btnCopiarLinkAprobacion.textContent = 'copiado';
+                setTimeout(function () {
+                    btnCopiarLinkAprobacion.textContent = 'copiar';
+                }, 1200);
+            } catch (error) {
+                inputLinkAprobacionCliente.type = 'text';
+                inputLinkAprobacionCliente.select();
+                document.execCommand('copy');
+                inputLinkAprobacionCliente.type = 'hidden';
+            }
+        });
+    }
 </script>

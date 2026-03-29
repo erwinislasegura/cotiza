@@ -175,6 +175,18 @@ class GestionComercial extends Modelo
         return $stmt->fetchAll();
     }
 
+
+    public function existeAprobacionRegistrada(int $empresaId, int $cotizacionId, string $estado): bool
+    {
+        $stmt = $this->db->prepare('SELECT id FROM aprobaciones_cotizacion WHERE empresa_id=:empresa_id AND cotizacion_id=:cotizacion_id AND estado=:estado LIMIT 1');
+        $stmt->execute([
+            'empresa_id' => $empresaId,
+            'cotizacion_id' => $cotizacionId,
+            'estado' => $estado,
+        ]);
+        return (bool) $stmt->fetch();
+    }
+
     public function crear(string $tabla, array $data): int
     {
         if (!in_array($tabla, $this->tablasPermitidas, true)) {
