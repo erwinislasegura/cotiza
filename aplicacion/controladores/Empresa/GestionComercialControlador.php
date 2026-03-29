@@ -582,6 +582,87 @@ class GestionComercialControlador extends Controlador
         $this->redirigir('/app/seguimiento');
     }
 
+    public function aprobaciones(): void
+    {
+        $empresaId = empresa_actual_id();
+        $buscar = trim($_GET['q'] ?? '');
+        $estadoAprobacion = trim($_GET['estado_aprobacion'] ?? '');
+        $estadosPermitidos = ['pendiente', 'aprobada', 'rechazada'];
+        if (!in_array($estadoAprobacion, $estadosPermitidos, true)) {
+            $estadoAprobacion = '';
+        }
+
+        $registros = $this->modelo->listarAprobacionesCotizaciones($empresaId, $buscar, $estadoAprobacion, 80);
+        $cotizaciones = (new Cotizacion())->listar($empresaId);
+
+        $this->vista('empresa/modulos/aprobaciones', compact('registros', 'cotizaciones', 'buscar', 'estadoAprobacion'), 'empresa');
+    }
+
+    public function guardarAprobacion(): void
+    {
+        validar_csrf();
+        $empresaId = empresa_actual_id();
+        $cotizacionId = (int) ($_POST['cotizacion_id'] ?? 0);
+        $estadosPermitidos = ['pendiente', 'aprobada', 'rechazada'];
+        $estado = trim($_POST['estado'] ?? 'pendiente');
+
+        if ($cotizacionId <= 0) {
+            flash('danger', 'Debes seleccionar una cotización para registrar la aprobación.');
+            $this->redirigir('/app/aprobaciones');
+        }
+
+        $cotizacion = (new Cotizacion())->obtenerPorId($empresaId, $cotizacionId);
+        if (!$cotizacion) {
+            flash('danger', 'La cotización seleccionada no existe o no pertenece a tu empresa.');
+            $this->redirigir('/app/aprobaciones');
+        }
+
+        if (!in_array($estado, $estadosPermitidos, true)) {
+            $estado = 'pendiente';
+        }
+
+        $monto = (float) ($_POST['monto'] ?? 0);
+        if ($monto <= 0) {
+            $monto = (float) ($cotizacion['total'] ?? 0);
+        }
+
+        $this->modelo->crear('aprobaciones_cotizacion', [
+            'empresa_id' => $empresaId,
+            'cotizacion_id' => $cotizacionId,
+            'monto' => $monto,
+            'motivo' => trim($_POST['motivo'] ?? ''),
+            'solicitante' => trim($_POST['solicitante'] ?? (usuario_actual()['nombre'] ?? '')),
+            'aprobador' => trim($_POST['aprobador'] ?? ''),
+            'estado' => $estado,
+            'fecha_aprobacion' => $_POST['fecha_aprobacion'] ?: null,
+            'observaciones' => trim($_POST['observaciones'] ?? ''),
+            'fecha_creacion' => date('Y-m-d H:i:s'),
+        ]);
+
+        if ($estado === 'aprobada') {
+            (new Cotizacion())->actualizarEstadoConHistorial(
+                $empresaId,
+                $cotizacionId,
+                'aprobada',
+                (int) (usuario_actual()['id'] ?? 0),
+                'Aprobación registrada desde módulo de aprobaciones'
+            );
+        }
+
+        if ($estado === 'rechazada') {
+            (new Cotizacion())->actualizarEstadoConHistorial(
+                $empresaId,
+                $cotizacionId,
+                'rechazada',
+                (int) (usuario_actual()['id'] ?? 0),
+                'Rechazo registrado desde módulo de aprobaciones'
+            );
+        }
+
+        flash('success', 'Aprobación registrada correctamente.');
+        $this->redirigir('/app/aprobaciones');
+    }
+
     public function reportes(): void
     {
         $empresaId = empresa_actual_id();

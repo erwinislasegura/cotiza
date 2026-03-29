@@ -1,8 +1,19 @@
 <?php
 $estadosCotizacion = ['borrador', 'enviada', 'aprobada', 'rechazada', 'vencida', 'anulada'];
+$estadosComerciales = ['abierto', 'contactado', 'en negociacion', 'pendiente cliente', 'seguimiento programado', 'cerrado ganado', 'cerrado perdido'];
 ?>
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h4 mb-0">Seguimiento de cotizaciones</h1>
+</div>
+
+<div class="alert alert-info info-modulo mb-3">
+    <div class="fw-semibold mb-1">Guía rápida para el equipo comercial</div>
+    <ul class="mb-0 small ps-3">
+        <li>Selecciona una cotización para autocompletar cliente y responsable.</li>
+        <li>Actualiza el <strong>estado comercial</strong> en cada contacto para mantener trazabilidad del embudo.</li>
+        <li>Usa <strong>próxima acción</strong> y <strong>fecha de seguimiento</strong> para no perder oportunidades.</li>
+        <li>Si cambias el estado de la cotización, el sistema registra historial automáticamente.</li>
+    </ul>
 </div>
 
 <div class="card mb-3">
@@ -73,7 +84,14 @@ $estadosCotizacion = ['borrador', 'enviada', 'aprobada', 'rechazada', 'vencida',
 
             <div class="col-md-2">
                 <label class="form-label">Estado comercial</label>
-                <input name="estado_comercial" class="form-control" value="abierto">
+                <select id="estado_comercial" name="estado_comercial" class="form-select">
+                    <?php foreach ($estadosComerciales as $estadoComercial): ?>
+                        <option value="<?= e($estadoComercial) ?>" <?= $estadoComercial === 'abierto' ? 'selected' : '' ?>>
+                            <?= e(ucfirst($estadoComercial)) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <div class="form-text">Selecciona el estado más representativo de la gestión actual.</div>
             </div>
 
             <div class="col-md-2">
@@ -108,9 +126,10 @@ $estadosCotizacion = ['borrador', 'enviada', 'aprobada', 'rechazada', 'vencida',
     const cotizacionSelect = document.getElementById('cotizacion_id');
     const clienteSelect = document.getElementById('cliente_id');
     const responsableInput = document.getElementById('responsable');
+    const estadoComercialSelect = document.getElementById('estado_comercial');
     const resumen = document.getElementById('resumen_cotizacion');
 
-    if (!cotizacionSelect || !clienteSelect || !responsableInput || !resumen) {
+    if (!cotizacionSelect || !clienteSelect || !responsableInput || !estadoComercialSelect || !resumen) {
         return;
     }
 
@@ -144,6 +163,16 @@ $estadosCotizacion = ['borrador', 'enviada', 'aprobada', 'rechazada', 'vencida',
 
         if (responsableInput.value.trim() === '' && responsable !== '') {
             responsableInput.value = responsable;
+        }
+
+        if (estado === 'aprobada') {
+            estadoComercialSelect.value = 'cerrado ganado';
+        } else if (estado === 'rechazada' || estado === 'anulada') {
+            estadoComercialSelect.value = 'cerrado perdido';
+        } else if (estado === 'enviada') {
+            estadoComercialSelect.value = 'en negociacion';
+        } else {
+            estadoComercialSelect.value = 'seguimiento programado';
         }
 
         campos.numero.textContent = opcion.textContent.split('·')[0]?.trim() || '—';
