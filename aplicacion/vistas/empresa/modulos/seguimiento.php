@@ -11,12 +11,35 @@ $estadosCotizacion = ['borrador', 'enviada', 'aprobada', 'rechazada', 'vencida',
         <form method="POST" action="<?= e(url('/app/seguimiento')) ?>" class="row g-2">
             <?= csrf_campo() ?>
 
+            <div class="col-12">
+                <div id="resumen_cotizacion" class="alert alert-info d-none mb-0 py-2">
+                    <div class="small text-uppercase fw-semibold">Resumen cotización seleccionada</div>
+                    <div class="row row-cols-1 row-cols-md-3 g-2 mt-1">
+                        <div><strong>Número:</strong> <span data-campo="numero">—</span></div>
+                        <div><strong>Cliente:</strong> <span data-campo="cliente">—</span></div>
+                        <div><strong>Estado:</strong> <span data-campo="estado">—</span></div>
+                        <div><strong>Total:</strong> <span data-campo="total">—</span></div>
+                        <div><strong>Emisión:</strong> <span data-campo="emision">—</span></div>
+                        <div><strong>Vencimiento:</strong> <span data-campo="vencimiento">—</span></div>
+                    </div>
+                </div>
+            </div>
+
             <div class="col-md-4">
                 <label class="form-label">Cotización</label>
-                <select name="cotizacion_id" class="form-select" required>
+                <select id="cotizacion_id" name="cotizacion_id" class="form-select" required>
                     <option value="">Selecciona una cotización</option>
                     <?php foreach ($cotizaciones as $cotizacion): ?>
-                        <option value="<?= (int) $cotizacion['id'] ?>">
+                        <option
+                            value="<?= (int) $cotizacion['id'] ?>"
+                            data-cliente-id="<?= (int) ($cotizacion['cliente_id'] ?? 0) ?>"
+                            data-cliente="<?= e((string) ($cotizacion['cliente'] ?? 'Sin cliente')) ?>"
+                            data-estado="<?= e((string) ($cotizacion['estado'] ?? '')) ?>"
+                            data-total="<?= e(number_format((float) ($cotizacion['total'] ?? 0), 2)) ?>"
+                            data-emision="<?= e((string) ($cotizacion['fecha_emision'] ?? '')) ?>"
+                            data-vencimiento="<?= e((string) ($cotizacion['fecha_vencimiento'] ?? '')) ?>"
+                            data-responsable="<?= e((string) ($cotizacion['vendedor'] ?? '')) ?>"
+                        >
                             <?= e((string) $cotizacion['numero']) ?> · <?= e((string) ($cotizacion['cliente'] ?? 'Sin cliente')) ?> · <?= e((string) ($cotizacion['estado'] ?? '')) ?>
                         </option>
                     <?php endforeach; ?>
@@ -25,7 +48,7 @@ $estadosCotizacion = ['borrador', 'enviada', 'aprobada', 'rechazada', 'vencida',
 
             <div class="col-md-3">
                 <label class="form-label">Cliente (opcional)</label>
-                <select name="cliente_id" class="form-select">
+                <select id="cliente_id" name="cliente_id" class="form-select">
                     <option value="">Se tomará desde la cotización</option>
                     <?php foreach ($clientes as $cliente): ?>
                         <option value="<?= (int) $cliente['id'] ?>"><?= e((string) ($cliente['nombre'] ?? $cliente['razon_social'] ?? '')) ?></option>
@@ -35,7 +58,7 @@ $estadosCotizacion = ['borrador', 'enviada', 'aprobada', 'rechazada', 'vencida',
 
             <div class="col-md-3">
                 <label class="form-label">Responsable</label>
-                <input name="responsable" class="form-control" placeholder="Ej: Juan Pérez">
+                <input id="responsable" name="responsable" class="form-control" placeholder="Ej: Juan Pérez">
             </div>
 
             <div class="col-md-2">
@@ -79,6 +102,63 @@ $estadosCotizacion = ['borrador', 'enviada', 'aprobada', 'rechazada', 'vencida',
         </form>
     </div>
 </div>
+
+<script>
+(() => {
+    const cotizacionSelect = document.getElementById('cotizacion_id');
+    const clienteSelect = document.getElementById('cliente_id');
+    const responsableInput = document.getElementById('responsable');
+    const resumen = document.getElementById('resumen_cotizacion');
+
+    if (!cotizacionSelect || !clienteSelect || !responsableInput || !resumen) {
+        return;
+    }
+
+    const campos = {
+        numero: resumen.querySelector('[data-campo="numero"]'),
+        cliente: resumen.querySelector('[data-campo="cliente"]'),
+        estado: resumen.querySelector('[data-campo="estado"]'),
+        total: resumen.querySelector('[data-campo="total"]'),
+        emision: resumen.querySelector('[data-campo="emision"]'),
+        vencimiento: resumen.querySelector('[data-campo="vencimiento"]'),
+    };
+
+    const actualizar = () => {
+        const opcion = cotizacionSelect.options[cotizacionSelect.selectedIndex];
+        if (!opcion || !opcion.value) {
+            resumen.classList.add('d-none');
+            return;
+        }
+
+        const clienteId = opcion.dataset.clienteId || '';
+        const clienteNombre = opcion.dataset.cliente || '—';
+        const estado = opcion.dataset.estado || '—';
+        const total = opcion.dataset.total || '0.00';
+        const emision = opcion.dataset.emision || '—';
+        const vencimiento = opcion.dataset.vencimiento || '—';
+        const responsable = opcion.dataset.responsable || '';
+
+        if (clienteId !== '') {
+            clienteSelect.value = clienteId;
+        }
+
+        if (responsableInput.value.trim() === '' && responsable !== '') {
+            responsableInput.value = responsable;
+        }
+
+        campos.numero.textContent = opcion.textContent.split('·')[0]?.trim() || '—';
+        campos.cliente.textContent = clienteNombre;
+        campos.estado.textContent = estado;
+        campos.total.textContent = total;
+        campos.emision.textContent = emision;
+        campos.vencimiento.textContent = vencimiento;
+
+        resumen.classList.remove('d-none');
+    };
+
+    cotizacionSelect.addEventListener('change', actualizar);
+})();
+</script>
 
 <div class="card">
     <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
