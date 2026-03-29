@@ -10,6 +10,14 @@ $modalId = $modalId ?? 'modalNuevaCategoria';
 $redirigirA = $redirigirA ?? '/app/productos';
 $unidadActual = $producto['unidad'] ?? 'unidad';
 ?>
+<div class="alert alert-info info-modulo mb-3">
+  <div class="fw-semibold mb-1">Uso y buenas prácticas para productos</div>
+  <ul class="mb-0 small ps-3">
+    <li>Incluye datos completos para que la cotización sea más clara para el cliente.</li>
+    <li>Usa <strong>stock mínimo</strong> y <strong>stock de aviso</strong> para anticipar reposición.</li>
+    <li>Si el ítem no se ofrece temporalmente, cambia estado a <strong>inactivo</strong>.</li>
+  </ul>
+</div>
 <form method="POST" action="<?= e($accion) ?>" class="row g-2">
   <?= csrf_campo() ?>
   <?php if (!$producto): ?>
@@ -38,8 +46,8 @@ $unidadActual = $producto['unidad'] ?? 'unidad';
     <div class="form-text">Agrupa productos para encontrarlos más rápido.</div>
   </div>
   <div class="col-md-2">
-    <label class="form-label">Código interno</label>
-    <input name="codigo" class="form-control" value="<?= e($producto['codigo'] ?? '') ?>" required>
+    <label class="form-label" for="producto_codigo">Código interno</label>
+    <input id="producto_codigo" name="codigo" class="form-control" value="<?= e($producto['codigo'] ?? '') ?>" required>
     <div class="form-text">Código corto para tu operación diaria.</div>
   </div>
   <div class="col-md-2">
@@ -51,8 +59,8 @@ $unidadActual = $producto['unidad'] ?? 'unidad';
     <input name="codigo_barras" class="form-control" value="<?= e($producto['codigo_barras'] ?? '') ?>" placeholder="EAN/UPC">
   </div>
   <div class="col-md-3">
-    <label class="form-label">Nombre</label>
-    <input name="nombre" class="form-control" value="<?= e($producto['nombre'] ?? '') ?>" required>
+    <label class="form-label" for="producto_nombre">Nombre</label>
+    <input id="producto_nombre" name="nombre" class="form-control" value="<?= e($producto['nombre'] ?? '') ?>" required>
   </div>
   <div class="col-md-3">
     <label class="form-label">Descripción</label>
@@ -119,7 +127,7 @@ $unidadActual = $producto['unidad'] ?? 'unidad';
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body row g-2">
-          <div class="col-12"><label class="form-label">Nombre</label><input name="nombre" class="form-control" required></div>
+          <div class="col-12"><label class="form-label" for="nueva_categoria_nombre_<?= e($modalId) ?>">Nombre</label><input id="nueva_categoria_nombre_<?= e($modalId) ?>" name="nombre" class="form-control" required></div>
           <div class="col-12"><label class="form-label">Descripción</label><input name="descripcion" class="form-control"></div>
           <div class="col-12"><label class="form-label">Estado</label><select name="estado" class="form-select"><option value="activo">Activo</option><option value="inactivo">Inactivo</option></select></div>
         </div>

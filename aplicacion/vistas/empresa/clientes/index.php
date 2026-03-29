@@ -5,6 +5,15 @@
   </div>
 </section>
 
+<div class="alert alert-info info-modulo mb-3">
+  <div class="fw-semibold mb-1">Información clave para gestionar clientes</div>
+  <ul class="mb-0 small ps-3">
+    <li>Registra razón social y datos fiscales correctos para emitir cotizaciones sin errores.</li>
+    <li>Asigna vendedor y lista de precios para acelerar propuestas comerciales.</li>
+    <li>Mantén observaciones actualizadas para dar mejor contexto al equipo.</li>
+  </ul>
+</div>
+
 <div class="card mb-3">
   <div class="card-header d-flex justify-content-between align-items-center">
     <span>Nuevo cliente</span>
@@ -14,8 +23,8 @@
     <form method="POST" action="<?= e(url('/app/clientes')) ?>" class="row g-3">
       <?= csrf_campo() ?>
       <div class="col-md-4">
-        <label class="form-label">Razón social *</label>
-        <input name="razon_social" class="form-control" required maxlength="150" placeholder="Ej: Comercial Andina SpA">
+        <label class="form-label" for="cliente_razon_social">Razón social</label>
+        <input id="cliente_razon_social" name="razon_social" class="form-control" required maxlength="150" placeholder="Ej: Comercial Andina SpA">
       </div>
       <div class="col-md-4">
         <label class="form-label">Nombre comercial</label>
