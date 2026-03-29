@@ -50,18 +50,65 @@ class UsuariosControlador extends Controlador
             $this->redirigir('/app/usuarios');
         }
         $roles = $modelo->listarRolesEmpresa();
-        $this->vista('empresa/usuarios/editar', compact('usuario', 'roles'), 'empresa');
+        $esUsuarioLogueado = (int) (usuario_actual()['id'] ?? 0) === (int) $usuario['id'];
+        $this->vista('empresa/usuarios/editar', compact('usuario', 'roles', 'esUsuarioLogueado'), 'empresa');
     }
 
     public function actualizar(int $id): void
     {
         validar_csrf();
-        (new Usuario())->actualizarEmpresa(empresa_actual_id(), $id, [
-            'nombre' => trim($_POST['nombre'] ?? ''),
-            'correo' => trim($_POST['correo'] ?? ''),
-            'rol_id' => (int) ($_POST['rol_id'] ?? 0),
-            'estado' => $_POST['estado'] ?? 'activo',
-        ]);
+        $modelo = new Usuario();
+        $usuario = $modelo->obtenerPorIdEmpresa(empresa_actual_id(), $id);
+
+        if (!$usuario) {
+            flash('danger', 'Usuario no encontrado.');
+            $this->redirigir('/app/usuarios');
+        }
+
+        $nombre = trim($_POST['nombre'] ?? '');
+        $correo = trim($_POST['correo'] ?? '');
+        $rolId = (int) ($_POST['rol_id'] ?? 0);
+        $estado = $_POST['estado'] ?? 'activo';
+
+        $datosActualizar = [
+            'nombre' => $nombre,
+            'correo' => $correo,
+            'rol_id' => $rolId,
+            'estado' => $estado,
+        ];
+
+        $esUsuarioLogueado = (int) (usuario_actual()['id'] ?? 0) === (int) $usuario['id'];
+        $nuevaPassword = trim($_POST['nueva_password'] ?? '');
+        $confirmarPassword = trim($_POST['confirmar_password'] ?? '');
+
+        if ($esUsuarioLogueado && $nuevaPassword !== '') {
+            $passwordActual = $_POST['password_actual'] ?? '';
+
+            if (!password_verify($passwordActual, $usuario['password'])) {
+                flash('danger', 'La contraseña actual no es correcta.');
+                $this->redirigir('/app/usuarios/editar/' . $id);
+            }
+
+            if (strlen($nuevaPassword) < 8) {
+                flash('danger', 'La nueva contraseña debe tener al menos 8 caracteres.');
+                $this->redirigir('/app/usuarios/editar/' . $id);
+            }
+
+            if ($nuevaPassword !== $confirmarPassword) {
+                flash('danger', 'La confirmación de contraseña no coincide.');
+                $this->redirigir('/app/usuarios/editar/' . $id);
+            }
+
+            $datosActualizar['password'] = password_hash($nuevaPassword, PASSWORD_BCRYPT);
+        }
+
+        $modelo->actualizarEmpresa(empresa_actual_id(), $id, $datosActualizar);
+
+        if ($esUsuarioLogueado) {
+            $_SESSION['usuario']['nombre'] = $nombre;
+            $_SESSION['usuario']['correo'] = $correo;
+        }
+
         flash('success', 'Usuario actualizado correctamente.');
         $this->redirigir('/app/usuarios');
     }
