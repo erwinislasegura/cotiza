@@ -65,6 +65,10 @@ class ServicioPreciosLista
         $fechaRef = $fecha ?: date('Y-m-d');
 
         if ($listaPrecioId !== null && $listaPrecioId > 0) {
+            if ($clienteId && !$this->clienteTieneListaPrecio($empresaId, $clienteId, $listaPrecioId)) {
+                return null;
+            }
+
             $stmtLista = $this->db->prepare('SELECT * FROM listas_precios
                 WHERE empresa_id = :empresa_id
                   AND id = :id
