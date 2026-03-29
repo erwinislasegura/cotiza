@@ -1,11 +1,18 @@
 <h1 class="h4 mb-3">Crear cliente</h1>
+<div class="alert alert-info info-modulo mb-3">
+  <div class="fw-semibold mb-1">Guía rápida de registro</div>
+  <ul class="mb-0 small ps-3">
+    <li>Completa al menos razón social y datos de contacto para iniciar cotizaciones.</li>
+    <li>Asocia listas de precios cuando el cliente tenga condiciones comerciales específicas.</li>
+  </ul>
+</div>
 <div class="card">
   <div class="card-body">
     <form method="POST" action="<?= e(url('/app/clientes/crear')) ?>" class="row g-3">
       <?= csrf_campo() ?>
       <div class="col-md-4">
-        <label class="form-label">Razón social *</label>
-        <input class="form-control" name="razon_social" required>
+        <label class="form-label" for="crear_cliente_razon_social">Razón social</label>
+        <input id="crear_cliente_razon_social" class="form-control" name="razon_social" required>
       </div>
       <div class="col-md-4">
         <label class="form-label">Nombre comercial</label>

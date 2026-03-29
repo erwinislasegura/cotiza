@@ -6,6 +6,15 @@
   </div>
 </div>
 
+<div class="alert alert-info info-modulo mb-3">
+  <div class="fw-semibold mb-1">Buenas prácticas de gestión de cotizaciones</div>
+  <ul class="mb-0 small ps-3">
+    <li>Usa filtros por estado y fechas para priorizar seguimiento comercial diario.</li>
+    <li>Revisa cotizaciones próximas a vencer para evitar pérdida de oportunidades.</li>
+    <li>Mantén estados actualizados para reportes comerciales más confiables.</li>
+  </ul>
+</div>
+
 <div class="card mb-3">
   <div class="card-header"><strong>Filtros</strong></div>
   <div class="card-body">

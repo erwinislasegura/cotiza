@@ -1,5 +1,14 @@
 <h1 class="h4 mb-3">Configuración de empresa</h1>
 
+<div class="alert alert-info info-modulo mb-3">
+  <div class="fw-semibold mb-1">Recomendaciones de configuración</div>
+  <ul class="mb-0 small ps-3">
+    <li>Mantén actualizados los datos fiscales y de contacto para documentos comerciales.</li>
+    <li>Configura IMAP correctamente para envío y trazabilidad de notificaciones.</li>
+    <li>Sube un logo optimizado para mejorar presentación de cotizaciones y PDFs.</li>
+  </ul>
+</div>
+
 <form method="POST" action="<?= e(url('/app/configuracion')) ?>" enctype="multipart/form-data" class="row g-3">
   <?= csrf_campo() ?>
 

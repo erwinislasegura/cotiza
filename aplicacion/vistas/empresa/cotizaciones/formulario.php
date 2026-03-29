@@ -5,6 +5,15 @@ $puedeGuardar = $hayClientes && $hayProductos;
 ?>
 <h1 class="h4 mb-3">Crear cotización</h1>
 
+<div class="alert alert-info info-modulo mb-3">
+    <div class="fw-semibold mb-1">Guía rápida para crear cotizaciones</div>
+    <ul class="mb-0 small ps-3">
+        <li>Selecciona cliente y lista de precios para aplicar ajustes comerciales correctos.</li>
+        <li>Completa detalle de productos con cantidades y descuentos para evitar reprocesos.</li>
+        <li>Usa observaciones y términos para dejar condiciones claras antes del envío.</li>
+    </ul>
+</div>
+
 <form method="POST" class="d-grid gap-3" id="form-cotizacion">
     <?= csrf_campo() ?>
 
