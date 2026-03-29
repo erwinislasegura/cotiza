@@ -45,15 +45,6 @@ if ($listaPrecioCotizacionId > 0) {
                 </select>
             </div>
 
-            <div class="col-md-2">
-                <label class="small">Canal venta</label>
-                <select class="form-select" name="canal_venta" id="canal_venta">
-                    <option value="">General</option>
-                    <option value="local">Local</option>
-                    <option value="delivery">Delivery</option>
-                    <option value="ecommerce">E-commerce</option>
-                </select>
-            </div>
             <div class="col-md-4">
                 <label class="small">Lista de precios aplicada</label>
                 <select class="form-select" name="lista_precio_id" id="lista_precio_id">
@@ -278,7 +269,7 @@ if ($listaPrecioCotizacionId > 0) {
 
         if (!tieneLista) {
             fila.dataset.listaAplicada = 'no';
-            celda.innerHTML = '<span style="color:#b94a48;">Sin lista para este cliente/canal.</span>';
+            celda.innerHTML = '<span style="color:#b94a48;">Sin lista para este cliente.</span>';
             actualizarIndicadorLista();
             return;
         }
@@ -302,14 +293,13 @@ if ($listaPrecioCotizacionId > 0) {
     async function autocompletarPrecioDesdeLista(fila, forzar = false) {
         const selectProducto = fila.querySelector('.js-producto');
         const clienteId = selectCliente?.value || '';
-        const canal = document.getElementById('canal_venta')?.value || '';
         const listaPrecioId = selectLista?.value || '';
         if (!selectProducto || !selectProducto.value || !clienteId) {
             renderInfoLista(fila, null);
             return;
         }
         try {
-            const params = new URLSearchParams({ producto_id: selectProducto.value, cliente_id: clienteId, canal: canal, lista_precio_id: listaPrecioId });
+            const params = new URLSearchParams({ producto_id: selectProducto.value, cliente_id: clienteId, lista_precio_id: listaPrecioId });
             const resp = await fetch('<?= e(url('/app/listas-precios/precio-producto')) ?>?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
             const data = await resp.json();
             if (data.ok && data.data && typeof data.data.precio_final !== 'undefined') {
@@ -430,7 +420,6 @@ if ($listaPrecioCotizacionId > 0) {
         actualizarOpcionesListaCliente();
         aplicarListaATodasLineas(true);
     });
-    document.getElementById('canal_venta')?.addEventListener('change', () => { aplicarListaATodasLineas(true); });
     document.getElementById('lista_precio_id')?.addEventListener('change', () => { aplicarListaATodasLineas(true); });
     aplicarListaATodasLineas(true);
 })();
