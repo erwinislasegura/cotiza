@@ -460,7 +460,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
                         inputPrecio.value = Number(data.data.precio_final || 0).toFixed(2);
                         if (forzar && selectDescuento && inputDescuento) {
                             selectDescuento.value = 'valor';
-                            inputDescuento.value = '0';
+                            inputDescuento.value = '0.00';
                         }
                     }
                 }
@@ -544,6 +544,11 @@ $puedeGuardar = $hayClientes && $hayProductos;
                 const detalleProducto = opcion?.dataset?.descripcion || opcion?.dataset?.nombre || '';
                 if (inputDescripcion) {
                     inputDescripcion.value = detalleProducto;
+                }
+                if (textoDetalle) {
+                    const detalleVisible = detalleProducto || '';
+                    textoDetalle.textContent = detalleVisible;
+                    textoDetalle.title = detalleVisible;
                 }
                 await autocompletarPrecioDesdeLista(fila, true);
                 recalcular();

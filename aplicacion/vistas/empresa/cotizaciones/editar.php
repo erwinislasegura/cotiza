@@ -388,7 +388,7 @@ if ($listaPrecioCotizacionId > 0) {
                         inputPrecio.value = Number(data.data.precio_final || 0).toFixed(2);
                         if (forzar && selectDescuento && inputDescuento) {
                             selectDescuento.value = 'valor';
-                            inputDescuento.value = '0';
+                            inputDescuento.value = '0.00';
                         }
                     }
                 }
