@@ -1,24 +1,29 @@
 <h1 class="h4 mb-3">Ver cotización</h1>
 
 <style>
+    #tabla-items-ver {
+        table-layout: fixed;
+        width: 100%;
+    }
+
     #tabla-items-ver th,
     #tabla-items-ver td {
         vertical-align: middle;
+        font-size: 0.82rem;
     }
 
-    #tabla-items-ver .col-producto { min-width: 260px; }
+    #tabla-items-ver .col-producto { width: 30%; }
     #tabla-items-ver .col-cantidad,
     #tabla-items-ver .col-precio,
     #tabla-items-ver .col-descuento,
-    #tabla-items-ver .col-iva { min-width: 120px; }
+    #tabla-items-ver .col-iva { width: 9%; }
 
     #tabla-items-ver .js-detalle-producto {
-        font-size: 0.78rem;
+        font-size: 0.70rem;
         color: #6c757d;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 380px;
     }
 
     #tabla-items-ver .valor-linea {
@@ -69,8 +74,8 @@
                 <tr>
                     <td>
                         <div><?= e($producto) ?></div>
-                        <div class="js-detalle-producto" title="<?= e($detalle !== '' ? $detalle : 'Sin detalle') ?>">
-                            <?= e($detalle !== '' ? $detalle : 'Sin detalle') ?>
+                        <div class="js-detalle-producto" title="<?= e($detalle) ?>">
+                            <?= e($detalle) ?>
                         </div>
                     </td>
                     <td><?= e(number_format($cantidad, 2, '.', '')) ?></td>

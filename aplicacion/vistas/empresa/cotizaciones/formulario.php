@@ -6,9 +6,15 @@ $puedeGuardar = $hayClientes && $hayProductos;
 <h1 class="h4 mb-3">Crear cotización</h1>
 
 <style>
+    #tabla-items {
+        table-layout: fixed;
+        width: 100%;
+    }
+
     #tabla-items th,
     #tabla-items td {
         vertical-align: middle;
+        font-size: 0.82rem;
     }
 
     #tabla-items .js-subtotal,
@@ -20,36 +26,41 @@ $puedeGuardar = $hayClientes && $hayProductos;
     }
 
     #tabla-items .col-producto {
-        min-width: 240px;
+        width: 30%;
     }
 
-
     #tabla-items .col-ajuste {
-        min-width: 250px;
+        width: 16%;
     }
 
     #tabla-items .col-cantidad,
     #tabla-items .col-precio,
     #tabla-items .col-descuento,
     #tabla-items .col-iva {
-        min-width: 130px;
+        width: 8%;
     }
 
     #tabla-items .js-descuento-valor,
     #tabla-items .js-iva {
-        min-width: 88px;
+        min-width: 62px;
     }
     #tabla-items .input-group {
         flex-wrap: nowrap;
     }
 
     #tabla-items .js-detalle-producto {
-        font-size: 0.78rem;
+        font-size: 0.70rem;
         color: #6c757d;
-        margin-top: 4px;
+        margin-top: 2px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    #tabla-items .js-lista-ajuste {
+        white-space: normal;
+        line-height: 1.15;
+        font-size: 0.74rem;
     }
 </style>
 
@@ -227,7 +238,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
                 </select>
                 <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalProducto">+</button>
             </div>
-            <div class="js-detalle-producto" aria-live="polite" title="Selecciona un producto para ver su detalle.">Selecciona un producto para ver su detalle.</div>
+            <div class="js-detalle-producto" aria-live="polite"></div>
             <input type="hidden" class="js-descripcion-item" name="descripcion_item[]" value="">
         </td>
         <td><input class="form-control form-control-sm js-cantidad" type="number" step="0.01" min="0" name="cantidad[]" value="1.00"></td>
@@ -545,7 +556,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
                     inputDescripcion.value = detalleProducto;
                 }
                 if (textoDetalle) {
-                    const detalleVisible = detalleProducto || 'Sin detalle';
+                    const detalleVisible = detalleProducto || '';
                     textoDetalle.textContent = detalleVisible;
                     textoDetalle.title = detalleVisible;
                 }
