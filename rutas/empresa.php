@@ -9,6 +9,7 @@ use Aplicacion\Controladores\Empresa\CotizacionesControlador;
 use Aplicacion\Controladores\Empresa\ConfiguracionControlador;
 use Aplicacion\Controladores\Empresa\UsuariosControlador;
 use Aplicacion\Controladores\Empresa\GestionComercialControlador;
+use Aplicacion\Controladores\Empresa\DocumentosControlador;
 
 $mwEmpresa = [AutenticadoMiddleware::class, EmpresaMiddleware::class];
 
@@ -100,6 +101,8 @@ $enrutador->agregar('GET', '/app/aprobaciones/ver/{id}', fn($id) => (new Gestion
 $enrutador->agregar('GET', '/app/aprobaciones/editar/{id}', fn($id) => (new GestionComercialControlador())->editarRegistro('aprobaciones', (int) $id), $mwEmpresa);
 $enrutador->agregar('POST', '/app/aprobaciones/editar/{id}', fn($id) => (new GestionComercialControlador())->actualizarRegistro('aprobaciones', (int) $id), $mwEmpresa);
 $enrutador->agregar('POST', '/app/aprobaciones/eliminar/{id}', fn($id) => (new GestionComercialControlador())->eliminarRegistro('aprobaciones', (int) $id), $mwEmpresa);
+$enrutador->agregar('GET', '/app/documentos', [DocumentosControlador::class, 'index'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/documentos', [DocumentosControlador::class, 'index'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/notificaciones', fn() => (new GestionComercialControlador())->moduloBase('notificaciones'), $mwEmpresa);
 $enrutador->agregar('POST', '/app/notificaciones', fn() => (new GestionComercialControlador())->guardarModuloBase('notificaciones'), $mwEmpresa);
 $enrutador->agregar('GET', '/app/notificaciones/ver/{id}', fn($id) => (new GestionComercialControlador())->verRegistro('notificaciones', (int) $id), $mwEmpresa);

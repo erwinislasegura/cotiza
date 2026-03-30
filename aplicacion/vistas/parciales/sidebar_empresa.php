@@ -12,6 +12,7 @@ $items = [
     ['url' => '/app/cotizaciones', 'texto' => 'Cotizaciones', 'icono' => 'bi-file-earmark-text'],
     ['url' => '/app/seguimiento', 'texto' => 'Seguimiento comercial', 'icono' => 'bi-graph-up-arrow'],
     ['url' => '/app/aprobaciones', 'texto' => 'Aprobaciones', 'icono' => 'bi-check2-square'],
+    ['url' => '/app/documentos', 'texto' => 'Plantilla correo cotización', 'icono' => 'bi-code-square'],
     ['url' => '/app/configuracion', 'texto' => 'Configuración empresa', 'icono' => 'bi-gear'],
     ['url' => '/app/usuarios', 'texto' => 'Usuarios y permisos', 'icono' => 'bi-people'],
     ['url' => '/app/notificaciones', 'texto' => 'Notificaciones', 'icono' => 'bi-bell'],
