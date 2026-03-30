@@ -39,6 +39,14 @@ $puedeGuardar = $hayClientes && $hayProductos;
     #tabla-items .js-iva {
         min-width: 88px;
     }
+
+    #tabla-items .js-detalle-producto {
+        font-size: 0.78rem;
+        color: #6c757d;
+        line-height: 1.25;
+        margin-top: 4px;
+        white-space: normal;
+    }
 </style>
 
 <div class="alert alert-info info-modulo mb-3">
@@ -215,6 +223,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
                 </select>
                 <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalProducto">+</button>
             </div>
+            <div class="js-detalle-producto" aria-live="polite">Selecciona un producto para ver su detalle.</div>
             <input type="hidden" class="js-descripcion-item" name="descripcion_item[]" value="">
         </td>
         <td><input class="form-control form-control-sm js-cantidad" type="number" step="0.01" min="0" name="cantidad[]" value="1.00"></td>
@@ -523,12 +532,16 @@ $puedeGuardar = $hayClientes && $hayProductos;
 
         const selectProducto = fila.querySelector('.js-producto');
         const inputDescripcion = fila.querySelector('.js-descripcion-item');
+        const textoDetalle = fila.querySelector('.js-detalle-producto');
         if (selectProducto) {
             selectProducto.addEventListener('change', async () => {
                 const opcion = selectProducto.options[selectProducto.selectedIndex];
                 const detalleProducto = opcion?.dataset?.descripcion || opcion?.dataset?.nombre || '';
                 if (inputDescripcion) {
                     inputDescripcion.value = detalleProducto;
+                }
+                if (textoDetalle) {
+                    textoDetalle.textContent = detalleProducto || 'Sin detalle para este producto.';
                 }
                 await autocompletarPrecioDesdeLista(fila, true);
                 recalcular();
