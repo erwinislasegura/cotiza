@@ -375,6 +375,51 @@ class GestionComercial extends Modelo
         return (bool) $stmt->fetchColumn();
     }
 
+    public function obtenerPlantillaCorreoCotizacion(int $empresaId): ?array
+    {
+        $this->asegurarTablaDocumentosPlantillas();
+        $stmt = $this->db->prepare('SELECT *
+            FROM documentos_plantillas
+            WHERE empresa_id = :empresa_id
+              AND tipo_documento = :tipo_documento
+            ORDER BY id DESC
+            LIMIT 1');
+        $stmt->execute([
+            'empresa_id' => $empresaId,
+            'tipo_documento' => 'correo_cotizacion',
+        ]);
+        return $stmt->fetch() ?: null;
+    }
+
+    public function guardarPlantillaCorreoCotizacion(int $empresaId, string $asunto, string $html): int
+    {
+        $this->asegurarTablaDocumentosPlantillas();
+        $plantilla = $this->obtenerPlantillaCorreoCotizacion($empresaId);
+
+        $data = [
+            'nombre' => 'Plantilla correo cotización',
+            'terminos_defecto' => $asunto,
+            'observaciones_defecto' => $html,
+            'estado' => 'activo',
+            'tipo_documento' => 'correo_cotizacion',
+        ];
+
+        if ($plantilla) {
+            $this->actualizarDinamico('documentos_plantillas', $empresaId, (int) $plantilla['id'], $data);
+            return (int) $plantilla['id'];
+        }
+
+        return $this->crear('documentos_plantillas', [
+            'empresa_id' => $empresaId,
+            'nombre' => $data['nombre'],
+            'tipo_documento' => $data['tipo_documento'],
+            'terminos_defecto' => $data['terminos_defecto'],
+            'observaciones_defecto' => $data['observaciones_defecto'],
+            'estado' => $data['estado'],
+            'fecha_creacion' => date('Y-m-d H:i:s'),
+        ]);
+    }
+
     private function asegurarTablaClientesListas(): void
     {
         $this->db->exec('CREATE TABLE IF NOT EXISTS clientes_listas_precios (
@@ -415,6 +460,29 @@ class GestionComercial extends Modelo
                 // Si la base no permite ALTER en runtime, mantener operación sin bloquear el flujo.
             }
         }
+    }
+
+    private function asegurarTablaDocumentosPlantillas(): void
+    {
+        if ($this->tablaExiste('documentos_plantillas')) {
+            return;
+        }
+
+        $this->db->exec('CREATE TABLE IF NOT EXISTS documentos_plantillas (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            empresa_id BIGINT UNSIGNED NOT NULL,
+            nombre VARCHAR(160) NOT NULL,
+            tipo_documento VARCHAR(80) NOT NULL DEFAULT "cotizacion",
+            terminos_defecto TEXT NULL,
+            observaciones_defecto TEXT NULL,
+            firma VARCHAR(180) NULL,
+            logo VARCHAR(255) NULL,
+            pie_documento VARCHAR(255) NULL,
+            estado ENUM("activo","inactivo") NOT NULL DEFAULT "activo",
+            fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_documentos_empresa (empresa_id),
+            CONSTRAINT fk_documentos_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
     }
 
     private function tablaExiste(string $tabla): bool

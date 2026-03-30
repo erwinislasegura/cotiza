@@ -16,14 +16,14 @@ class Usuario extends Modelo
 
     public function listarPorEmpresa(int $empresaId): array
     {
-        $stmt = $this->db->prepare('SELECT u.id, u.nombre, u.correo, u.estado, r.nombre AS rol FROM usuarios u INNER JOIN roles r ON r.id = u.rol_id WHERE u.empresa_id = :empresa_id AND u.fecha_eliminacion IS NULL ORDER BY u.id DESC');
+        $stmt = $this->db->prepare('SELECT u.id, u.nombre, u.correo, u.telefono, u.cargo, u.estado, r.nombre AS rol FROM usuarios u INNER JOIN roles r ON r.id = u.rol_id WHERE u.empresa_id = :empresa_id AND u.fecha_eliminacion IS NULL ORDER BY u.id DESC');
         $stmt->execute(['empresa_id' => $empresaId]);
         return $stmt->fetchAll();
     }
 
     public function crear(array $data): int
     {
-        $sql = 'INSERT INTO usuarios (empresa_id, rol_id, nombre, correo, password, estado, fecha_creacion) VALUES (:empresa_id, :rol_id, :nombre, :correo, :password, :estado, NOW())';
+        $sql = 'INSERT INTO usuarios (empresa_id, rol_id, nombre, correo, password, telefono, cargo, biografia, estado, fecha_creacion) VALUES (:empresa_id, :rol_id, :nombre, :correo, :password, :telefono, :cargo, :biografia, :estado, NOW())';
         $stmt = $this->db->prepare($sql);
         $stmt->execute($data);
         return (int) $this->db->lastInsertId();
@@ -63,7 +63,7 @@ class Usuario extends Modelo
 
     public function actualizarEmpresa(int $empresaId, int $id, array $data): void
     {
-        $campos = 'nombre=:nombre, correo=:correo, rol_id=:rol_id, estado=:estado';
+        $campos = 'nombre=:nombre, correo=:correo, telefono=:telefono, cargo=:cargo, biografia=:biografia, rol_id=:rol_id, estado=:estado';
 
         if (isset($data['password'])) {
             $campos .= ', password=:password';

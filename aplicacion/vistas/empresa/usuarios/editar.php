@@ -1,4 +1,11 @@
 <h1 class="h4 mb-3">Editar usuario</h1>
+<div class="alert alert-info info-modulo mb-3">
+    <div class="fw-semibold mb-1">Recomendaciones para edición de usuarios</div>
+    <ul class="mb-0 small ps-3">
+        <li>Completa cargo, teléfono e información interna para mejorar coordinación del equipo.</li>
+        <li>Si vas a cambiar contraseña, confirma primero la contraseña actual para proteger la cuenta.</li>
+    </ul>
+</div>
 <div class="card shadow-sm border-0">
     <div class="card-body">
         <div class="alert alert-light border d-flex justify-content-between align-items-center mb-4">
@@ -22,7 +29,17 @@
                 <input name="correo" type="email" class="form-control" value="<?= e($usuario['correo']) ?>" required>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-4">
+                <label class="form-label">Cargo / puesto</label>
+                <input name="cargo" class="form-control" value="<?= e($usuario['cargo'] ?? '') ?>">
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Teléfono</label>
+                <input name="telefono" class="form-control" value="<?= e($usuario['telefono'] ?? '') ?>">
+            </div>
+
+            <div class="col-md-4">
                 <label class="form-label">Rol</label>
                 <select name="rol_id" class="form-select" required>
                     <?php foreach ($roles as $rol): ?>
@@ -39,6 +56,11 @@
                     <option value="activo" <?= $usuario['estado'] === 'activo' ? 'selected' : '' ?>>Activo</option>
                     <option value="inactivo" <?= $usuario['estado'] === 'inactivo' ? 'selected' : '' ?>>Inactivo</option>
                 </select>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Información del usuario</label>
+                <textarea name="biografia" class="form-control" rows="2" placeholder="Notas internas del usuario."><?= e($usuario['biografia'] ?? '') ?></textarea>
             </div>
 
             <?php if (!empty($esUsuarioLogueado)): ?>

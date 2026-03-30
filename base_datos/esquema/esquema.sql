@@ -78,6 +78,9 @@ CREATE TABLE usuarios (
   nombre VARCHAR(150) NOT NULL,
   correo VARCHAR(150) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
+  telefono VARCHAR(80) NULL,
+  cargo VARCHAR(120) NULL,
+  biografia TEXT NULL,
   estado ENUM('activo','inactivo') NOT NULL DEFAULT 'activo',
   ultimo_acceso DATETIME NULL,
   fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -349,4 +352,20 @@ CREATE TABLE configuraciones_empresa (
   fecha_actualizacion DATETIME NULL,
   UNIQUE KEY uq_conf_empresa (empresa_id, clave),
   CONSTRAINT fk_conf_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id)
+);
+
+CREATE TABLE documentos_plantillas (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  empresa_id BIGINT UNSIGNED NOT NULL,
+  nombre VARCHAR(160) NOT NULL,
+  tipo_documento VARCHAR(80) NOT NULL DEFAULT 'cotizacion',
+  terminos_defecto TEXT NULL,
+  observaciones_defecto TEXT NULL,
+  firma VARCHAR(180) NULL,
+  logo VARCHAR(255) NULL,
+  pie_documento VARCHAR(255) NULL,
+  estado ENUM('activo','inactivo') NOT NULL DEFAULT 'activo',
+  fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_documentos_empresa (empresa_id),
+  CONSTRAINT fk_documentos_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id)
 );
