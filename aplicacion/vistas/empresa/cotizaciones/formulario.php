@@ -5,6 +5,56 @@ $puedeGuardar = $hayClientes && $hayProductos;
 ?>
 <h1 class="h4 mb-3">Crear cotización</h1>
 
+<style>
+    #tabla-items {
+        table-layout: fixed;
+        width: 100%;
+    }
+
+    #tabla-items th,
+    #tabla-items td {
+        vertical-align: middle;
+        font-size: 0.82rem;
+    }
+
+    #tabla-items .js-subtotal,
+    #tabla-items .js-iva-total,
+    #tabla-items .js-total {
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+        min-width: 120px;
+    }
+
+    #tabla-items .col-producto {
+        width: 30%;
+    }
+
+    #tabla-items .col-ajuste {
+        width: 16%;
+    }
+
+    #tabla-items .col-cantidad,
+    #tabla-items .col-precio,
+    #tabla-items .col-descuento,
+    #tabla-items .col-iva {
+        width: 10%;
+    }
+
+    #tabla-items .js-descuento-valor,
+    #tabla-items .js-iva {
+        min-width: 70px;
+    }
+    #tabla-items .input-group {
+        flex-wrap: nowrap;
+    }
+
+    #tabla-items .js-lista-ajuste {
+        white-space: normal;
+        line-height: 1.15;
+        font-size: 0.74rem;
+    }
+</style>
+
 <div class="alert alert-info info-modulo mb-3">
     <div class="fw-semibold mb-1">Guía rápida para crear cotizaciones</div>
     <ul class="mb-0 small ps-3">
@@ -110,13 +160,12 @@ $puedeGuardar = $hayClientes && $hayProductos;
                 <table class="table table-sm align-middle" id="tabla-items">
                     <thead>
                     <tr>
-                        <th style="min-width: 220px;">Producto / Servicio</th>
-                        <th style="min-width: 180px;">Descripción</th>
-                        <th>Cantidad</th>
-                        <th>Precio</th>
-                        <th style="min-width: 230px;">Lista / ajuste</th>
-                        <th>Descuento</th>
-                        <th>IVA %</th>
+                        <th class="col-producto">Producto / Servicio</th>
+                        <th class="col-cantidad">Cantidad</th>
+                        <th class="col-precio">Precio</th>
+                        <th class="col-ajuste">Lista / ajuste</th>
+                        <th class="col-descuento">Descuento</th>
+                        <th class="col-iva">IVA %</th>
                         <th class="text-end">Subtotal</th>
                         <th class="text-end">IVA</th>
                         <th class="text-end">Total</th>
@@ -180,10 +229,10 @@ $puedeGuardar = $hayClientes && $hayProductos;
                 </select>
                 <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalProducto">+</button>
             </div>
+            <input type="hidden" class="js-descripcion-item" name="descripcion_item[]" value="">
         </td>
-        <td><input class="form-control form-control-sm" name="descripcion_item[]" placeholder="Detalle del producto o servicio"></td>
-        <td><input class="form-control form-control-sm js-cantidad" type="number" step="0.01" min="0" name="cantidad[]" value="1"></td>
-        <td><input class="form-control form-control-sm js-precio" type="number" step="0.01" min="0" name="precio_unitario[]" value="0"></td>
+        <td><input class="form-control form-control-sm js-cantidad" type="number" step="0.01" min="0" name="cantidad[]" value="1.00"></td>
+        <td><input class="form-control form-control-sm js-precio" type="number" step="0.01" min="0" name="precio_unitario[]" value="0.00"></td>
         <td class="small text-muted js-lista-ajuste">Sin validar lista</td>
         <td>
             <div class="input-group input-group-sm">
@@ -191,13 +240,13 @@ $puedeGuardar = $hayClientes && $hayProductos;
                     <option value="valor">$</option>
                     <option value="porcentaje">%</option>
                 </select>
-                <input class="form-control js-descuento-valor" type="number" step="0.01" min="0" name="descuento_item[]" value="0">
+                <input class="form-control js-descuento-valor" type="number" step="1" min="0" name="descuento_item[]" value="0">
             </div>
         </td>
-        <td><input class="form-control form-control-sm js-iva" type="number" step="0.01" min="0" name="impuesto_item[]" value="19"></td>
-        <td class="text-end js-subtotal">$0.00</td>
-        <td class="text-end js-iva-total">$0.00</td>
-        <td class="text-end js-total">$0.00</td>
+        <td><input class="form-control form-control-sm js-iva" type="number" step="1" min="0" name="impuesto_item[]" value="19"></td>
+        <td class="text-end js-subtotal fw-semibold">$0.00</td>
+        <td class="text-end js-iva-total fw-semibold">$0.00</td>
+        <td class="text-end js-total fw-semibold">$0.00</td>
         <td><button type="button" class="btn btn-outline-danger btn-sm js-eliminar">×</button></td>
     </tr>
 </template>
@@ -291,6 +340,20 @@ $puedeGuardar = $hayClientes && $hayProductos;
         return '$' + (Math.round((valor + Number.EPSILON) * 100) / 100).toFixed(2);
     }
 
+    function normalizarNumero(input, decimales = 2, minimo = 0) {
+        if (!input) { return; }
+        const valor = parseFloat(input.value || '0');
+        const saneado = Number.isFinite(valor) ? Math.max(minimo, valor) : minimo;
+        input.value = saneado.toFixed(decimales);
+    }
+
+    function aplicarFormatoFila(fila) {
+        normalizarNumero(fila.querySelector('.js-cantidad'), 2);
+        normalizarNumero(fila.querySelector('.js-precio'), 2);
+        normalizarNumero(fila.querySelector('.js-descuento-valor'), 0);
+        normalizarNumero(fila.querySelector('.js-iva'), 0);
+    }
+
     function esc(valor) {
         return String(valor ?? '').replace(/[&<>"']/g, (c) => ({
             '&': '&amp;',
@@ -353,7 +416,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
         const signo = esDescuento ? '-' : '+';
         const etiqueta = esDescuento ? 'Descuento por lista' : 'Incremento por lista';
         fila.dataset.listaAplicada = 'si';
-        celda.innerHTML = `<span class="badge ${esDescuento ? 'text-bg-success' : 'text-bg-warning'} mb-1">${nombreLista}</span><div ${colorSuave}><strong>${etiqueta}</strong>: ${signo}${porcentaje.toFixed(2)}% (${signo}${fmt(montoAjuste)})</div><div>Base ${fmt(precioBase)} → Final ${fmt(precioFinal)}</div>`;
+        celda.innerHTML = `<span class="badge ${esDescuento ? 'text-bg-success' : 'text-bg-warning'} mb-1">${nombreLista}</span><div ${colorSuave}><strong>${etiqueta}</strong>: ${signo}${porcentaje.toFixed(0)}% (${signo}${fmt(montoAjuste)})</div><div>Base ${fmt(precioBase)} → Final ${fmt(precioFinal)}</div>`;
         actualizarIndicadorLista();
     }
 
@@ -386,15 +449,15 @@ $puedeGuardar = $hayClientes && $hayProductos;
                     const ajusteTipo = data.data.ajuste_tipo || '';
                     const ajustePorcentaje = parseFloat(data.data.ajuste_porcentaje || '0');
                     if (ajusteTipo === 'descuento' && ajustePorcentaje > 0) {
-                        inputPrecio.value = String(data.data.precio_base);
+                        inputPrecio.value = Number(data.data.precio_base || 0).toFixed(2);
                         if (selectDescuento) {
                             selectDescuento.value = 'porcentaje';
                         }
                         if (inputDescuento) {
-                            inputDescuento.value = String(ajustePorcentaje);
+                            inputDescuento.value = Number(ajustePorcentaje).toFixed(0);
                         }
                     } else {
-                        inputPrecio.value = String(data.data.precio_final);
+                        inputPrecio.value = Number(data.data.precio_final || 0).toFixed(2);
                         if (forzar && selectDescuento && inputDescuento) {
                             selectDescuento.value = 'valor';
                             inputDescuento.value = '0';
@@ -465,19 +528,28 @@ $puedeGuardar = $hayClientes && $hayProductos;
             control.addEventListener('change', recalcular);
         });
 
+        fila.querySelectorAll('.js-cantidad, .js-precio, .js-descuento-valor, .js-iva').forEach((input) => {
+            input.addEventListener('blur', () => {
+                const decimales = input.classList.contains('js-descuento-valor') || input.classList.contains('js-iva') ? 0 : 2;
+                normalizarNumero(input, decimales);
+                recalcular();
+            });
+        });
+
         const selectProducto = fila.querySelector('.js-producto');
-        const inputDescripcion = fila.querySelector('[name="descripcion_item[]"]');
-        if (selectProducto) {
+        const inputDescripcion = fila.querySelector('.js-descripcion-item');
+                if (selectProducto) {
             selectProducto.addEventListener('change', async () => {
                 const opcion = selectProducto.options[selectProducto.selectedIndex];
                 const detalleProducto = opcion?.dataset?.descripcion || opcion?.dataset?.nombre || '';
-                if (inputDescripcion && inputDescripcion.value.trim() === '') {
+                if (inputDescripcion) {
                     inputDescripcion.value = detalleProducto;
                 }
                 await autocompletarPrecioDesdeLista(fila, true);
                 recalcular();
             });
         }
+        aplicarFormatoFila(fila);
         cuerpo.appendChild(fila);
     }
 
@@ -553,6 +625,10 @@ $puedeGuardar = $hayClientes && $hayProductos;
     agregarFila();
     document.getElementById('descuento_tipo_total').addEventListener('change', recalcular);
     document.getElementById('descuento_total').addEventListener('input', recalcular);
+    document.getElementById('descuento_total').addEventListener('blur', function () {
+        normalizarNumero(this, 2);
+        recalcular();
+    });
     actualizarOpcionesListaCliente();
     renderResumenCliente();
     document.querySelector('[name="cliente_id"]')?.addEventListener('change', () => {
