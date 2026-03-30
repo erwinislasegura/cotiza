@@ -25,6 +25,13 @@ class Empresa extends Modelo
         return (int) $this->db->lastInsertId();
     }
 
+    public function existePorIdentificadorFiscal(string $identificadorFiscal): bool
+    {
+        $stmt = $this->db->prepare('SELECT id FROM empresas WHERE identificador_fiscal = :identificador_fiscal AND fecha_eliminacion IS NULL LIMIT 1');
+        $stmt->execute(['identificador_fiscal' => $identificadorFiscal]);
+        return (bool) $stmt->fetchColumn();
+    }
+
     public function obtenerConfiguracion(int $empresaId): ?array
     {
         $stmt = $this->db->prepare('SELECT * FROM empresas WHERE id = :id AND fecha_eliminacion IS NULL');
