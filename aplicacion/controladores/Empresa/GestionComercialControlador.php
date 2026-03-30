@@ -277,7 +277,6 @@ class GestionComercialControlador extends Controlador
             'listas-precios' => ['tabla' => 'listas_precios', 'vista' => 'empresa/modulos/listas_precios', 'titulo' => 'Listas de precios'],
             'seguimiento' => ['tabla' => 'seguimientos_comerciales', 'vista' => 'empresa/modulos/seguimiento', 'titulo' => 'Seguimiento comercial'],
             'aprobaciones' => ['tabla' => 'aprobaciones_cotizacion', 'vista' => 'empresa/modulos/aprobaciones', 'titulo' => 'Aprobaciones'],
-            'documentos' => ['tabla' => 'documentos_plantillas', 'vista' => 'empresa/modulos/documentos', 'titulo' => 'Documentos y plantillas'],
             'notificaciones' => ['tabla' => 'notificaciones_empresa', 'vista' => 'empresa/modulos/notificaciones', 'titulo' => 'Notificaciones'],
             'historial' => ['tabla' => 'historial_actividad', 'vista' => 'empresa/modulos/historial', 'titulo' => 'Historial de actividad'],
         ];
@@ -446,22 +445,6 @@ class GestionComercialControlador extends Controlador
                 'fecha_creacion' => date('Y-m-d H:i:s'),
             ]);
         }
-
-        if ($modulo === 'documentos') {
-            $this->modelo->crear('documentos_plantillas', [
-                'empresa_id' => $empresaId,
-                'nombre' => trim($_POST['nombre'] ?? ''),
-                'tipo_documento' => trim($_POST['tipo_documento'] ?? 'cotizacion'),
-                'terminos_defecto' => trim($_POST['terminos_defecto'] ?? ''),
-                'observaciones_defecto' => trim($_POST['observaciones_defecto'] ?? ''),
-                'firma' => trim($_POST['firma'] ?? ''),
-                'logo' => trim($_POST['logo'] ?? ''),
-                'pie_documento' => trim($_POST['pie_documento'] ?? ''),
-                'estado' => $_POST['estado'] ?? 'activo',
-                'fecha_creacion' => date('Y-m-d H:i:s'),
-            ]);
-        }
-
         if ($modulo === 'notificaciones') {
             $this->modelo->crear('notificaciones_empresa', [
                 'empresa_id' => $empresaId,
@@ -662,14 +645,6 @@ class GestionComercialControlador extends Controlador
         flash('success', 'Aprobación registrada correctamente.');
         $this->redirigir('/app/aprobaciones');
     }
-
-    public function reportes(): void
-    {
-        $empresaId = empresa_actual_id();
-        $resumen = $this->modelo->estadisticasInicio($empresaId);
-        $this->vista('empresa/reportes/index', compact('resumen'), 'empresa');
-    }
-
     public function verRegistro(string $modulo, int $id): void
     {
         $mapeo = $this->mapeoModulos();
@@ -895,7 +870,6 @@ class GestionComercialControlador extends Controlador
             'listas-precios' => ['tabla' => 'listas_precios', 'titulo' => 'Listas de precios'],
             'seguimiento' => ['tabla' => 'seguimientos_comerciales', 'titulo' => 'Seguimiento comercial'],
             'aprobaciones' => ['tabla' => 'aprobaciones_cotizacion', 'titulo' => 'Aprobaciones'],
-            'documentos' => ['tabla' => 'documentos_plantillas', 'titulo' => 'Documentos y plantillas'],
             'notificaciones' => ['tabla' => 'notificaciones_empresa', 'titulo' => 'Notificaciones'],
             'historial' => ['tabla' => 'historial_actividad', 'titulo' => 'Historial / actividad'],
         ];
