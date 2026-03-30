@@ -150,7 +150,7 @@ class PuntoVentaControlador extends Controlador
             ], $items, $pagos, (bool) ($configuracion['permitir_venta_sin_stock'] ?? false));
 
             flash('success', 'Venta registrada correctamente.');
-            $this->redirigir('/app/punto-venta/ventas/ver/' . $ventaId);
+            $this->redirigir('/app/punto-venta/ventas/ver/' . $ventaId . '?imprimir=1');
         } catch (\Throwable $e) {
             flash('danger', 'No fue posible registrar la venta: ' . $e->getMessage());
             $this->redirigir('/app/punto-venta');

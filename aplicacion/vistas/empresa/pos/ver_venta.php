@@ -1,7 +1,54 @@
-<div class="d-flex justify-content-between align-items-center mb-3"><h1 class="h4 mb-0">Ticket <?= e($venta['numero_venta']) ?></h1><div><a class="btn btn-outline-secondary btn-sm" href="<?= e(url('/app/punto-venta/ventas')) ?>">Volver</a><button class="btn btn-primary btn-sm" onclick="window.print()">Imprimir</button></div></div>
-<div class="card"><div class="card-body">
-  <div class="row"><div class="col-md-6"><strong>Caja:</strong> <?= e($venta['caja_nombre']) ?><br><strong>Cajero:</strong> <?= e($venta['cajero'] ?? '') ?><br><strong>Fecha:</strong> <?= e($venta['fecha_venta']) ?></div><div class="col-md-6"><strong>Cliente:</strong> <?= e($venta['cliente_nombre']) ?><br><strong>Tipo:</strong> <?= e($venta['tipo_venta']) ?></div></div>
-  <hr>
-  <table class="table table-sm"><thead><tr><th>Producto</th><th>Cant.</th><th>P. unit</th><th>Impuesto</th><th>Total</th></tr></thead><tbody><?php foreach ($venta['items'] as $item): ?><tr><td><?= e($item['nombre_producto']) ?></td><td><?= number_format((float) $item['cantidad'], 2) ?></td><td>$ <?= number_format((float) $item['precio_unitario'], 2) ?></td><td>$ <?= number_format((float) $item['impuesto'], 2) ?></td><td>$ <?= number_format((float) $item['total'], 2) ?></td></tr><?php endforeach; ?></tbody></table>
-  <div class="row"><div class="col-md-6"><strong>Pagos</strong><ul><?php foreach ($venta['pagos'] as $pago): ?><li><?= e($pago['metodo_pago']) ?> - $ <?= number_format((float) $pago['monto'], 2) ?> <?= $pago['referencia'] ? '(' . e($pago['referencia']) . ')' : '' ?></li><?php endforeach; ?></ul></div><div class="col-md-6 text-end"><div>Subtotal: $ <?= number_format((float) $venta['subtotal'], 2) ?></div><div>Descuento: $ <?= number_format((float) $venta['descuento'], 2) ?></div><div>Impuesto: $ <?= number_format((float) $venta['impuesto'], 2) ?></div><div class="fs-5"><strong>Total: $ <?= number_format((float) $venta['total'], 2) ?></strong></div><div>Monto recibido: $ <?= number_format((float) $venta['monto_recibido'], 2) ?></div><div>Vuelto: $ <?= number_format((float) $venta['vuelto'], 2) ?></div></div></div>
-</div></div>
+<?php $autoImprimir = isset($_GET['imprimir']) && $_GET['imprimir'] === '1'; ?>
+<div class="d-flex justify-content-between align-items-center mb-3 no-print">
+  <h1 class="h5 mb-0">Boucher de pago <?= e($venta['numero_venta']) ?></h1>
+  <div>
+    <a class="btn btn-outline-secondary btn-sm" href="<?= e(url('/app/punto-venta/ventas')) ?>">Volver</a>
+    <button class="btn btn-primary btn-sm" onclick="window.print()">Imprimir</button>
+  </div>
+</div>
+
+<div class="card mx-auto" style="max-width: 420px;">
+  <div class="card-body small" id="boucher_pago">
+    <div class="text-center mb-2">
+      <strong>COMPROBANTE POS</strong><br>
+      <span><?= e($venta['numero_venta']) ?></span><br>
+      <span><?= e($venta['fecha_venta']) ?></span>
+    </div>
+    <div>Caja: <strong><?= e($venta['caja_nombre']) ?></strong></div>
+    <div>Cajero: <strong><?= e($venta['cajero'] ?? '') ?></strong></div>
+    <div>Cliente: <strong><?= e($venta['cliente_nombre']) ?></strong></div>
+    <hr>
+    <?php foreach ($venta['items'] as $item): ?>
+      <div class="d-flex justify-content-between">
+        <span><?= e($item['nombre_producto']) ?> x <?= number_format((float) $item['cantidad'], 2) ?></span>
+        <strong>$ <?= number_format((float) $item['total'], 2) ?></strong>
+      </div>
+    <?php endforeach; ?>
+    <hr>
+    <div class="d-flex justify-content-between"><span>Subtotal</span><strong>$ <?= number_format((float) $venta['subtotal'], 2) ?></strong></div>
+    <div class="d-flex justify-content-between"><span>Descuento</span><strong>$ <?= number_format((float) $venta['descuento'], 2) ?></strong></div>
+    <div class="d-flex justify-content-between"><span>Impuesto</span><strong>$ <?= number_format((float) $venta['impuesto'], 2) ?></strong></div>
+    <div class="d-flex justify-content-between fs-6"><span>Total</span><strong>$ <?= number_format((float) $venta['total'], 2) ?></strong></div>
+    <hr>
+    <?php foreach ($venta['pagos'] as $pago): ?>
+      <div class="d-flex justify-content-between"><span><?= e(ucfirst($pago['metodo_pago'])) ?></span><strong>$ <?= number_format((float) $pago['monto'], 2) ?></strong></div>
+    <?php endforeach; ?>
+    <div class="d-flex justify-content-between"><span>Monto recibido</span><strong>$ <?= number_format((float) $venta['monto_recibido'], 2) ?></strong></div>
+    <div class="d-flex justify-content-between"><span>Vuelto</span><strong>$ <?= number_format((float) $venta['vuelto'], 2) ?></strong></div>
+    <div class="text-center mt-3">Gracias por su compra</div>
+  </div>
+</div>
+
+<style>
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff; }
+  #boucher_pago { font-size: 12px; }
+}
+</style>
+
+<?php if ($autoImprimir): ?>
+<script>
+  window.addEventListener('load', () => window.print());
+</script>
+<?php endif; ?>

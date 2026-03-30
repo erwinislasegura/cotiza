@@ -5,7 +5,7 @@
 - Registro de ventas POS (rápidas y con cliente registrado).
 - Carrito de venta con cobro en efectivo, transferencia, tarjeta y pagos mixtos.
 - Descuento de stock en `productos.stock_actual` al confirmar venta.
-- Ticket imprimible de venta.
+- Boucher/ticket imprimible automático al registrar la venta.
 - Historial de ventas, movimientos de caja y configuración POS (incluye decimales y cantidad de decimales).
 
 ## Rutas del módulo
@@ -21,9 +21,12 @@
 2. Si no hay caja abierta del usuario, debe abrirla desde el modal en la pantalla POS.
 3. Agrega productos al carrito (panel derecho) y revisa detalle (panel izquierdo).
 4. Selecciona tipo de venta (rápida / cliente registrado).
-5. Registra uno o varios pagos.
-6. Finaliza venta, se descuenta inventario y se genera ticket.
+5. Registra uno o varios pagos (efectivo, transferencia, tarjeta).
+6. Finaliza venta, se descuenta inventario y se imprime boucher de pago.
 7. Al cierre de jornada, realiza arqueo y cierra caja.
+
+## Reglas de pago
+- El vuelto se calcula solo cuando existe pago en efectivo.
 
 ## Integración con inventario
 - Cada ítem vendido descuenta `stock_actual` del producto.
