@@ -25,6 +25,9 @@ class UsuariosControlador extends Controlador
             'nombre' => trim($_POST['nombre'] ?? ''),
             'correo' => trim($_POST['correo'] ?? ''),
             'password' => password_hash($_POST['password'] ?? '123456', PASSWORD_BCRYPT),
+            'telefono' => trim($_POST['telefono'] ?? ''),
+            'cargo' => trim($_POST['cargo'] ?? ''),
+            'biografia' => trim($_POST['biografia'] ?? ''),
             'estado' => $_POST['estado'] ?? 'activo',
         ]);
         flash('success', 'Usuario creado correctamente.');
@@ -68,11 +71,17 @@ class UsuariosControlador extends Controlador
         $nombre = trim($_POST['nombre'] ?? '');
         $correo = trim($_POST['correo'] ?? '');
         $rolId = (int) ($_POST['rol_id'] ?? 0);
+        $telefono = trim($_POST['telefono'] ?? '');
+        $cargo = trim($_POST['cargo'] ?? '');
+        $biografia = trim($_POST['biografia'] ?? '');
         $estado = $_POST['estado'] ?? 'activo';
 
         $datosActualizar = [
             'nombre' => $nombre,
             'correo' => $correo,
+            'telefono' => $telefono,
+            'cargo' => $cargo,
+            'biografia' => $biografia,
             'rol_id' => $rolId,
             'estado' => $estado,
         ];
