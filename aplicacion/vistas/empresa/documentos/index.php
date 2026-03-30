@@ -23,7 +23,10 @@
         </select>
       </div>
       <div class="col-md-5">
-        <button class="btn btn-primary btn-sm">Generar vista previa</button>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-primary btn-sm" name="accion" value="preview">Generar vista previa</button>
+          <button class="btn btn-primary btn-sm" name="accion" value="guardar">Guardar plantilla</button>
+        </div>
       </div>
 
       <div class="col-md-6">
@@ -39,6 +42,12 @@
           <div class="fw-semibold"><?= e($variables['{{remitente_nombre}}'] ?? 'Tu empresa') ?></div>
           <div class="small text-muted"><?= e($variables['{{remitente_correo}}'] ?? '') ?></div>
         </div>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Asunto del correo</label>
+        <input name="asunto_correo" class="form-control" value="<?= e($asuntoCorreo ?? '') ?>" placeholder="Cotización {{numero_cotizacion}} - {{empresa_nombre}}">
+        <div class="form-text">Vista previa asunto: <strong><?= e($asuntoPrevia ?? '') ?></strong></div>
       </div>
 
       <div class="col-12">

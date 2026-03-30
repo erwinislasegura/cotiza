@@ -341,9 +341,34 @@ class CotizacionesControlador extends Controlador
             $clienteNombrePlantilla = trim((string) ($clienteActual['nombre'] ?? ($cotizacion['cliente'] ?? '')));
         }
 
+        $variablesPlantilla = [
+            '{{empresa_nombre}}' => (string) ($empresa['nombre_comercial'] ?? $empresa['razon_social'] ?? 'Tu empresa'),
+            '{{cliente_nombre}}' => $clienteNombrePlantilla,
+            '{{correo_destino}}' => $destinatario,
+            '{{numero_cotizacion}}' => (string) ($cotizacion['numero'] ?? ('#' . $id)),
+            '{{total_cotizacion}}' => '$' . number_format((float) ($cotizacion['total'] ?? 0), 2, ',', '.'),
+            '{{fecha_vencimiento}}' => (string) ($cotizacion['fecha_vencimiento'] ?? ''),
+            '{{url_publica}}' => $urlPublica,
+            '{{url_pdf}}' => $urlPdf,
+            '{{remitente_nombre}}' => $remitenteNombre,
+            '{{remitente_correo}}' => $remitenteCorreo,
+        ];
+
+        $plantillaCorreo = (new GestionComercial())->obtenerPlantillaCorreoCotizacion($empresaId);
+        $asuntoPlantilla = trim((string) ($plantillaCorreo['terminos_defecto'] ?? ''));
+        $htmlPlantilla = trim((string) ($plantillaCorreo['observaciones_defecto'] ?? ''));
+
+        $asuntoCorreo = $asuntoPlantilla !== ''
+            ? $this->renderizarPlantillaCorreo($asuntoPlantilla, $variablesPlantilla)
+            : ('Cotización ' . ($cotizacion['numero'] ?? ('#' . $id)) . ' - ' . ($empresa['nombre_comercial'] ?? 'CotizaPro'));
+
+        $mensajeHtml = $htmlPlantilla !== ''
+            ? $this->renderizarPlantillaCorreo($htmlPlantilla, $variablesPlantilla)
+            : $this->construirPlantillaCorreoCotizacion($cotizacion, $empresa ?: [], $urlPublica, $urlPdf, $clienteNombrePlantilla);
+
         (new ServicioCorreo())->enviar(
             $destinatario,
-            'Cotización ' . ($cotizacion['numero'] ?? ('#' . $id)) . ' - ' . ($empresa['nombre_comercial'] ?? 'CotizaPro'),
+            $asuntoCorreo,
             'cotizacion_cliente_profesional',
             [
                 'empresa' => $empresa['nombre_comercial'] ?? '',
@@ -354,7 +379,7 @@ class CotizacionesControlador extends Controlador
                 'total' => number_format((float) ($cotizacion['total'] ?? 0), 2, ',', '.'),
                 'remitente_correo' => $remitenteCorreo,
                 'remitente_nombre' => $remitenteNombre,
-                'mensaje_html' => $this->construirPlantillaCorreoCotizacion($cotizacion, $empresa ?: [], $urlPublica, $urlPdf, $clienteNombrePlantilla),
+                'mensaje_html' => $mensajeHtml,
                 'adjuntos' => [[
                     'nombre' => 'Cotizacion-' . ($cotizacion['numero'] ?? $id) . '.pdf',
                     'mime' => 'application/pdf',
@@ -561,6 +586,15 @@ class CotizacionesControlador extends Controlador
             $texto = "'" . $texto;
         }
         return htmlspecialchars($texto, ENT_QUOTES, 'UTF-8');
+    }
+
+    private function renderizarPlantillaCorreo(string $template, array $variables): string
+    {
+        $reemplazos = [];
+        foreach ($variables as $clave => $valor) {
+            $reemplazos[$clave] = htmlspecialchars((string) $valor, ENT_QUOTES, 'UTF-8');
+        }
+        return strtr($template, $reemplazos);
     }
 
     private function construirPlantillaCorreoCotizacion(array $cotizacion, array $empresa, string $urlPublica, string $urlPdf, string $clienteNombre = ''): string

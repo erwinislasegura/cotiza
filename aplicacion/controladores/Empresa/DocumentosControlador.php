@@ -6,6 +6,7 @@ use Aplicacion\Nucleo\Controlador;
 use Aplicacion\Modelos\Cotizacion;
 use Aplicacion\Modelos\Empresa;
 use Aplicacion\Modelos\Cliente;
+use Aplicacion\Modelos\GestionComercial;
 
 class DocumentosControlador extends Controlador
 {
@@ -15,6 +16,9 @@ class DocumentosControlador extends Controlador
         $cotizaciones = (new Cotizacion())->listar($empresaId);
         $cotizacionId = (int) ($_REQUEST['cotizacion_id'] ?? 0);
         $plantillaHtml = trim((string) ($_POST['plantilla_html'] ?? ''));
+        $asuntoCorreo = trim((string) ($_POST['asunto_correo'] ?? ''));
+        $accion = trim((string) ($_POST['accion'] ?? 'preview'));
+        $modeloComercial = new GestionComercial();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             validar_csrf();
@@ -31,16 +35,43 @@ class DocumentosControlador extends Controlador
         }
 
         $variables = $this->armarVariablesPlantilla($empresa, $cotizacion, $cliente);
+        $plantillaGuardada = $modeloComercial->obtenerPlantillaCorreoCotizacion($empresaId);
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && $accion === 'guardar') {
+            if ($asuntoCorreo === '') {
+                $asuntoCorreo = 'Cotización {{numero_cotizacion}} - {{empresa_nombre}}';
+            }
+            if ($plantillaHtml === '') {
+                $plantillaHtml = $this->plantillaBaseCorreo();
+            }
+            $modeloComercial->guardarPlantillaCorreoCotizacion($empresaId, $asuntoCorreo, $plantillaHtml);
+            flash('success', 'Plantilla de correo guardada. Se aplicará en los envíos desde cotizaciones.');
+            $plantillaGuardada = $modeloComercial->obtenerPlantillaCorreoCotizacion($empresaId);
+        }
+
+        if ($plantillaHtml === '') {
+            $plantillaHtml = trim((string) ($plantillaGuardada['observaciones_defecto'] ?? ''));
+        }
         if ($plantillaHtml === '') {
             $plantillaHtml = $this->plantillaBaseCorreo();
         }
 
+        if ($asuntoCorreo === '') {
+            $asuntoCorreo = trim((string) ($plantillaGuardada['terminos_defecto'] ?? ''));
+        }
+        if ($asuntoCorreo === '') {
+            $asuntoCorreo = 'Cotización {{numero_cotizacion}} - {{empresa_nombre}}';
+        }
+
         $vistaPrevia = $this->renderizarPlantilla($plantillaHtml, $variables);
+        $asuntoPrevia = $this->renderizarPlantilla($asuntoCorreo, $variables);
 
         $this->vista('empresa/documentos/index', compact(
             'cotizaciones',
             'cotizacionId',
             'plantillaHtml',
+            'asuntoCorreo',
+            'asuntoPrevia',
             'vistaPrevia',
             'variables',
             'cotizacion',
