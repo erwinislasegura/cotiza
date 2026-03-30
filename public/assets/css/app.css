@@ -1,10 +1,17 @@
 :root{--color-primario:#0d6efd;--color-fondo:#f4f6f9;--sidebar-ancho:260px}
 body{font-size:.88rem;color:#253648;background:var(--color-fondo)}
 .app-shell{min-height:100vh}
-.sidebar{width:var(--sidebar-ancho);min-height:100vh;position:sticky;top:0;align-self:flex-start}
-.sidebar-app .nav-link{color:#3e5268;border-radius:.45rem;padding:.42rem .55rem}
+.sidebar{width:var(--sidebar-ancho);min-width:var(--sidebar-ancho);min-height:100vh;position:sticky;top:0;align-self:flex-start}
+.sidebar-app{background:#fbfcfe !important;border-color:#d8e2ed !important}
+.sidebar-app__titulo{font-size:.7rem;letter-spacing:.08em;color:#7b8da2;font-weight:700}
+.sidebar-app .nav-link{color:#496178;border-radius:.6rem;padding:.5rem .6rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:background-color .15s ease,color .15s ease,box-shadow .15s ease}
+.sidebar-app .nav-link i{width:1rem;text-align:center;color:#6a829a;flex:0 0 auto}
+.sidebar-app .nav-link span{overflow:hidden;text-overflow:ellipsis}
+.sidebar-app .nav-link.submenu{padding-left:1.75rem}
 .sidebar-app .nav-link:hover{background:#eef3f8;color:#183b63}
-.sidebar-app .nav-link.active{background:var(--color-primario);color:#fff}
+.sidebar-app .nav-link:hover i{color:#24527c}
+.sidebar-app .nav-link.active{background:#e8f1ff;color:#0c4a8a;box-shadow:inset 3px 0 0 #2f9dff}
+.sidebar-app .nav-link.active i{color:#2f9dff}
 .topbar{height:56px}
 .card{border-radius:.55rem;border:1px solid #dde4ec;box-shadow:0 1px 4px rgba(26,43,60,.05)}
 .card-header{background:#f9fbfd;font-weight:600;padding:.55rem .75rem}
@@ -86,4 +93,24 @@ form.form-enviando .btn{pointer-events:none}
 .public-page .chart-card canvas{width:100% !important;height:100% !important}
 @media (max-width: 767.98px){
   .public-page .chart-card .card-body{height:220px}
+}
+
+/* Panel de control cliente (estilo ejecutivo) */
+.panel-cliente .card-dashboard{border:1px solid #dbe5ef;box-shadow:0 6px 14px rgba(18,42,66,.06)}
+.panel-cliente .card-dashboard .card-header{background:#f7fafd;color:#30455b;font-weight:700}
+.panel-cliente .chart-area{height:320px}
+.metric-card{position:relative;border-radius:.75rem;padding:1rem .95rem 1rem 3.6rem;background:#fff;border:1px solid #dde6f0;box-shadow:0 8px 18px rgba(32,53,73,.06)}
+.metric-card__icon{position:absolute;left:.85rem;top:50%;transform:translateY(-50%);width:2.1rem;height:2.1rem;border-radius:.6rem;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1rem}
+.metric-card__meta{font-size:.74rem;text-transform:uppercase;letter-spacing:.04em;color:#66788b;font-weight:700}
+.metric-card__value{font-size:1.2rem;font-weight:700;color:#1f3348;line-height:1.2}
+.metric-card-sky{border-top:3px solid #35a9ff}.metric-card-sky .metric-card__icon{background:#35a9ff}
+.metric-card-red{border-top:3px solid #ea4d4d}.metric-card-red .metric-card__icon{background:#ea4d4d}
+.metric-card-green{border-top:3px solid #16b364}.metric-card-green .metric-card__icon{background:#16b364}
+.metric-card-amber{border-top:3px solid #f59f00}.metric-card-amber .metric-card__icon{background:#f59f00}
+.panel-cliente .kpi-progress .progress{height:.5rem;background:#edf2f7}
+.panel-cliente .table thead th{background:#f5f8fc;color:#4d647b;font-weight:700}
+
+@media (max-width: 767.98px){
+  .panel-cliente .chart-area{height:260px}
+  .metric-card{padding-left:3.2rem}
 }
