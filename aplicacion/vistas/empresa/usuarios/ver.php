@@ -11,11 +11,20 @@
             <dt class="col-sm-3">Correo</dt>
             <dd class="col-sm-9"><?= e($usuario['correo']) ?></dd>
 
+            <dt class="col-sm-3">Cargo</dt>
+            <dd class="col-sm-9"><?= e($usuario['cargo'] ?? 'No especificado') ?></dd>
+
+            <dt class="col-sm-3">Teléfono</dt>
+            <dd class="col-sm-9"><?= e($usuario['telefono'] ?? 'No especificado') ?></dd>
+
             <dt class="col-sm-3">Rol</dt>
             <dd class="col-sm-9"><?= e($usuario['rol']) ?></dd>
 
             <dt class="col-sm-3">Estado</dt>
             <dd class="col-sm-9"><span class="badge <?= $usuario['estado'] === 'activo' ? 'text-bg-success' : 'text-bg-secondary' ?> text-uppercase"><?= e($usuario['estado']) ?></span></dd>
+
+            <dt class="col-sm-3">Información</dt>
+            <dd class="col-sm-9"><?= nl2br(e($usuario['biografia'] ?? 'Sin información adicional')) ?></dd>
 
             <dt class="col-sm-3">Fecha de registro</dt>
             <dd class="col-sm-9"><?= e(date('d/m/Y H:i', strtotime($usuario['fecha_creacion'] ?? 'now'))) ?></dd>
