@@ -37,7 +37,12 @@ class DocumentosControlador extends Controlador
         $variables = $this->armarVariablesPlantilla($empresa, $cotizacion, $cliente);
         $plantillaGuardada = $modeloComercial->obtenerPlantillaCorreoCotizacion($empresaId);
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && $accion === 'guardar') {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && in_array($accion, ['guardar', 'restaurar'], true)) {
+            if ($accion === 'restaurar') {
+                $asuntoCorreo = 'Cotización {{numero_cotizacion}} - {{empresa_nombre}}';
+                $plantillaHtml = $this->plantillaBaseCorreo();
+            }
+
             if ($asuntoCorreo === '') {
                 $asuntoCorreo = 'Cotización {{numero_cotizacion}} - {{empresa_nombre}}';
             }
@@ -45,7 +50,10 @@ class DocumentosControlador extends Controlador
                 $plantillaHtml = $this->plantillaBaseCorreo();
             }
             $modeloComercial->guardarPlantillaCorreoCotizacion($empresaId, $asuntoCorreo, $plantillaHtml);
-            flash('success', 'Plantilla de correo guardada. Se aplicará en los envíos desde cotizaciones.');
+            $mensaje = $accion === 'restaurar'
+                ? 'Plantilla original restaurada y guardada en base de datos.'
+                : 'Plantilla de correo guardada. Se aplicará en los envíos desde cotizaciones.';
+            flash('success', $mensaje);
             $plantillaGuardada = $modeloComercial->obtenerPlantillaCorreoCotizacion($empresaId);
         }
 
@@ -104,7 +112,12 @@ class DocumentosControlador extends Controlador
         }
 
         $numero = (string) ($cotizacion['numero'] ?? 'COT-0000');
+        $estadoCotizacion = (string) ($cotizacion['estado'] ?? 'borrador');
+        $fechaEmision = (string) ($cotizacion['fecha_emision'] ?? date('Y-m-d'));
         $total = '$' . number_format((float) ($cotizacion['total'] ?? 0), 2, ',', '.');
+        $subtotal = '$' . number_format((float) ($cotizacion['subtotal'] ?? 0), 2, ',', '.');
+        $impuesto = '$' . number_format((float) ($cotizacion['impuesto'] ?? 0), 2, ',', '.');
+        $descuento = '$' . number_format((float) ($cotizacion['descuento'] ?? 0), 2, ',', '.');
         $fechaVencimiento = (string) ($cotizacion['fecha_vencimiento'] ?? date('Y-m-d'));
         $urlPublica = url('/cotizacion/publica/' . (string) ($cotizacion['token_publico'] ?? '{token}'));
         $urlPdf = url('/app/cotizaciones/pdf/' . (int) ($cotizacion['id'] ?? 0));
@@ -114,7 +127,12 @@ class DocumentosControlador extends Controlador
             '{{cliente_nombre}}' => $clienteNombre,
             '{{correo_destino}}' => $correoDestino,
             '{{numero_cotizacion}}' => $numero,
+            '{{estado_cotizacion}}' => $estadoCotizacion,
+            '{{fecha_emision}}' => $fechaEmision,
             '{{total_cotizacion}}' => $total,
+            '{{subtotal_cotizacion}}' => $subtotal,
+            '{{impuesto_cotizacion}}' => $impuesto,
+            '{{descuento_cotizacion}}' => $descuento,
             '{{fecha_vencimiento}}' => $fechaVencimiento,
             '{{url_publica}}' => $urlPublica,
             '{{url_pdf}}' => $urlPdf,
@@ -145,6 +163,18 @@ class DocumentosControlador extends Controlador
     <div style="padding:24px;">
       <p style="margin:0 0 14px;">Hola <strong>{{cliente_nombre}}</strong>,</p>
       <p style="margin:0 0 14px;line-height:1.5;">Adjuntamos la cotización <strong>{{numero_cotizacion}}</strong> por un total de <strong>{{total_cotizacion}}</strong>, con vigencia hasta el <strong>{{fecha_vencimiento}}</strong>.</p>
+      <div style="border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;padding:14px;margin:0 0 16px;">
+        <div style="font-size:13px;margin-bottom:8px;color:#111827;"><strong>Detalle de la cotización</strong></div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <tr><td style="padding:4px 0;color:#6b7280;">Número</td><td style="padding:4px 0;text-align:right;"><strong>{{numero_cotizacion}}</strong></td></tr>
+          <tr><td style="padding:4px 0;color:#6b7280;">Estado</td><td style="padding:4px 0;text-align:right;">{{estado_cotizacion}}</td></tr>
+          <tr><td style="padding:4px 0;color:#6b7280;">Fecha emisión</td><td style="padding:4px 0;text-align:right;">{{fecha_emision}}</td></tr>
+          <tr><td style="padding:4px 0;color:#6b7280;">Subtotal</td><td style="padding:4px 0;text-align:right;">{{subtotal_cotizacion}}</td></tr>
+          <tr><td style="padding:4px 0;color:#6b7280;">Descuento</td><td style="padding:4px 0;text-align:right;">{{descuento_cotizacion}}</td></tr>
+          <tr><td style="padding:4px 0;color:#6b7280;">Impuesto</td><td style="padding:4px 0;text-align:right;">{{impuesto_cotizacion}}</td></tr>
+          <tr><td style="padding:6px 0;color:#111827;"><strong>Total</strong></td><td style="padding:6px 0;text-align:right;"><strong>{{total_cotizacion}}</strong></td></tr>
+        </table>
+      </div>
       <p style="margin:0 0 20px;line-height:1.5;">Puedes revisarla en línea y registrar tu decisión desde el siguiente botón:</p>
       <p style="margin:0 0 18px;">
         <a href="{{url_publica}}" style="display:inline-block;background:#0f3d77;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:8px;font-weight:600;">Ver, aceptar o rechazar cotización</a>

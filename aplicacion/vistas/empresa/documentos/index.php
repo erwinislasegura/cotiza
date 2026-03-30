@@ -26,6 +26,7 @@
         <div class="d-flex gap-2">
           <button class="btn btn-outline-primary btn-sm" name="accion" value="preview">Generar vista previa</button>
           <button class="btn btn-primary btn-sm" name="accion" value="guardar">Guardar plantilla</button>
+          <button class="btn btn-outline-secondary btn-sm" name="accion" value="restaurar">Restaurar original</button>
         </div>
       </div>
 
