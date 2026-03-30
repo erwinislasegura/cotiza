@@ -10,6 +10,7 @@ use Aplicacion\Controladores\Empresa\ConfiguracionControlador;
 use Aplicacion\Controladores\Empresa\UsuariosControlador;
 use Aplicacion\Controladores\Empresa\GestionComercialControlador;
 use Aplicacion\Controladores\Empresa\DocumentosControlador;
+use Aplicacion\Controladores\Empresa\PuntoVentaControlador;
 
 $mwEmpresa = [AutenticadoMiddleware::class, EmpresaMiddleware::class];
 
@@ -115,3 +116,18 @@ $enrutador->agregar('GET', '/app/historial/ver/{id}', fn($id) => (new GestionCom
 $enrutador->agregar('GET', '/app/historial/editar/{id}', fn($id) => (new GestionComercialControlador())->editarRegistro('historial', (int) $id), $mwEmpresa);
 $enrutador->agregar('POST', '/app/historial/editar/{id}', fn($id) => (new GestionComercialControlador())->actualizarRegistro('historial', (int) $id), $mwEmpresa);
 $enrutador->agregar('POST', '/app/historial/eliminar/{id}', fn($id) => (new GestionComercialControlador())->eliminarRegistro('historial', (int) $id), $mwEmpresa);
+
+
+$enrutador->agregar('GET', '/app/punto-venta', [PuntoVentaControlador::class, 'index'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/punto-venta/venta/guardar', [PuntoVentaControlador::class, 'guardarVenta'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/punto-venta/apertura-caja', [PuntoVentaControlador::class, 'aperturaCaja'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/punto-venta/apertura-caja', [PuntoVentaControlador::class, 'guardarAperturaCaja'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/punto-venta/cierre-caja', [PuntoVentaControlador::class, 'cierreCaja'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/punto-venta/cierre-caja', [PuntoVentaControlador::class, 'guardarCierreCaja'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/punto-venta/ventas', [PuntoVentaControlador::class, 'ventas'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/punto-venta/ventas/ver/{id}', [PuntoVentaControlador::class, 'verVenta'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/punto-venta/cajas', [PuntoVentaControlador::class, 'cajas'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/punto-venta/cajas', [PuntoVentaControlador::class, 'guardarCaja'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/punto-venta/movimientos', [PuntoVentaControlador::class, 'movimientosCaja'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/punto-venta/configuracion', [PuntoVentaControlador::class, 'configuracion'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/punto-venta/configuracion', [PuntoVentaControlador::class, 'guardarConfiguracion'], $mwEmpresa);
