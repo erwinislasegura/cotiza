@@ -23,12 +23,21 @@ $puedeGuardar = $hayClientes && $hayProductos;
         min-width: 240px;
     }
 
-    #tabla-items .col-detalle {
-        min-width: 280px;
-    }
 
     #tabla-items .col-ajuste {
         min-width: 250px;
+    }
+
+    #tabla-items .col-cantidad,
+    #tabla-items .col-precio,
+    #tabla-items .col-descuento,
+    #tabla-items .col-iva {
+        min-width: 130px;
+    }
+
+    #tabla-items .js-descuento-valor,
+    #tabla-items .js-iva {
+        min-width: 88px;
     }
 </style>
 
@@ -138,12 +147,11 @@ $puedeGuardar = $hayClientes && $hayProductos;
                     <thead>
                     <tr>
                         <th class="col-producto">Producto / Servicio</th>
-                        <th class="col-detalle">Descripción</th>
-                        <th>Cantidad</th>
-                        <th>Precio</th>
+                        <th class="col-cantidad">Cantidad</th>
+                        <th class="col-precio">Precio</th>
                         <th class="col-ajuste">Lista / ajuste</th>
-                        <th>Descuento</th>
-                        <th>IVA %</th>
+                        <th class="col-descuento">Descuento</th>
+                        <th class="col-iva">IVA %</th>
                         <th class="text-end">Subtotal</th>
                         <th class="text-end">IVA</th>
                         <th class="text-end">Total</th>
@@ -207,8 +215,8 @@ $puedeGuardar = $hayClientes && $hayProductos;
                 </select>
                 <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalProducto">+</button>
             </div>
+            <input type="hidden" class="js-descripcion-item" name="descripcion_item[]" value="">
         </td>
-        <td><input class="form-control form-control-sm" name="descripcion_item[]" placeholder="Detalle del producto o servicio"></td>
         <td><input class="form-control form-control-sm js-cantidad" type="number" step="0.01" min="0" name="cantidad[]" value="1.00"></td>
         <td><input class="form-control form-control-sm js-precio" type="number" step="0.01" min="0" name="precio_unitario[]" value="0.00"></td>
         <td class="small text-muted js-lista-ajuste">Sin validar lista</td>
@@ -514,12 +522,12 @@ $puedeGuardar = $hayClientes && $hayProductos;
         });
 
         const selectProducto = fila.querySelector('.js-producto');
-        const inputDescripcion = fila.querySelector('[name="descripcion_item[]"]');
+        const inputDescripcion = fila.querySelector('.js-descripcion-item');
         if (selectProducto) {
             selectProducto.addEventListener('change', async () => {
                 const opcion = selectProducto.options[selectProducto.selectedIndex];
                 const detalleProducto = opcion?.dataset?.descripcion || opcion?.dataset?.nombre || '';
-                if (inputDescripcion && inputDescripcion.value.trim() === '') {
+                if (inputDescripcion) {
                     inputDescripcion.value = detalleProducto;
                 }
                 await autocompletarPrecioDesdeLista(fila, true);
