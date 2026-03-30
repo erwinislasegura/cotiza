@@ -150,6 +150,19 @@ CREATE TABLE IF NOT EXISTS configuracion_pos (
   empresa_id BIGINT UNSIGNED PRIMARY KEY,
   permitir_venta_sin_stock TINYINT(1) NOT NULL DEFAULT 0,
   impuesto_por_defecto DECIMAL(8,2) NOT NULL DEFAULT 0,
+  usar_decimales TINYINT(1) NOT NULL DEFAULT 1,
+  cantidad_decimales TINYINT UNSIGNED NOT NULL DEFAULT 2,
   fecha_actualizacion DATETIME NULL,
   CONSTRAINT fk_configuracion_pos_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id)
 );
+
+
+SET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=@db_name AND TABLE_NAME='configuracion_pos' AND COLUMN_NAME='usar_decimales') = 0,
+  'ALTER TABLE configuracion_pos ADD COLUMN usar_decimales TINYINT(1) NOT NULL DEFAULT 1 AFTER impuesto_por_defecto',
+  'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=@db_name AND TABLE_NAME='configuracion_pos' AND COLUMN_NAME='cantidad_decimales') = 0,
+  'ALTER TABLE configuracion_pos ADD COLUMN cantidad_decimales TINYINT UNSIGNED NOT NULL DEFAULT 2 AFTER usar_decimales',
+  'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;

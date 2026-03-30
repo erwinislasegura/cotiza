@@ -40,10 +40,6 @@ class PuntoVentaControlador extends Controlador
         $pos = new PuntoVenta();
 
         $apertura = $pos->obtenerAperturaActiva($empresaId, (int) $usuario['id']);
-        if (!$apertura) {
-            flash('warning', 'Debes abrir caja antes de iniciar ventas en el POS.');
-            $this->redirigir('/app/punto-venta/apertura-caja');
-        }
 
         $buscar = trim($_GET['q'] ?? '');
         $categoriaId = (int) ($_GET['categoria_id'] ?? 0) ?: null;
@@ -52,8 +48,10 @@ class PuntoVentaControlador extends Controlador
         $clientes = $pos->listarClientesPos($empresaId);
         $categorias = (new GestionComercial())->listarTablaEmpresa('categorias_productos', $empresaId, '', 300);
         $configuracion = $pos->obtenerConfiguracion($empresaId);
+        $cajas = $pos->listarCajas($empresaId);
+        $resumenCierre = $apertura ? $pos->resumenCierre($empresaId, (int) $apertura['id']) : null;
 
-        $this->vista('empresa/pos/index', compact('apertura', 'productos', 'clientes', 'categorias', 'buscar', 'categoriaId', 'configuracion'), 'empresa');
+        $this->vista('empresa/pos/index', compact('apertura', 'productos', 'clientes', 'categorias', 'buscar', 'categoriaId', 'configuracion', 'cajas', 'resumenCierre'), 'empresa');
     }
 
     public function aperturaCaja(): void
@@ -272,6 +270,8 @@ class PuntoVentaControlador extends Controlador
         (new PuntoVenta())->guardarConfiguracion((int) empresa_actual_id(), [
             'permitir_venta_sin_stock' => isset($_POST['permitir_venta_sin_stock']) ? 1 : 0,
             'impuesto_por_defecto' => (float) ($_POST['impuesto_por_defecto'] ?? 0),
+            'usar_decimales' => isset($_POST['usar_decimales']) ? 1 : 0,
+            'cantidad_decimales' => max(0, min(6, (int) ($_POST['cantidad_decimales'] ?? 2))),
         ]);
 
         flash('success', 'Configuración POS actualizada.');

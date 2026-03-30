@@ -6,12 +6,10 @@
 - Carrito de venta con cobro en efectivo, transferencia, tarjeta y pagos mixtos.
 - Descuento de stock en `productos.stock_actual` al confirmar venta.
 - Ticket imprimible de venta.
-- Historial de ventas, movimientos de caja y configuración POS.
+- Historial de ventas, movimientos de caja y configuración POS (incluye decimales y cantidad de decimales).
 
 ## Rutas del módulo
 - `/app/punto-venta`
-- `/app/punto-venta/apertura-caja`
-- `/app/punto-venta/cierre-caja`
 - `/app/punto-venta/ventas`
 - `/app/punto-venta/ventas/ver/{id}`
 - `/app/punto-venta/movimientos`
@@ -20,7 +18,7 @@
 
 ## Flujo operativo
 1. Usuario entra al POS.
-2. Si no hay caja abierta del usuario, debe abrirla.
+2. Si no hay caja abierta del usuario, debe abrirla desde el modal en la pantalla POS.
 3. Agrega productos al carrito (panel derecho) y revisa detalle (panel izquierdo).
 4. Selecciona tipo de venta (rápida / cliente registrado).
 5. Registra uno o varios pagos.

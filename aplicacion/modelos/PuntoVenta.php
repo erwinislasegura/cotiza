@@ -261,18 +261,20 @@ class PuntoVenta extends Modelo
 
     public function obtenerConfiguracion(int $empresaId): array
     {
-        $stmt = $this->db->prepare('SELECT permitir_venta_sin_stock, impuesto_por_defecto FROM configuracion_pos WHERE empresa_id = :empresa_id LIMIT 1');
+        $stmt = $this->db->prepare('SELECT permitir_venta_sin_stock, impuesto_por_defecto, usar_decimales, cantidad_decimales FROM configuracion_pos WHERE empresa_id = :empresa_id LIMIT 1');
         $stmt->execute(['empresa_id' => $empresaId]);
-        return $stmt->fetch() ?: ['permitir_venta_sin_stock' => 0, 'impuesto_por_defecto' => 0];
+        return $stmt->fetch() ?: ['permitir_venta_sin_stock' => 0, 'impuesto_por_defecto' => 0, 'usar_decimales' => 1, 'cantidad_decimales' => 2];
     }
 
     public function guardarConfiguracion(int $empresaId, array $data): void
     {
-        $stmt = $this->db->prepare('INSERT INTO configuracion_pos (empresa_id,permitir_venta_sin_stock,impuesto_por_defecto,fecha_actualizacion) VALUES (:empresa_id,:permitir_venta_sin_stock,:impuesto_por_defecto,NOW()) ON DUPLICATE KEY UPDATE permitir_venta_sin_stock = VALUES(permitir_venta_sin_stock), impuesto_por_defecto = VALUES(impuesto_por_defecto), fecha_actualizacion = NOW()');
+        $stmt = $this->db->prepare('INSERT INTO configuracion_pos (empresa_id,permitir_venta_sin_stock,impuesto_por_defecto,usar_decimales,cantidad_decimales,fecha_actualizacion) VALUES (:empresa_id,:permitir_venta_sin_stock,:impuesto_por_defecto,:usar_decimales,:cantidad_decimales,NOW()) ON DUPLICATE KEY UPDATE permitir_venta_sin_stock = VALUES(permitir_venta_sin_stock), impuesto_por_defecto = VALUES(impuesto_por_defecto), usar_decimales = VALUES(usar_decimales), cantidad_decimales = VALUES(cantidad_decimales), fecha_actualizacion = NOW()');
         $stmt->execute([
             'empresa_id' => $empresaId,
             'permitir_venta_sin_stock' => $data['permitir_venta_sin_stock'],
             'impuesto_por_defecto' => $data['impuesto_por_defecto'],
+            'usar_decimales' => $data['usar_decimales'],
+            'cantidad_decimales' => $data['cantidad_decimales'],
         ]);
     }
 
