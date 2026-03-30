@@ -21,9 +21,8 @@
     #tabla-items-ver .js-detalle-producto {
         font-size: 0.70rem;
         color: #6c757d;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        white-space: normal;
+        word-break: break-word;
     }
 
     #tabla-items-ver .valor-linea {

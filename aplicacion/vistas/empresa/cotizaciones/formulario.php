@@ -37,24 +37,15 @@ $puedeGuardar = $hayClientes && $hayProductos;
     #tabla-items .col-precio,
     #tabla-items .col-descuento,
     #tabla-items .col-iva {
-        width: 8%;
+        width: 10%;
     }
 
     #tabla-items .js-descuento-valor,
     #tabla-items .js-iva {
-        min-width: 62px;
+        min-width: 70px;
     }
     #tabla-items .input-group {
         flex-wrap: nowrap;
-    }
-
-    #tabla-items .js-detalle-producto {
-        font-size: 0.70rem;
-        color: #6c757d;
-        margin-top: 2px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
     #tabla-items .js-lista-ajuste {
@@ -238,7 +229,6 @@ $puedeGuardar = $hayClientes && $hayProductos;
                 </select>
                 <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalProducto">+</button>
             </div>
-            <div class="js-detalle-producto" aria-live="polite"></div>
             <input type="hidden" class="js-descripcion-item" name="descripcion_item[]" value="">
         </td>
         <td><input class="form-control form-control-sm js-cantidad" type="number" step="0.01" min="0" name="cantidad[]" value="1.00"></td>
@@ -250,10 +240,10 @@ $puedeGuardar = $hayClientes && $hayProductos;
                     <option value="valor">$</option>
                     <option value="porcentaje">%</option>
                 </select>
-                <input class="form-control js-descuento-valor" type="number" step="0.01" min="0" name="descuento_item[]" value="0.00">
+                <input class="form-control js-descuento-valor" type="number" step="1" min="0" name="descuento_item[]" value="0">
             </div>
         </td>
-        <td><input class="form-control form-control-sm js-iva" type="number" step="0.01" min="0" name="impuesto_item[]" value="19.00"></td>
+        <td><input class="form-control form-control-sm js-iva" type="number" step="1" min="0" name="impuesto_item[]" value="19"></td>
         <td class="text-end js-subtotal fw-semibold">$0.00</td>
         <td class="text-end js-iva-total fw-semibold">$0.00</td>
         <td class="text-end js-total fw-semibold">$0.00</td>
@@ -350,18 +340,18 @@ $puedeGuardar = $hayClientes && $hayProductos;
         return '$' + (Math.round((valor + Number.EPSILON) * 100) / 100).toFixed(2);
     }
 
-    function normalizarDosDecimales(input, minimo = 0) {
+    function normalizarNumero(input, decimales = 2, minimo = 0) {
         if (!input) { return; }
         const valor = parseFloat(input.value || '0');
         const saneado = Number.isFinite(valor) ? Math.max(minimo, valor) : minimo;
-        input.value = saneado.toFixed(2);
+        input.value = saneado.toFixed(decimales);
     }
 
     function aplicarFormatoFila(fila) {
-        normalizarDosDecimales(fila.querySelector('.js-cantidad'));
-        normalizarDosDecimales(fila.querySelector('.js-precio'));
-        normalizarDosDecimales(fila.querySelector('.js-descuento-valor'));
-        normalizarDosDecimales(fila.querySelector('.js-iva'));
+        normalizarNumero(fila.querySelector('.js-cantidad'), 2);
+        normalizarNumero(fila.querySelector('.js-precio'), 2);
+        normalizarNumero(fila.querySelector('.js-descuento-valor'), 0);
+        normalizarNumero(fila.querySelector('.js-iva'), 0);
     }
 
     function esc(valor) {
@@ -426,7 +416,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
         const signo = esDescuento ? '-' : '+';
         const etiqueta = esDescuento ? 'Descuento por lista' : 'Incremento por lista';
         fila.dataset.listaAplicada = 'si';
-        celda.innerHTML = `<span class="badge ${esDescuento ? 'text-bg-success' : 'text-bg-warning'} mb-1">${nombreLista}</span><div ${colorSuave}><strong>${etiqueta}</strong>: ${signo}${porcentaje.toFixed(2)}% (${signo}${fmt(montoAjuste)})</div><div>Base ${fmt(precioBase)} → Final ${fmt(precioFinal)}</div>`;
+        celda.innerHTML = `<span class="badge ${esDescuento ? 'text-bg-success' : 'text-bg-warning'} mb-1">${nombreLista}</span><div ${colorSuave}><strong>${etiqueta}</strong>: ${signo}${porcentaje.toFixed(0)}% (${signo}${fmt(montoAjuste)})</div><div>Base ${fmt(precioBase)} → Final ${fmt(precioFinal)}</div>`;
         actualizarIndicadorLista();
     }
 
@@ -464,7 +454,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
                             selectDescuento.value = 'porcentaje';
                         }
                         if (inputDescuento) {
-                            inputDescuento.value = Number(ajustePorcentaje).toFixed(2);
+                            inputDescuento.value = Number(ajustePorcentaje).toFixed(0);
                         }
                     } else {
                         inputPrecio.value = Number(data.data.precio_final || 0).toFixed(2);
@@ -540,15 +530,15 @@ $puedeGuardar = $hayClientes && $hayProductos;
 
         fila.querySelectorAll('.js-cantidad, .js-precio, .js-descuento-valor, .js-iva').forEach((input) => {
             input.addEventListener('blur', () => {
-                normalizarDosDecimales(input);
+                const decimales = input.classList.contains('js-descuento-valor') || input.classList.contains('js-iva') ? 0 : 2;
+                normalizarNumero(input, decimales);
                 recalcular();
             });
         });
 
         const selectProducto = fila.querySelector('.js-producto');
         const inputDescripcion = fila.querySelector('.js-descripcion-item');
-        const textoDetalle = fila.querySelector('.js-detalle-producto');
-        if (selectProducto) {
+                if (selectProducto) {
             selectProducto.addEventListener('change', async () => {
                 const opcion = selectProducto.options[selectProducto.selectedIndex];
                 const detalleProducto = opcion?.dataset?.descripcion || opcion?.dataset?.nombre || '';
@@ -641,7 +631,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
     document.getElementById('descuento_tipo_total').addEventListener('change', recalcular);
     document.getElementById('descuento_total').addEventListener('input', recalcular);
     document.getElementById('descuento_total').addEventListener('blur', function () {
-        normalizarDosDecimales(this);
+        normalizarNumero(this, 2);
         recalcular();
     });
     actualizarOpcionesListaCliente();

@@ -38,18 +38,10 @@ if ($listaPrecioCotizacionId > 0) {
     #tabla-items .col-cantidad,
     #tabla-items .col-precio,
     #tabla-items .col-descuento,
-    #tabla-items .col-iva { width: 8%; }
+    #tabla-items .col-iva { width: 10%; }
     #tabla-items .js-descuento-valor,
-    #tabla-items .js-iva { min-width: 62px; }
+    #tabla-items .js-iva { min-width: 70px; }
     #tabla-items .input-group { flex-wrap: nowrap; }
-    #tabla-items .js-detalle-producto {
-        font-size: 0.70rem;
-        color: #6c757d;
-        margin-top: 2px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
     #tabla-items .js-lista-ajuste {
         white-space: normal;
         line-height: 1.15;
@@ -171,9 +163,6 @@ if ($listaPrecioCotizacionId > 0) {
                                     <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalProducto">+</button>
                                 </div>
                                 <?php $detalleItem = trim((string) ($item['descripcion'] ?? '')); ?>
-                                <div class="js-detalle-producto" aria-live="polite" title="<?= e($detalleItem) ?>">
-                                    <?= e($detalleItem) ?>
-                                </div>
                                 <input type="hidden" class="js-descripcion-item" name="descripcion_item[]" value="<?= e($detalleItem) ?>">
                             </td>
                             <td><input class="form-control form-control-sm js-cantidad" type="number" step="0.01" min="0" name="cantidad[]" value="<?= e(number_format((float) ($item['cantidad'] ?? 1), 2, '.', '')) ?>"></td>
@@ -185,10 +174,10 @@ if ($listaPrecioCotizacionId > 0) {
                                         <option value="valor" <?= ($item['descuento_tipo'] ?? 'valor') === 'valor' ? 'selected' : '' ?>>$</option>
                                         <option value="porcentaje" <?= ($item['descuento_tipo'] ?? '') === 'porcentaje' ? 'selected' : '' ?>>%</option>
                                     </select>
-                                    <input class="form-control js-descuento-valor" type="number" step="0.01" min="0" name="descuento_item[]" value="<?= e(number_format((float) ($item['descuento_valor'] ?? 0), 2, '.', '')) ?>">
+                                    <input class="form-control js-descuento-valor" type="number" step="1" min="0" name="descuento_item[]" value="<?= e(number_format((float) ($item['descuento_valor'] ?? 0), 0, '.', '')) ?>">
                                 </div>
                             </td>
-                            <td><input class="form-control form-control-sm js-iva" type="number" step="0.01" min="0" name="impuesto_item[]" value="<?= e(number_format((float) ($item['porcentaje_impuesto'] ?? 19), 2, '.', '')) ?>"></td>
+                            <td><input class="form-control form-control-sm js-iva" type="number" step="1" min="0" name="impuesto_item[]" value="<?= e(number_format((float) ($item['porcentaje_impuesto'] ?? 19), 0, '.', '')) ?>"></td>
                             <td class="text-end js-subtotal fw-semibold">$0.00</td>
                             <td class="text-end js-iva-total fw-semibold">$0.00</td>
                             <td class="text-end js-total fw-semibold">$0.00</td>
@@ -253,7 +242,6 @@ if ($listaPrecioCotizacionId > 0) {
                 </select>
                 <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalProducto">+</button>
             </div>
-            <div class="js-detalle-producto" aria-live="polite"></div>
             <input type="hidden" class="js-descripcion-item" name="descripcion_item[]" value="">
         </td>
         <td><input class="form-control form-control-sm js-cantidad" type="number" step="0.01" min="0" name="cantidad[]" value="1.00"></td>
@@ -265,10 +253,10 @@ if ($listaPrecioCotizacionId > 0) {
                     <option value="valor">$</option>
                     <option value="porcentaje">%</option>
                 </select>
-                <input class="form-control js-descuento-valor" type="number" step="0.01" min="0" name="descuento_item[]" value="0.00">
+                <input class="form-control js-descuento-valor" type="number" step="1" min="0" name="descuento_item[]" value="0">
             </div>
         </td>
-        <td><input class="form-control form-control-sm js-iva" type="number" step="0.01" min="0" name="impuesto_item[]" value="19.00"></td>
+        <td><input class="form-control form-control-sm js-iva" type="number" step="1" min="0" name="impuesto_item[]" value="19"></td>
         <td class="text-end js-subtotal fw-semibold">$0.00</td>
         <td class="text-end js-iva-total fw-semibold">$0.00</td>
         <td class="text-end js-total fw-semibold">$0.00</td>
@@ -291,17 +279,17 @@ if ($listaPrecioCotizacionId > 0) {
     const clientes = <?= json_encode($clientes ?? [], JSON_UNESCAPED_UNICODE) ?>;
 
     function fmt(v) { return '$' + (Math.round((v + Number.EPSILON) * 100) / 100).toFixed(2); }
-    function normalizarDosDecimales(input, minimo = 0) {
+    function normalizarNumero(input, decimales = 2, minimo = 0) {
         if (!input) { return; }
         const numero = parseFloat(input.value || '0');
         const valor = Number.isFinite(numero) ? Math.max(minimo, numero) : minimo;
-        input.value = valor.toFixed(2);
+        input.value = valor.toFixed(decimales);
     }
     function aplicarFormatoFila(fila) {
-        normalizarDosDecimales(fila.querySelector('.js-cantidad'));
-        normalizarDosDecimales(fila.querySelector('.js-precio'));
-        normalizarDosDecimales(fila.querySelector('.js-descuento-valor'));
-        normalizarDosDecimales(fila.querySelector('.js-iva'));
+        normalizarNumero(fila.querySelector('.js-cantidad'), 2);
+        normalizarNumero(fila.querySelector('.js-precio'), 2);
+        normalizarNumero(fila.querySelector('.js-descuento-valor'), 0);
+        normalizarNumero(fila.querySelector('.js-iva'), 0);
     }
     function esc(valor) {
         return String(valor ?? '').replace(/[&<>"']/g, (c) => ({
@@ -369,7 +357,7 @@ if ($listaPrecioCotizacionId > 0) {
         const colorSuave = esDescuento ? 'style="color:#3f8f62;"' : '';
         const etiqueta = esDescuento ? 'Descuento aplicado' : 'Incremento aplicado';
         fila.dataset.listaAplicada = 'si';
-        celda.innerHTML = `<span class="badge ${tipoBadge} mb-1">${nombreLista}</span><div ${colorSuave}><strong>${etiqueta}</strong>: ${signo}${porcentaje.toFixed(2)}% (${signo}${fmt(montoAjuste)})</div><div>Base ${fmt(precioBase)} → Final ${fmt(precioFinal)}</div>`;
+        celda.innerHTML = `<span class="badge ${tipoBadge} mb-1">${nombreLista}</span><div ${colorSuave}><strong>${etiqueta}</strong>: ${signo}${porcentaje.toFixed(0)}% (${signo}${fmt(montoAjuste)})</div><div>Base ${fmt(precioBase)} → Final ${fmt(precioFinal)}</div>`;
         actualizarIndicadorLista();
     }
     async function autocompletarPrecioDesdeLista(fila, forzar = false) {
@@ -395,7 +383,7 @@ if ($listaPrecioCotizacionId > 0) {
                     if (ajusteTipo === 'descuento' && ajustePorcentaje > 0) {
                         inputPrecio.value = Number(data.data.precio_base || 0).toFixed(2);
                         if (selectDescuento) { selectDescuento.value = 'porcentaje'; }
-                        if (inputDescuento) { inputDescuento.value = Number(ajustePorcentaje || 0).toFixed(2); }
+                        if (inputDescuento) { inputDescuento.value = Number(ajustePorcentaje || 0).toFixed(0); }
                     } else {
                         inputPrecio.value = Number(data.data.precio_final || 0).toFixed(2);
                         if (forzar && selectDescuento && inputDescuento) {
@@ -418,21 +406,16 @@ if ($listaPrecioCotizacionId > 0) {
         fila.querySelectorAll('input, select').forEach((c) => { c.addEventListener('input', recalcular); c.addEventListener('change', recalcular); });
         fila.querySelectorAll('.js-cantidad, .js-precio, .js-descuento-valor, .js-iva').forEach((input) => {
             input.addEventListener('blur', () => {
-                normalizarDosDecimales(input);
+                const decimales = input.classList.contains('js-descuento-valor') || input.classList.contains('js-iva') ? 0 : 2;
+                normalizarNumero(input, decimales);
                 recalcular();
             });
         });
         const selectProducto = fila.querySelector('.js-producto');
         const inputDescripcion = fila.querySelector('.js-descripcion-item');
-        const textoDetalle = fila.querySelector('.js-detalle-producto');
         const setDetalle = (detalle) => {
             const limpio = String(detalle || '').trim();
             if (inputDescripcion) { inputDescripcion.value = limpio; }
-            if (textoDetalle) {
-                const visible = limpio !== '' ? limpio : '';
-                textoDetalle.textContent = visible;
-                textoDetalle.title = visible;
-            }
         };
         setDetalle(inputDescripcion ? inputDescripcion.value : '');
         if (selectProducto) {
@@ -542,7 +525,7 @@ if ($listaPrecioCotizacionId > 0) {
     document.getElementById('descuento_tipo_total').addEventListener('change', recalcular);
     document.getElementById('descuento_total').addEventListener('input', recalcular);
     document.getElementById('descuento_total').addEventListener('blur', function () {
-        normalizarDosDecimales(this);
+        normalizarNumero(this, 2);
         recalcular();
     });
     actualizarOpcionesListaCliente();
