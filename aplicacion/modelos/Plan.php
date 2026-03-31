@@ -16,6 +16,11 @@ class Plan extends Modelo
         return $this->db->query($sql)->fetchAll();
     }
 
+    public function listarActivos(): array
+    {
+        return $this->db->query("SELECT * FROM planes WHERE fecha_eliminacion IS NULL AND estado = 'activo' ORDER BY orden_visualizacion ASC, id ASC")->fetchAll();
+    }
+
     public function buscar(int $id): ?array
     {
         $stmt = $this->db->prepare('SELECT * FROM planes WHERE id = :id LIMIT 1');
@@ -32,7 +37,7 @@ class Plan extends Modelo
 
     public function crear(array $data): int
     {
-        $sql = 'INSERT INTO planes (nombre, slug, descripcion_comercial, precio_mensual, precio_anual, duracion_dias, visible, destacado, orden_visualizacion, insignia, resumen_comercial, color_visual, estado, fecha_creacion) VALUES (:nombre,:slug,:descripcion_comercial,:precio_mensual,:precio_anual,:duracion_dias,:visible,:destacado,:orden_visualizacion,:insignia,:resumen_comercial,:color_visual,:estado,NOW())';
+        $sql = 'INSERT INTO planes (nombre, slug, descripcion_comercial, precio_mensual, descuento_anual_pct, precio_anual, duracion_dias, visible, destacado, recomendado, orden_visualizacion, insignia, resumen_comercial, color_visual, maximo_usuarios, usuarios_ilimitados, observaciones_internas, estado, fecha_creacion) VALUES (:nombre,:slug,:descripcion_comercial,:precio_mensual,:descuento_anual_pct,:precio_anual,:duracion_dias,:visible,:destacado,:recomendado,:orden_visualizacion,:insignia,:resumen_comercial,:color_visual,:maximo_usuarios,:usuarios_ilimitados,:observaciones_internas,:estado,NOW())';
         $this->db->prepare($sql)->execute($data);
         return (int) $this->db->lastInsertId();
     }
@@ -40,7 +45,7 @@ class Plan extends Modelo
     public function actualizar(int $id, array $data): void
     {
         $data['id'] = $id;
-        $sql = 'UPDATE planes SET nombre=:nombre, slug=:slug, descripcion_comercial=:descripcion_comercial, precio_mensual=:precio_mensual, precio_anual=:precio_anual, duracion_dias=:duracion_dias, visible=:visible, destacado=:destacado, orden_visualizacion=:orden_visualizacion, insignia=:insignia, resumen_comercial=:resumen_comercial, color_visual=:color_visual, estado=:estado, fecha_actualizacion=NOW() WHERE id=:id';
+        $sql = 'UPDATE planes SET nombre=:nombre, slug=:slug, descripcion_comercial=:descripcion_comercial, precio_mensual=:precio_mensual, descuento_anual_pct=:descuento_anual_pct, precio_anual=:precio_anual, duracion_dias=:duracion_dias, visible=:visible, destacado=:destacado, recomendado=:recomendado, orden_visualizacion=:orden_visualizacion, insignia=:insignia, resumen_comercial=:resumen_comercial, color_visual=:color_visual, maximo_usuarios=:maximo_usuarios, usuarios_ilimitados=:usuarios_ilimitados, observaciones_internas=:observaciones_internas, estado=:estado, fecha_actualizacion=NOW() WHERE id=:id';
         $this->db->prepare($sql)->execute($data);
     }
 
