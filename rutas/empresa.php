@@ -143,6 +143,7 @@ $enrutador->agregar('GET', '/app/punto-venta/cierre-caja', [PuntoVentaControlado
 $enrutador->agregar('POST', '/app/punto-venta/cierre-caja', [PuntoVentaControlador::class, 'guardarCierreCaja'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/punto-venta/ventas', [PuntoVentaControlador::class, 'ventas'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/punto-venta/ventas/ver/{id}', [PuntoVentaControlador::class, 'verVenta'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/punto-venta/ventas/imprimir/{id}', [PuntoVentaControlador::class, 'imprimirVenta'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/punto-venta/cajas', [PuntoVentaControlador::class, 'cajas'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/punto-venta/cajas', [PuntoVentaControlador::class, 'guardarCaja'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/punto-venta/movimientos', [PuntoVentaControlador::class, 'movimientosCaja'], $mwEmpresa);

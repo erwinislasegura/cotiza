@@ -156,7 +156,7 @@ class PuntoVentaControlador extends Controlador
             }
 
             flash('success', 'Venta registrada correctamente.');
-            $this->redirigir('/app/punto-venta/ventas/ver/' . $ventaId . '?imprimir=1');
+            $this->redirigir('/app/punto-venta/ventas/imprimir/' . $ventaId);
         } catch (\Throwable $e) {
             flash('danger', 'No fue posible registrar la venta: ' . $e->getMessage());
             $this->redirigir('/app/punto-venta');
@@ -185,6 +185,20 @@ class PuntoVentaControlador extends Controlador
         }
         $configuracion = $pos->obtenerConfiguracion($empresaId);
         $this->vista('empresa/pos/ver_venta', compact('venta', 'configuracion'), 'empresa');
+    }
+
+    public function imprimirVenta(int $id): void
+    {
+        $this->validarPermiso('ver_historial_pos');
+        $pos = new PuntoVenta();
+        $empresaId = (int) empresa_actual_id();
+        $venta = $pos->obtenerVenta($empresaId, $id);
+        if (!$venta) {
+            http_response_code(404);
+            exit('Venta no encontrada.');
+        }
+        $configuracion = $pos->obtenerConfiguracion($empresaId);
+        $this->vista('empresa/pos/imprimir_venta', compact('venta', 'configuracion'), 'impresion');
     }
 
     public function cierreCaja(): void
