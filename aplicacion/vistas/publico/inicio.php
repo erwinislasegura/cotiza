@@ -288,6 +288,7 @@
                 </div>
             </div>
         </div>
+        <p class="small text-secondary mt-3 mb-0 text-center">Si buscas crecer, controlar stock y tomar decisiones con datos, el plan Profesional suele ser la decisión más rentable.</p>
     </div>
 </section>
 
