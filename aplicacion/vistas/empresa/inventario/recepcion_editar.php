@@ -31,7 +31,6 @@
     <button class="btn btn-primary btn-sm" name="accion" value="guardar">Guardar sin salir</button>
     <button class="btn btn-success btn-sm" name="accion" value="guardar_salir">Guardar y salir</button>
     <a class="btn btn-outline-dark btn-sm" href="<?= e(url('/app/inventario/recepciones/pdf/' . (int) $recepcion['id'])) ?>">Descargar PDF</a>
-    <button class="btn btn-outline-success btn-sm" formmethod="post" formaction="<?= e(url('/app/inventario/recepciones/enviar/' . (int) $recepcion['id'])) ?>" onclick="return confirm('¿Enviar recepción por correo al proveedor?')">Enviar por correo</button>
     <a href="<?= e(url('/app/inventario/recepciones')) ?>" class="btn btn-outline-secondary btn-sm">Cancelar</a>
   </div>
 </form>
