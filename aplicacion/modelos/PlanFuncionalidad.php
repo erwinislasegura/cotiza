@@ -8,7 +8,26 @@ class PlanFuncionalidad extends Modelo
 {
     public function listarPorPlan(int $planId): array
     {
-        $sql = 'SELECT pf.*, f.nombre, f.codigo_interno, f.tipo_valor FROM plan_funcionalidades pf INNER JOIN funcionalidades f ON f.id = pf.funcionalidad_id WHERE pf.plan_id = :plan_id ORDER BY f.nombre';
+        $sql = 'SELECT pf.*, f.nombre, f.codigo_interno, f.descripcion, f.tipo_valor, f.estado AS funcionalidad_estado
+            FROM plan_funcionalidades pf
+            INNER JOIN funcionalidades f ON f.id = pf.funcionalidad_id
+            WHERE pf.plan_id = :plan_id
+            ORDER BY f.nombre';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['plan_id' => $planId]);
+        return $stmt->fetchAll();
+    }
+
+    public function listarActivasPorPlan(int $planId): array
+    {
+        $sql = 'SELECT f.nombre, f.codigo_interno, f.descripcion, pf.valor_numerico, pf.es_ilimitado
+            FROM plan_funcionalidades pf
+            INNER JOIN funcionalidades f ON f.id = pf.funcionalidad_id
+            WHERE pf.plan_id = :plan_id
+              AND pf.activo = 1
+              AND f.estado = "activo"
+              AND f.fecha_eliminacion IS NULL
+            ORDER BY f.nombre';
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['plan_id' => $planId]);
         return $stmt->fetchAll();
