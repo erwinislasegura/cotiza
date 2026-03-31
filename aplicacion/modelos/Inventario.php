@@ -333,7 +333,7 @@ class Inventario extends Modelo
 
     public function obtenerOrdenCompra(int $empresaId, int $id): ?array
     {
-        $stmt = $this->db->prepare('SELECT o.*, p.nombre AS proveedor_nombre, u.nombre AS usuario_nombre
+        $stmt = $this->db->prepare('SELECT o.*, p.nombre AS proveedor_nombre, p.correo AS proveedor_correo, u.nombre AS usuario_nombre
             FROM ordenes_compra o
             LEFT JOIN proveedores_inventario p ON p.id = o.proveedor_id
             LEFT JOIN usuarios u ON u.id = o.usuario_id
@@ -352,6 +352,46 @@ class Inventario extends Modelo
         $orden['detalles'] = $stmtDet->fetchAll();
 
         return $orden;
+    }
+
+    public function actualizarOrdenCompra(int $empresaId, int $id, array $cabecera, array $detalles): void
+    {
+        $this->db->beginTransaction();
+        try {
+            $stmtCab = $this->db->prepare('UPDATE ordenes_compra SET proveedor_id=:proveedor_id, numero=:numero, fecha_emision=:fecha_emision, fecha_entrega_estimada=:fecha_entrega_estimada, referencia=:referencia, observacion=:observacion, usuario_id=:usuario_id, fecha_actualizacion=NOW() WHERE empresa_id=:empresa_id AND id=:id');
+            $stmtCab->execute([
+                'proveedor_id' => $cabecera['proveedor_id'],
+                'numero' => $cabecera['numero'],
+                'fecha_emision' => $cabecera['fecha_emision'],
+                'fecha_entrega_estimada' => $cabecera['fecha_entrega_estimada'],
+                'referencia' => $cabecera['referencia'],
+                'observacion' => $cabecera['observacion'],
+                'usuario_id' => $cabecera['usuario_id'],
+                'empresa_id' => $empresaId,
+                'id' => $id,
+            ]);
+
+            $this->db->prepare('DELETE FROM ordenes_compra_detalle WHERE orden_compra_id = :orden_compra_id')
+                ->execute(['orden_compra_id' => $id]);
+
+            $stmtDet = $this->db->prepare('INSERT INTO ordenes_compra_detalle (orden_compra_id,producto_id,cantidad,costo_unitario,subtotal,fecha_creacion) VALUES (:orden_compra_id,:producto_id,:cantidad,:costo_unitario,:subtotal,NOW())');
+            foreach ($detalles as $detalle) {
+                $stmtDet->execute([
+                    'orden_compra_id' => $id,
+                    'producto_id' => $detalle['producto_id'],
+                    'cantidad' => $detalle['cantidad'],
+                    'costo_unitario' => $detalle['costo_unitario'],
+                    'subtotal' => $detalle['subtotal'],
+                ]);
+            }
+
+            $this->db->commit();
+        } catch (Throwable $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            throw $e;
+        }
     }
 
     public function actualizarEstadoOrdenCompra(int $empresaId, int $ordenCompraId): void
