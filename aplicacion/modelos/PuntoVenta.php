@@ -9,6 +9,7 @@ use Throwable;
 class PuntoVenta extends Modelo
 {
     private array $ultimasTransicionesStock = [];
+    private array $cacheColumnas = [];
     public function listarCajas(int $empresaId): array
     {
         $stmt = $this->db->prepare('SELECT * FROM cajas_pos WHERE empresa_id = :empresa_id ORDER BY id DESC');
@@ -284,13 +285,31 @@ class PuntoVenta extends Modelo
 
     public function obtenerConfiguracion(int $empresaId): array
     {
-        $stmt = $this->db->prepare('SELECT permitir_venta_sin_stock, impuesto_por_defecto, usar_decimales, cantidad_decimales FROM configuracion_pos WHERE empresa_id = :empresa_id LIMIT 1');
+        $columnas = ['permitir_venta_sin_stock', 'impuesto_por_defecto', 'usar_decimales', 'cantidad_decimales'];
+        if ($this->tieneColumna('configuracion_pos', 'moneda')) {
+            $columnas[] = 'moneda';
+        }
+
+        $stmt = $this->db->prepare('SELECT ' . implode(', ', $columnas) . ' FROM configuracion_pos WHERE empresa_id = :empresa_id LIMIT 1');
         $stmt->execute(['empresa_id' => $empresaId]);
-        return $stmt->fetch() ?: ['permitir_venta_sin_stock' => 0, 'impuesto_por_defecto' => 0, 'usar_decimales' => 1, 'cantidad_decimales' => 2];
+        return $stmt->fetch() ?: ['permitir_venta_sin_stock' => 0, 'impuesto_por_defecto' => 0, 'usar_decimales' => 1, 'cantidad_decimales' => 2, 'moneda' => 'CLP'];
     }
 
     public function guardarConfiguracion(int $empresaId, array $data): void
     {
+        if ($this->tieneColumna('configuracion_pos', 'moneda')) {
+            $stmt = $this->db->prepare('INSERT INTO configuracion_pos (empresa_id,permitir_venta_sin_stock,impuesto_por_defecto,usar_decimales,cantidad_decimales,moneda,fecha_actualizacion) VALUES (:empresa_id,:permitir_venta_sin_stock,:impuesto_por_defecto,:usar_decimales,:cantidad_decimales,:moneda,NOW()) ON DUPLICATE KEY UPDATE permitir_venta_sin_stock = VALUES(permitir_venta_sin_stock), impuesto_por_defecto = VALUES(impuesto_por_defecto), usar_decimales = VALUES(usar_decimales), cantidad_decimales = VALUES(cantidad_decimales), moneda = VALUES(moneda), fecha_actualizacion = NOW()');
+            $stmt->execute([
+                'empresa_id' => $empresaId,
+                'permitir_venta_sin_stock' => $data['permitir_venta_sin_stock'],
+                'impuesto_por_defecto' => $data['impuesto_por_defecto'],
+                'usar_decimales' => $data['usar_decimales'],
+                'cantidad_decimales' => $data['cantidad_decimales'],
+                'moneda' => $data['moneda'] ?? 'CLP',
+            ]);
+            return;
+        }
+
         $stmt = $this->db->prepare('INSERT INTO configuracion_pos (empresa_id,permitir_venta_sin_stock,impuesto_por_defecto,usar_decimales,cantidad_decimales,fecha_actualizacion) VALUES (:empresa_id,:permitir_venta_sin_stock,:impuesto_por_defecto,:usar_decimales,:cantidad_decimales,NOW()) ON DUPLICATE KEY UPDATE permitir_venta_sin_stock = VALUES(permitir_venta_sin_stock), impuesto_por_defecto = VALUES(impuesto_por_defecto), usar_decimales = VALUES(usar_decimales), cantidad_decimales = VALUES(cantidad_decimales), fecha_actualizacion = NOW()');
         $stmt->execute([
             'empresa_id' => $empresaId,
@@ -299,6 +318,23 @@ class PuntoVenta extends Modelo
             'usar_decimales' => $data['usar_decimales'],
             'cantidad_decimales' => $data['cantidad_decimales'],
         ]);
+    }
+
+    private function tieneColumna(string $tabla, string $columna): bool
+    {
+        $llave = $tabla . '.' . $columna;
+        if (array_key_exists($llave, $this->cacheColumnas)) {
+            return $this->cacheColumnas[$llave];
+        }
+
+        $stmt = $this->db->prepare('SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :tabla AND COLUMN_NAME = :columna');
+        $stmt->execute([
+            'tabla' => $tabla,
+            'columna' => $columna,
+        ]);
+
+        $this->cacheColumnas[$llave] = ((int) $stmt->fetchColumn()) > 0;
+        return $this->cacheColumnas[$llave];
     }
 
     public function obtenerTransicionesStock(): array

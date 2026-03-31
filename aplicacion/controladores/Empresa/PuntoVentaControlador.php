@@ -288,6 +288,7 @@ class PuntoVentaControlador extends Controlador
             'impuesto_por_defecto' => (float) ($_POST['impuesto_por_defecto'] ?? 0),
             'usar_decimales' => isset($_POST['usar_decimales']) ? 1 : 0,
             'cantidad_decimales' => max(0, min(6, (int) ($_POST['cantidad_decimales'] ?? 2))),
+            'moneda' => in_array((string) ($_POST['moneda'] ?? 'CLP'), ['CLP', 'USD', 'EU'], true) ? (string) $_POST['moneda'] : 'CLP',
         ]);
 
         flash('success', 'Configuración POS actualizada.');
