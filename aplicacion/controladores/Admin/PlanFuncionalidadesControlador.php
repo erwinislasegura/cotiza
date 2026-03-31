@@ -12,6 +12,10 @@ class PlanFuncionalidadesControlador extends Controlador
     public function index(int $planId): void
     {
         $plan = (new Plan())->buscar($planId);
+        if (!$plan) {
+            flash('danger', 'El plan solicitado no existe.');
+            $this->redirigir('/admin/planes');
+        }
         $funcionalidades = (new Funcionalidad())->listar();
         $asignadas = (new PlanFuncionalidad())->listarPorPlan($planId);
         $mapa = [];

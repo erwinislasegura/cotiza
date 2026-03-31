@@ -77,4 +77,23 @@ class Suscripcion extends Modelo
         $this->db->prepare('UPDATE suscripciones SET estado=:estado, observaciones=:observaciones, fecha_actualizacion=NOW() WHERE id=:id')->execute(['id' => $id, 'estado' => $estado, 'observaciones' => $observaciones]);
         $this->db->prepare('INSERT INTO historial_suscripciones (suscripcion_id, accion, observaciones, fecha_creacion) VALUES (:suscripcion_id,:accion,:observaciones,NOW())')->execute(['suscripcion_id' => $id, 'accion' => 'actualizacion_estado', 'observaciones' => $observaciones]);
     }
+
+    public function obtenerResumenVigenciaEmpresa(int $empresaId): ?array
+    {
+        $sql = 'SELECT s.id, s.estado, s.fecha_inicio, s.fecha_vencimiento, p.nombre AS plan_nombre,
+                CASE
+                    WHEN s.estado IN ("cancelada", "suspendida") THEN NULL
+                    WHEN s.fecha_vencimiento IS NULL THEN NULL
+                    ELSE DATEDIFF(s.fecha_vencimiento, CURDATE())
+                END AS dias_restantes
+            FROM suscripciones s
+            INNER JOIN planes p ON p.id = s.plan_id
+            WHERE s.empresa_id = :empresa_id
+              AND s.fecha_eliminacion IS NULL
+            ORDER BY s.id DESC
+            LIMIT 1';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['empresa_id' => $empresaId]);
+        return $stmt->fetch() ?: null;
+    }
 }

@@ -7,6 +7,7 @@ use Aplicacion\Modelos\Plan;
 use Aplicacion\Modelos\Cotizacion;
 use Aplicacion\Modelos\Empresa;
 use Aplicacion\Modelos\GestionComercial;
+use Aplicacion\Modelos\PlanFuncionalidad;
 use Aplicacion\Servicios\ServicioCorreo;
 
 class PublicoControlador extends Controlador
@@ -14,6 +15,7 @@ class PublicoControlador extends Controlador
     public function inicio(): void
     {
         $planes = (new Plan())->listar(true);
+        $planes = $this->agregarFuncionalidadesPlanes($planes);
         $this->vista('publico/inicio', ['planes' => $planes], 'publico');
     }
 
@@ -25,6 +27,7 @@ class PublicoControlador extends Controlador
     public function planes(): void
     {
         $planes = (new Plan())->listar(true);
+        $planes = $this->agregarFuncionalidadesPlanes($planes);
         $this->vista('publico/planes', ['planes' => $planes], 'publico');
     }
 
@@ -64,13 +67,24 @@ class PublicoControlador extends Controlador
 
     public function contratar(string $planSlug): void
     {
-        $plan = (new Plan())->buscarPorSlug($planSlug);
+        $plan = (new Plan())->buscarPublicoPorSlug($planSlug);
         if (!$plan) {
             http_response_code(404);
             require __DIR__ . '/../../vistas/errores/404.php';
             return;
         }
         $this->vista('publico/contratar', ['plan' => $plan], 'publico');
+    }
+
+    private function agregarFuncionalidadesPlanes(array $planes): array
+    {
+        $planFuncionalidadModelo = new PlanFuncionalidad();
+        foreach ($planes as &$plan) {
+            $plan['funcionalidades'] = $planFuncionalidadModelo->listarActivasPorPlan((int) $plan['id']);
+        }
+        unset($plan);
+
+        return $planes;
     }
 
     public function verCotizacionPublica(string $token): void

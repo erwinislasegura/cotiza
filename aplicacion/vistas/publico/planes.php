@@ -33,10 +33,14 @@
                             <h2 class="h5 mb-2"><?= e($plan['nombre']) ?></h2>
                             <p class="small text-secondary mb-3"><?= e($plan['resumen_comercial'] ?: $plan['descripcion_comercial']) ?></p>
                             <div class="mb-3">
-                                <div class="h3 mb-0">$<?= number_format((float)$plan['precio_mensual'],2) ?></div>
+                                <div class="h3 mb-0">$<?= number_format((float)$plan['precio_mensual'],0,',','.') ?></div>
                                 <small class="text-secondary">USD / mes</small>
                             </div>
-                            <p class="small text-secondary">Ideal para empresas que buscan mejorar sus cotizaciones, acelerar su respuesta comercial y mantener control operativo.</p>
+                            <ul class="small ps-3 d-grid gap-1 mb-3">
+                                <?php foreach (($plan['funcionalidades'] ?? []) as $funcionalidad): ?>
+                                    <li><?= e($funcionalidad['descripcion'] ?: $funcionalidad['nombre']) ?></li>
+                                <?php endforeach; ?>
+                            </ul>
                             <div class="mt-auto d-grid gap-2">
                                 <a class="btn btn-primary btn-sm" href="<?= e(url('/contratar/' . $plan['slug'])) ?>">Contratar plan</a>
                                 <a class="btn btn-outline-secondary btn-sm" href="<?= e(url('/contacto')) ?>">Hablar con ventas</a>
