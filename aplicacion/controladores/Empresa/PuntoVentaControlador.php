@@ -156,7 +156,7 @@ class PuntoVentaControlador extends Controlador
             }
 
             flash('success', 'Venta registrada correctamente.');
-            $this->redirigir('/app/punto-venta/ventas/imprimir/' . $ventaId);
+            $this->redirigir('/app/punto-venta/ventas/imprimir/' . $ventaId . '?retorno_pos=1');
         } catch (\Throwable $e) {
             flash('danger', 'No fue posible registrar la venta: ' . $e->getMessage());
             $this->redirigir('/app/punto-venta');

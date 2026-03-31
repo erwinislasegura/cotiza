@@ -62,5 +62,13 @@ $fmon = static fn(float $monto): string => $simboloMoneda . ' ' . number_format(
 </style>
 
 <script>
-  window.addEventListener('load', () => window.print());
+  window.addEventListener('load', () => {
+    const volverPos = <?= isset($_GET['retorno_pos']) && $_GET['retorno_pos'] === '1' ? 'true' : 'false' ?>;
+    if (volverPos) {
+      window.addEventListener('afterprint', () => {
+        window.location.href = '<?= e(url('/app/punto-venta')) ?>';
+      }, { once: true });
+    }
+    window.print();
+  });
 </script>
