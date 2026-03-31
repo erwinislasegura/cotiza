@@ -4,6 +4,7 @@ namespace Aplicacion\Controladores\Admin;
 
 use Aplicacion\Nucleo\Controlador;
 use Aplicacion\Modelos\Funcionalidad;
+use Throwable;
 
 class FuncionalidadesControlador extends Controlador
 {
@@ -21,22 +22,34 @@ class FuncionalidadesControlador extends Controlador
     public function guardar(): void
     {
         validar_csrf();
-        (new Funcionalidad())->crear($this->datos());
-        flash('success', 'Funcionalidad creada.');
+        try {
+            (new Funcionalidad())->crear($this->datos());
+            flash('success', 'Funcionalidad creada.');
+        } catch (Throwable $e) {
+            flash('danger', 'No se pudo crear la funcionalidad. Verifica código interno único.');
+        }
         $this->redirigir('/admin/funcionalidades');
     }
 
     public function editar(int $id): void
     {
         $funcionalidad = (new Funcionalidad())->buscar($id);
+        if (!$funcionalidad) {
+            flash('danger', 'Funcionalidad no encontrada.');
+            $this->redirigir('/admin/funcionalidades');
+        }
         $this->vista('admin/funcionalidades/formulario', compact('funcionalidad'), 'admin');
     }
 
     public function actualizar(int $id): void
     {
         validar_csrf();
-        (new Funcionalidad())->actualizar($id, $this->datos());
-        flash('success', 'Funcionalidad actualizada.');
+        try {
+            (new Funcionalidad())->actualizar($id, $this->datos());
+            flash('success', 'Funcionalidad actualizada.');
+        } catch (Throwable $e) {
+            flash('danger', 'No se pudo actualizar la funcionalidad. Verifica código interno único.');
+        }
         $this->redirigir('/admin/funcionalidades');
     }
 

@@ -21,6 +21,13 @@ class PanelAdminControlador extends Controlador
             'total_usuarios_empresas' => (int) $db->query('SELECT COUNT(*) total FROM usuarios u INNER JOIN roles r ON r.id = u.rol_id WHERE r.codigo != "superadministrador" AND u.fecha_eliminacion IS NULL')->fetch()['total'],
             'ingresos_mensuales_estimados' => (float) $db->query("SELECT COALESCE(SUM(p.precio_mensual),0) total FROM suscripciones s INNER JOIN planes p ON p.id = s.plan_id WHERE s.estado IN ('activa','por_vencer') AND s.fecha_eliminacion IS NULL")->fetch()['total'],
             'ingresos_anuales_estimados' => (float) $db->query("SELECT COALESCE(SUM(CASE WHEN p.precio_anual > 0 THEN p.precio_anual ELSE (p.precio_mensual * 12) END),0) total FROM suscripciones s INNER JOIN planes p ON p.id = s.plan_id WHERE s.estado IN ('activa','por_vencer') AND s.fecha_eliminacion IS NULL")->fetch()['total'],
+            'nuevas_empresas_7_dias' => (int) $db->query("SELECT COUNT(*) total FROM empresas WHERE fecha_eliminacion IS NULL AND fecha_creacion >= DATE_SUB(NOW(), INTERVAL 7 DAY)")->fetch()['total'],
+            'renovaciones_hoy' => (int) $db->query("SELECT COUNT(*) total FROM suscripciones WHERE fecha_eliminacion IS NULL AND fecha_vencimiento = CURDATE()")->fetch()['total'],
+            'mrr_en_riesgo' => (float) $db->query("SELECT COALESCE(SUM(p.precio_mensual),0) total
+                FROM suscripciones s
+                INNER JOIN planes p ON p.id = s.plan_id
+                WHERE s.fecha_eliminacion IS NULL
+                  AND s.estado IN ('vencida','suspendida')")->fetch()['total'],
         ];
 
         $empresasPorPlan = $db->query('SELECT p.nombre, COUNT(e.id) total FROM planes p LEFT JOIN empresas e ON e.plan_id = p.id AND e.fecha_eliminacion IS NULL GROUP BY p.id, p.nombre ORDER BY total DESC')->fetchAll();
@@ -34,6 +41,9 @@ class PanelAdminControlador extends Controlador
         }
         if ($resumen['empresas_por_vencer'] > 0) {
             $alertas[] = "{$resumen['empresas_por_vencer']} suscripciones vencerán dentro de los próximos 10 días.";
+        }
+        if ($resumen['mrr_en_riesgo'] > 0) {
+            $alertas[] = 'Hay $' . number_format($resumen['mrr_en_riesgo'], 0, ',', '.') . ' de MRR en riesgo por cuentas vencidas/suspendidas.';
         }
 
         $this->vista('admin/panel', compact('resumen', 'empresasPorPlan', 'ultimasEmpresas', 'ultimasSuscripciones', 'proximosVencimientos', 'alertas'), 'admin');

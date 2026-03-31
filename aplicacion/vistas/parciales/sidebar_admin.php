@@ -1,7 +1,6 @@
 <?php
 $rutaActual = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 $items = [
-    ['/admin/panel', 'Inicio', 'bi-house-door'],
     ['/admin/panel', 'Dashboard', 'bi-speedometer2'],
     ['/admin/empresas', 'Empresas', 'bi-buildings'],
     ['/admin/administradores-empresa', 'Administradores de empresas', 'bi-people'],
@@ -11,7 +10,6 @@ $items = [
     ['/admin/pagos', 'Pagos', 'bi-cash-stack'],
     ['/admin/reportes', 'Reportes', 'bi-bar-chart-line'],
     ['/admin/configuracion', 'Configuración general', 'bi-gear'],
-    ['/admin/administradores-empresa', 'Seguridad / credenciales', 'bi-shield-lock'],
     ['/admin/historial', 'Historial / actividad', 'bi-clock-history'],
 ];
 ?>
