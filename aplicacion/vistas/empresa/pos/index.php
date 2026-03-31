@@ -49,7 +49,7 @@ $fmon = static fn(float $monto): string => $simboloMoneda . ' ' . number_format(
   <div class="col-md-2 d-grid"><button class="btn btn-sm btn-outline-primary">Filtrar</button></div>
 </form>
 
-<form method="POST" action="<?= e(url('/app/punto-venta/venta/guardar')) ?>" id="form_pos">
+<form method="POST" action="<?= e(url('/app/punto-venta/venta/guardar')) ?>" id="form_pos" target="_blank">
   <?= csrf_campo() ?>
   <input type="hidden" name="tipo_venta" id="tipo_venta" value="rapida">
   <input type="hidden" name="cliente_id" id="cliente_id" value="">
@@ -340,6 +340,21 @@ $fmon = static fn(float $monto): string => $simboloMoneda . ' ' . number_format(
       return;
     }
     document.getElementById('pagos_json').value = JSON.stringify(pagos);
+
+    // Deja el formulario listo para registrar una nueva venta
+    // mientras el boucher se abre/imprime en la nueva pestaña.
+    setTimeout(() => {
+      carrito.splice(0, carrito.length);
+      pagos.splice(0, pagos.length);
+      document.getElementById('selector_tipo_venta').value = 'rapida';
+      document.getElementById('selector_cliente').value = '';
+      document.getElementById('tipo_venta').value = 'rapida';
+      document.getElementById('cliente_id').value = '';
+      document.getElementById('monto_pago').value = '';
+      document.getElementById('referencia_pago').value = '';
+      render();
+      pintarPagos();
+    }, 0);
   });
 
   render();
