@@ -87,7 +87,6 @@ $ordenCompraSeleccionada = $ordenCompraSeleccionada ?? null;
   <div>
     <button class="btn btn-primary btn-sm" name="accion" value="guardar" <?= $hayProductos ? '' : 'disabled' ?>>Guardar sin salir</button>
     <button class="btn btn-success btn-sm" name="accion" value="guardar_salir" <?= $hayProductos ? '' : 'disabled' ?>>Guardar y salir</button>
-    <button class="btn btn-outline-success btn-sm" type="button" onclick="alert('Guarda la recepción para habilitar envío por correo.')">Enviar por correo</button>
     <button class="btn btn-outline-dark btn-sm" type="button" onclick="alert('Guarda la recepción para descargar el PDF.')">Descargar PDF</button>
     <a href="<?= e(url('/app/inventario/recepciones')) ?>" class="btn btn-outline-secondary btn-sm">Cancelar</a>
     <?php if (!$hayProductos): ?><span class="text-muted small ms-2">Debes tener productos activos para recepcionar.</span><?php endif; ?>
