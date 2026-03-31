@@ -3,6 +3,7 @@
 use Aplicacion\Modelos\Plan;
 use Aplicacion\Modelos\PlanFuncionalidad;
 use Aplicacion\Modelos\Suscripcion;
+use Aplicacion\Modelos\Empresa;
 
 function iniciar_sesion_segura(string $nombre): void
 {
@@ -158,4 +159,24 @@ function plan_tiene_funcionalidad_empresa_actual(string $codigo): bool
 {
     $funcionalidades = funcionalidades_plan_empresa_actual();
     return isset($funcionalidades[$codigo]);
+}
+
+function nombre_empresa_actual(): ?string
+{
+    static $nombre = null;
+    static $resuelto = false;
+
+    if ($resuelto) {
+        return $nombre;
+    }
+
+    $resuelto = true;
+    $empresaId = empresa_actual_id();
+    if (!$empresaId) {
+        return null;
+    }
+
+    $empresa = (new Empresa())->buscar($empresaId);
+    $nombre = $empresa['nombre_comercial'] ?? $empresa['razon_social'] ?? null;
+    return $nombre;
 }
