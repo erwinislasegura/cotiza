@@ -4,6 +4,8 @@ namespace Aplicacion\Controladores\Empresa;
 
 use Aplicacion\Nucleo\Controlador;
 use Aplicacion\Modelos\Empresa;
+use Aplicacion\Servicios\ServicioAlertaStock;
+use Aplicacion\Servicios\ServicioCorreo;
 
 class ConfiguracionControlador extends Controlador
 {
@@ -62,6 +64,89 @@ class ConfiguracionControlador extends Controlador
 
         flash('success', 'Configuración actualizada correctamente.');
         $this->redirigir('/app/configuracion');
+    }
+
+
+
+    public function correosStock(): void
+    {
+        $this->validarPermisoAlertas();
+        $empresaId = (int) empresa_actual_id();
+        $servicio = new ServicioAlertaStock();
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            validar_csrf();
+            $accion = trim((string) ($_POST['accion'] ?? 'guardar'));
+            $config = [
+                'activar_alerta_stock_bajo' => isset($_POST['activar_alerta_stock_bajo']) ? '1' : '0',
+                'activar_alerta_stock_critico' => isset($_POST['activar_alerta_stock_critico']) ? '1' : '0',
+                'destinatarios_alerta_stock' => trim((string) ($_POST['destinatarios_alerta_stock'] ?? '')),
+                'asunto_stock_bajo' => trim((string) ($_POST['asunto_stock_bajo'] ?? '')),
+                'asunto_stock_critico' => trim((string) ($_POST['asunto_stock_critico'] ?? '')),
+                'plantilla_html_stock_bajo' => trim((string) ($_POST['plantilla_html_stock_bajo'] ?? '')),
+                'plantilla_html_stock_critico' => trim((string) ($_POST['plantilla_html_stock_critico'] ?? '')),
+            ];
+
+            if ($accion === 'guardar') {
+                $servicio->guardarConfiguracion($empresaId, $config);
+                flash('success', 'Configuración de alertas de stock guardada correctamente.');
+            }
+
+            if ($accion === 'enviar_prueba') {
+                $destino = trim((string) ($_POST['correo_prueba'] ?? ''));
+                if (!filter_var($destino, FILTER_VALIDATE_EMAIL)) {
+                    flash('danger', 'Correo de prueba inválido.');
+                } else {
+                    $variables = $this->variablesPruebaStock();
+                    $asunto = strtr($config['asunto_stock_bajo'], $variables);
+                    $html = $servicio->vistaPrevia($config['plantilla_html_stock_bajo'], $variables);
+                    (new ServicioCorreo())->enviarConEmpresa($empresaId, $destino, $asunto, 'alerta_stock_prueba', ['html' => $html, 'variables' => $variables]);
+                    flash('success', 'Correo de prueba enviado (registrado en logs).');
+                }
+            }
+        }
+
+        $configuracion = $servicio->obtenerConfiguracion($empresaId);
+        $variables = $servicio->variablesAyuda();
+        $previewVars = $this->variablesPruebaStock();
+        $vistaPreviaBajo = $servicio->vistaPrevia($configuracion['plantilla_html_stock_bajo'], $previewVars);
+        $vistaPreviaCritico = $servicio->vistaPrevia($configuracion['plantilla_html_stock_critico'], $previewVars);
+        $asuntoPreviaBajo = strtr($configuracion['asunto_stock_bajo'], $previewVars);
+        $asuntoPreviaCritico = strtr($configuracion['asunto_stock_critico'], $previewVars);
+
+        $this->vista('empresa/configuracion/correos_stock', compact('configuracion', 'variables', 'vistaPreviaBajo', 'vistaPreviaCritico', 'asuntoPreviaBajo', 'asuntoPreviaCritico'), 'empresa');
+    }
+
+    private function variablesPruebaStock(): array
+    {
+        $usuario = usuario_actual();
+        $empresa = (new Empresa())->buscar((int) empresa_actual_id()) ?: [];
+        return [
+            '{empresa}' => (string) ($empresa['nombre_comercial'] ?? 'Empresa Demo'),
+            '{producto}' => 'Producto demo',
+            '{codigo}' => 'P-001',
+            '{stock_actual}' => '5.00',
+            '{stock_minimo}' => '10.00',
+            '{stock_critico}' => '3.00',
+            '{fecha}' => date('Y-m-d H:i:s'),
+            '{usuario}' => (string) ($usuario['nombre'] ?? 'Usuario demo'),
+        ];
+    }
+
+    private function validarPermisoAlertas(): void
+    {
+        $usuario = usuario_actual();
+        if (!$usuario) {
+            http_response_code(403);
+            exit('No autorizado');
+        }
+
+        if (($usuario['rol_codigo'] ?? '') === 'superadministrador' || ($usuario['rol_codigo'] ?? '') === 'administrador_empresa') {
+            return;
+        }
+
+        http_response_code(403);
+        exit('No tienes permisos para configurar alertas de stock.');
     }
 
     private function guardarLogoEmpresa(string $logoActual): string
