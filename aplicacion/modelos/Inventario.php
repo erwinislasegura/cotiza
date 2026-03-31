@@ -14,11 +14,30 @@ class Inventario extends Modelo
         return $stmt->fetchAll();
     }
 
-    public function crearProveedor(int $empresaId, string $nombre): int
+    public function crearProveedor(int $empresaId, array $data): int
     {
-        $stmt = $this->db->prepare('INSERT INTO proveedores_inventario (empresa_id,nombre,estado,fecha_creacion) VALUES (:empresa_id,:nombre,"activo",NOW())');
-        $stmt->execute(['empresa_id' => $empresaId, 'nombre' => $nombre]);
+        $stmt = $this->db->prepare('INSERT INTO proveedores_inventario (empresa_id,nombre,identificador_fiscal,contacto,correo,telefono,direccion,ciudad,observacion,estado,fecha_creacion) VALUES (:empresa_id,:nombre,:identificador_fiscal,:contacto,:correo,:telefono,:direccion,:ciudad,:observacion,:estado,NOW())');
+        $stmt->execute([
+            'empresa_id' => $empresaId,
+            'nombre' => $data['nombre'],
+            'identificador_fiscal' => $data['identificador_fiscal'] ?? null,
+            'contacto' => $data['contacto'] ?? null,
+            'correo' => $data['correo'] ?? null,
+            'telefono' => $data['telefono'] ?? null,
+            'direccion' => $data['direccion'] ?? null,
+            'ciudad' => $data['ciudad'] ?? null,
+            'observacion' => $data['observacion'] ?? null,
+            'estado' => $data['estado'] ?? 'activo',
+        ]);
         return (int) $this->db->lastInsertId();
+    }
+
+
+    public function obtenerProveedor(int $empresaId, int $id): ?array
+    {
+        $stmt = $this->db->prepare('SELECT * FROM proveedores_inventario WHERE empresa_id=:empresa_id AND id=:id LIMIT 1');
+        $stmt->execute(['empresa_id' => $empresaId, 'id' => $id]);
+        return $stmt->fetch() ?: null;
     }
 
     public function listarProductos(int $empresaId): array

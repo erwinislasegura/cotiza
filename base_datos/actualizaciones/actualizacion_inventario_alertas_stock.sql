@@ -27,13 +27,44 @@ CREATE TABLE IF NOT EXISTS proveedores_inventario (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   empresa_id BIGINT UNSIGNED NOT NULL,
   nombre VARCHAR(180) NOT NULL,
+  identificador_fiscal VARCHAR(80) NULL,
+  contacto VARCHAR(140) NULL,
   correo VARCHAR(160) NULL,
   telefono VARCHAR(80) NULL,
+  direccion VARCHAR(200) NULL,
+  ciudad VARCHAR(120) NULL,
+  observacion TEXT NULL,
   estado ENUM('activo','inactivo') NOT NULL DEFAULT 'activo',
   fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_proveedores_empresa (empresa_id),
   CONSTRAINT fk_proveedores_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id)
 );
+
+
+SET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=@db_name AND TABLE_NAME='proveedores_inventario' AND COLUMN_NAME='identificador_fiscal') = 0,
+  'ALTER TABLE proveedores_inventario ADD COLUMN identificador_fiscal VARCHAR(80) NULL AFTER nombre',
+  'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=@db_name AND TABLE_NAME='proveedores_inventario' AND COLUMN_NAME='contacto') = 0,
+  'ALTER TABLE proveedores_inventario ADD COLUMN contacto VARCHAR(140) NULL AFTER identificador_fiscal',
+  'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=@db_name AND TABLE_NAME='proveedores_inventario' AND COLUMN_NAME='direccion') = 0,
+  'ALTER TABLE proveedores_inventario ADD COLUMN direccion VARCHAR(200) NULL AFTER telefono',
+  'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=@db_name AND TABLE_NAME='proveedores_inventario' AND COLUMN_NAME='ciudad') = 0,
+  'ALTER TABLE proveedores_inventario ADD COLUMN ciudad VARCHAR(120) NULL AFTER direccion',
+  'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=@db_name AND TABLE_NAME='proveedores_inventario' AND COLUMN_NAME='observacion') = 0,
+  'ALTER TABLE proveedores_inventario ADD COLUMN observacion TEXT NULL AFTER ciudad',
+  'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 CREATE TABLE IF NOT EXISTS recepciones_inventario (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

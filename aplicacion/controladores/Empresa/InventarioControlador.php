@@ -67,7 +67,17 @@ class InventarioControlador extends Controlador
         $proveedorId = (int) ($_POST['proveedor_id'] ?? 0);
         $nuevoProveedor = trim((string) ($_POST['proveedor_nuevo'] ?? ''));
         if ($proveedorId <= 0 && $nuevoProveedor !== '') {
-            $proveedorId = $inventario->crearProveedor($empresaId, $nuevoProveedor);
+            $proveedorId = $inventario->crearProveedor($empresaId, [
+                'nombre' => $nuevoProveedor,
+                'identificador_fiscal' => trim((string) ($_POST['proveedor_identificador_fiscal'] ?? '')),
+                'contacto' => trim((string) ($_POST['proveedor_contacto'] ?? '')),
+                'correo' => trim((string) ($_POST['proveedor_correo'] ?? '')),
+                'telefono' => trim((string) ($_POST['proveedor_telefono'] ?? '')),
+                'direccion' => trim((string) ($_POST['proveedor_direccion'] ?? '')),
+                'ciudad' => trim((string) ($_POST['proveedor_ciudad'] ?? '')),
+                'observacion' => trim((string) ($_POST['proveedor_observacion'] ?? '')),
+                'estado' => 'activo',
+            ]);
         }
 
         $tiposPermitidos = ['guia_despacho', 'factura'];
@@ -203,6 +213,42 @@ class InventarioControlador extends Controlador
             exit('Ajuste no encontrado.');
         }
         $this->vista('empresa/inventario/ajuste_ver', compact('ajuste'), 'empresa');
+    }
+
+
+    public function proveedores(): void
+    {
+        $this->validarPermiso('inventario_ver_recepciones');
+        $empresaId = (int) empresa_actual_id();
+        $proveedores = (new Inventario())->listarProveedores($empresaId);
+        $this->vista('empresa/inventario/proveedores', compact('proveedores'), 'empresa');
+    }
+
+    public function guardarProveedor(): void
+    {
+        $this->validarPermiso('inventario_crear_recepciones');
+        validar_csrf();
+        $empresaId = (int) empresa_actual_id();
+        $nombre = trim((string) ($_POST['nombre'] ?? ''));
+        if ($nombre === '') {
+            flash('danger', 'El nombre del proveedor es obligatorio.');
+            $this->redirigir('/app/inventario/proveedores');
+        }
+
+        (new Inventario())->crearProveedor($empresaId, [
+            'nombre' => $nombre,
+            'identificador_fiscal' => trim((string) ($_POST['identificador_fiscal'] ?? '')),
+            'contacto' => trim((string) ($_POST['contacto'] ?? '')),
+            'correo' => trim((string) ($_POST['correo'] ?? '')),
+            'telefono' => trim((string) ($_POST['telefono'] ?? '')),
+            'direccion' => trim((string) ($_POST['direccion'] ?? '')),
+            'ciudad' => trim((string) ($_POST['ciudad'] ?? '')),
+            'observacion' => trim((string) ($_POST['observacion'] ?? '')),
+            'estado' => ($_POST['estado'] ?? 'activo') === 'inactivo' ? 'inactivo' : 'activo',
+        ]);
+
+        flash('success', 'Proveedor creado correctamente.');
+        $this->redirigir((string) ($_POST['redirect_to'] ?? '/app/inventario/proveedores'));
     }
 
     public function movimientos(): void

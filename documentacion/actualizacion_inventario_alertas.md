@@ -9,12 +9,13 @@ Este script agrega:
 
 - Nuevos campos en `productos`: `stock_actual`, `stock_critico`, `ultimo_aviso_stock_bajo`, `ultimo_aviso_stock_critico`.
 - Tablas: `proveedores_inventario`, `recepciones_inventario`, `recepciones_inventario_detalle`, `ajustes_inventario`, `movimientos_inventario`.
+- Módulo operativo de proveedores en `/app/inventario/proveedores` para mantener datos comerciales del proveedor (RUT/NIT, contacto, correo, teléfono, dirección, ciudad y observaciones).
 - Claves base en `configuraciones_empresa` para alertas de stock.
 
 ## 2) Flujo implementado
 
 ### Recepción desde proveedor
-Ruta: `/app/inventario/recepciones`
+Rutas: `/app/inventario/recepciones` y `/app/inventario/proveedores`
 
 Permite registrar:
 - proveedor
