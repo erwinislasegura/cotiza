@@ -114,3 +114,16 @@ form.form-enviando .btn{pointer-events:none}
   .panel-cliente .chart-area{height:260px}
   .metric-card{padding-left:3.2rem}
 }
+
+/* Panel administrador global */
+.sidebar-admin{background:linear-gradient(180deg,#111927 0%,#0b1220 100%) !important;border-color:#1f2b3d !important}
+.sidebar-admin .sidebar-app__titulo{color:#8ea4c0}
+.sidebar-admin .nav-link{color:#becde0}
+.sidebar-admin .nav-link i{color:#8ea4c0}
+.sidebar-admin .nav-link:hover{background:#18263a;color:#f5f8ff}
+.sidebar-admin .nav-link.active{background:#1d3048;color:#fff;box-shadow:inset 3px 0 0 #4aa3ff}
+.sidebar-admin .nav-link.active i{color:#78beff}
+
+.admin-kpi{background:#fff;border:1px solid #d7e0eb;border-left:4px solid #1d4ed8;border-radius:.65rem;padding:.7rem .8rem}
+.admin-kpi .label{font-size:.72rem;text-transform:uppercase;color:#6b7e94;font-weight:700}
+.admin-kpi .value{font-size:1.15rem;font-weight:700;color:#16283c}

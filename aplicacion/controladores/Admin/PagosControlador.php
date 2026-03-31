@@ -2,14 +2,23 @@
 
 namespace Aplicacion\Controladores\Admin;
 
-use Aplicacion\Nucleo\Controlador;
 use Aplicacion\Modelos\Pago;
+use Aplicacion\Modelos\Plan;
+use Aplicacion\Modelos\Suscripcion;
+use Aplicacion\Nucleo\Controlador;
 
 class PagosControlador extends Controlador
 {
     public function index(): void
     {
-        $pagos = (new Pago())->listar();
-        $this->vista('admin/pagos/index', compact('pagos'), 'admin');
+        $filtros = [
+            'desde' => $_GET['desde'] ?? '',
+            'hasta' => $_GET['hasta'] ?? '',
+            'estado' => $_GET['estado'] ?? '',
+        ];
+        $pagos = (new Pago())->listar($filtros);
+        $suscripciones = (new Suscripcion())->listar();
+        $planes = (new Plan())->listar();
+        $this->vista('admin/pagos/index', compact('pagos', 'filtros', 'suscripciones', 'planes'), 'admin');
     }
 }

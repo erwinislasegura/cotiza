@@ -21,6 +21,43 @@ class Usuario extends Modelo
         return $stmt->fetchAll();
     }
 
+    public function listarAdministradoresEmpresa(array $filtros = []): array
+    {
+        $sql = 'SELECT u.id, u.empresa_id, u.nombre, u.correo, u.telefono, u.estado, u.ultimo_acceso, u.password_actualizado_en,
+                e.nombre_comercial AS empresa_nombre, e.estado AS empresa_estado
+            FROM usuarios u
+            INNER JOIN roles r ON r.id = u.rol_id
+            INNER JOIN empresas e ON e.id = u.empresa_id
+            WHERE r.codigo = "administrador_empresa" AND u.fecha_eliminacion IS NULL';
+        $params = [];
+
+        if (!empty($filtros['busqueda'])) {
+            $sql .= ' AND (u.nombre LIKE :q OR u.correo LIKE :q OR e.nombre_comercial LIKE :q)';
+            $params['q'] = '%' . $filtros['busqueda'] . '%';
+        }
+        if (!empty($filtros['empresa_id'])) {
+            $sql .= ' AND u.empresa_id = :empresa_id';
+            $params['empresa_id'] = (int) $filtros['empresa_id'];
+        }
+
+        $sql .= ' ORDER BY u.id DESC';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    public function obtenerAdministradorEmpresa(int $id): ?array
+    {
+        $sql = 'SELECT u.*, e.nombre_comercial AS empresa_nombre
+            FROM usuarios u
+            INNER JOIN roles r ON r.id = u.rol_id
+            INNER JOIN empresas e ON e.id = u.empresa_id
+            WHERE r.codigo = "administrador_empresa" AND u.id = :id LIMIT 1';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $id]);
+        return $stmt->fetch() ?: null;
+    }
+
     public function crear(array $data): int
     {
         $sql = 'INSERT INTO usuarios (empresa_id, rol_id, nombre, correo, password, telefono, cargo, biografia, estado, fecha_creacion) VALUES (:empresa_id, :rol_id, :nombre, :correo, :password, :telefono, :cargo, :biografia, :estado, NOW())';
@@ -73,5 +110,30 @@ class Usuario extends Modelo
         $data['empresa_id'] = $empresaId;
         $data['id'] = $id;
         $this->db->prepare($sql)->execute($data);
+    }
+
+    public function actualizarEstado(int $id, string $estado): void
+    {
+        $this->db->prepare('UPDATE usuarios SET estado = :estado, fecha_actualizacion = NOW() WHERE id = :id')->execute([
+            'id' => $id,
+            'estado' => $estado,
+        ]);
+    }
+
+    public function actualizarCredencialesAdmin(int $id, string $correo, string $nombre): void
+    {
+        $this->db->prepare('UPDATE usuarios SET correo = :correo, nombre = :nombre, fecha_actualizacion = NOW() WHERE id = :id')->execute([
+            'id' => $id,
+            'correo' => $correo,
+            'nombre' => $nombre,
+        ]);
+    }
+
+    public function resetearPasswordAdminEmpresa(int $id, string $passwordHash): void
+    {
+        $this->db->prepare('UPDATE usuarios SET password = :password, password_actualizado_en = NOW(), fecha_actualizacion = NOW() WHERE id = :id')->execute([
+            'id' => $id,
+            'password' => $passwordHash,
+        ]);
     }
 }

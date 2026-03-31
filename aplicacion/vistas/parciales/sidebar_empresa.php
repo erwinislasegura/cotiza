@@ -15,6 +15,18 @@ $esProductos = $coincideRuta('/app/productos', $rutaActual)
 
 $esPos = $coincideRuta('/app/punto-venta', $rutaActual);
 ?>
+<style>
+  .sidebar-app .sidebar-desc {
+    display: none;
+    white-space: normal;
+    line-height: 1.2;
+  }
+
+  .sidebar-app .nav-link:hover .sidebar-desc,
+  .sidebar-app .nav-link.active .sidebar-desc {
+    display: block;
+  }
+</style>
 <aside class="sidebar sidebar-app p-3 border-end bg-white">
   <h6 class="sidebar-app__titulo text-uppercase mb-3">Mi Empresa</h6>
   <nav class="nav flex-column small gap-2">
