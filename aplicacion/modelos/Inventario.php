@@ -181,7 +181,7 @@ class Inventario extends Modelo
 
     public function listarRecepciones(int $empresaId): array
     {
-        $stmt = $this->db->prepare('SELECT r.*, p.nombre AS proveedor_nombre, u.nombre AS usuario_nombre
+        $stmt = $this->db->prepare('SELECT r.*, p.nombre AS proveedor_nombre, p.correo AS proveedor_correo, u.nombre AS usuario_nombre
             FROM recepciones_inventario r
             LEFT JOIN proveedores_inventario p ON p.id = r.proveedor_id
             LEFT JOIN usuarios u ON u.id = r.usuario_id
@@ -193,7 +193,7 @@ class Inventario extends Modelo
 
     public function obtenerRecepcion(int $empresaId, int $id): ?array
     {
-        $stmt = $this->db->prepare('SELECT r.*, p.nombre AS proveedor_nombre, u.nombre AS usuario_nombre
+        $stmt = $this->db->prepare('SELECT r.*, p.nombre AS proveedor_nombre, p.correo AS proveedor_correo, u.nombre AS usuario_nombre
             FROM recepciones_inventario r
             LEFT JOIN proveedores_inventario p ON p.id = r.proveedor_id
             LEFT JOIN usuarios u ON u.id = r.usuario_id
@@ -212,6 +212,21 @@ class Inventario extends Modelo
         $recepcion['detalles'] = $stmtDet->fetchAll();
 
         return $recepcion;
+    }
+
+    public function actualizarRecepcionBasica(int $empresaId, int $id, array $data): void
+    {
+        $stmt = $this->db->prepare('UPDATE recepciones_inventario SET proveedor_id=:proveedor_id, tipo_documento=:tipo_documento, numero_documento=:numero_documento, fecha_documento=:fecha_documento, referencia_interna=:referencia_interna, observacion=:observacion, fecha_actualizacion=NOW() WHERE empresa_id=:empresa_id AND id=:id');
+        $stmt->execute([
+            'proveedor_id' => $data['proveedor_id'],
+            'tipo_documento' => $data['tipo_documento'],
+            'numero_documento' => $data['numero_documento'],
+            'fecha_documento' => $data['fecha_documento'],
+            'referencia_interna' => $data['referencia_interna'],
+            'observacion' => $data['observacion'],
+            'empresa_id' => $empresaId,
+            'id' => $id,
+        ]);
     }
 
     public function listarAjustes(int $empresaId, array $filtros = []): array

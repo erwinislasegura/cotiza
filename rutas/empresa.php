@@ -122,7 +122,12 @@ $enrutador->agregar('POST', '/app/historial/eliminar/{id}', fn($id) => (new Gest
 
 $enrutador->agregar('GET', '/app/inventario/recepciones', [InventarioControlador::class, 'recepciones'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/inventario/recepciones', [InventarioControlador::class, 'guardarRecepcion'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/inventario/recepciones/editar/{id}', [InventarioControlador::class, 'editarRecepcion'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/inventario/recepciones/editar/{id}', [InventarioControlador::class, 'actualizarRecepcion'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/inventario/recepciones/ver/{id}', [InventarioControlador::class, 'verRecepcion'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/inventario/recepciones/imprimir/{id}', [InventarioControlador::class, 'imprimirRecepcion'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/inventario/recepciones/pdf/{id}', [InventarioControlador::class, 'descargarRecepcionPdf'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/inventario/recepciones/enviar/{id}', [InventarioControlador::class, 'enviarRecepcion'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/inventario/ordenes-compra', [InventarioControlador::class, 'ordenesCompra'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/inventario/ordenes-compra', [InventarioControlador::class, 'guardarOrdenCompra'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/inventario/ordenes-compra/editar/{id}', [InventarioControlador::class, 'editarOrdenCompra'], $mwEmpresa);

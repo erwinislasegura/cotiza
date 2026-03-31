@@ -85,7 +85,11 @@ $ordenCompraSeleccionada = $ordenCompraSeleccionada ?? null;
   </div>
 
   <div>
-    <button class="btn btn-primary btn-sm" <?= $hayProductos ? '' : 'disabled' ?>>Guardar recepción</button>
+    <button class="btn btn-primary btn-sm" name="accion" value="guardar" <?= $hayProductos ? '' : 'disabled' ?>>Guardar sin salir</button>
+    <button class="btn btn-success btn-sm" name="accion" value="guardar_salir" <?= $hayProductos ? '' : 'disabled' ?>>Guardar y salir</button>
+    <button class="btn btn-outline-success btn-sm" type="button" onclick="alert('Guarda la recepción para habilitar envío por correo.')">Enviar por correo</button>
+    <button class="btn btn-outline-dark btn-sm" type="button" onclick="alert('Guarda la recepción para descargar el PDF.')">Descargar PDF</button>
+    <a href="<?= e(url('/app/inventario/recepciones')) ?>" class="btn btn-outline-secondary btn-sm">Cancelar</a>
     <?php if (!$hayProductos): ?><span class="text-muted small ms-2">Debes tener productos activos para recepcionar.</span><?php endif; ?>
   </div>
 </form>
@@ -108,7 +112,7 @@ $ordenCompraSeleccionada = $ordenCompraSeleccionada ?? null;
 </template>
 
 <div class="card mt-3"><div class="card-header">Historial de recepciones</div><div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Fecha</th><th>Proveedor</th><th>Documento</th><th>Número</th><th>Usuario</th><th class="text-end">Acción</th></tr></thead><tbody>
-<?php if(empty($recepciones)): ?><tr><td colspan="6" class="text-center text-muted py-3">Sin recepciones registradas.</td></tr><?php else: foreach($recepciones as $r): ?><tr><td><?= e($r['fecha_creacion']) ?></td><td><?= e($r['proveedor_nombre'] ?? 'Sin proveedor') ?></td><td><?= e($r['tipo_documento']) ?></td><td><?= e($r['numero_documento']) ?></td><td><?= e($r['usuario_nombre'] ?? '-') ?></td><td class="text-end"><a class="btn btn-outline-secondary btn-sm" href="<?= e(url('/app/inventario/recepciones/ver/' . $r['id'])) ?>">Ver detalle</a></td></tr><?php endforeach; endif; ?>
+<?php if(empty($recepciones)): ?><tr><td colspan="6" class="text-center text-muted py-3">Sin recepciones registradas.</td></tr><?php else: foreach($recepciones as $r): ?><tr><td><?= e($r['fecha_creacion']) ?></td><td><?= e($r['proveedor_nombre'] ?? 'Sin proveedor') ?></td><td><?= e($r['tipo_documento']) ?></td><td><?= e($r['numero_documento']) ?></td><td><?= e($r['usuario_nombre'] ?? '-') ?></td><td class="text-end d-flex justify-content-end gap-1"><a class="btn btn-outline-secondary btn-sm" href="<?= e(url('/app/inventario/recepciones/ver/' . $r['id'])) ?>">Ver</a><a class="btn btn-outline-primary btn-sm" href="<?= e(url('/app/inventario/recepciones/editar/' . $r['id'])) ?>">Editar</a><a class="btn btn-outline-dark btn-sm" href="<?= e(url('/app/inventario/recepciones/pdf/' . $r['id'])) ?>">PDF</a></td></tr><?php endforeach; endif; ?>
 </tbody></table></div></div>
 
 <div class="modal fade" id="modalProveedor" tabindex="-1" aria-hidden="true">

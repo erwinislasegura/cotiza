@@ -113,7 +113,7 @@ class InventarioControlador extends Controlador
         }
 
         try {
-            $inventario->crearRecepcion([
+            $recepcionId = $inventario->crearRecepcion([
                 'empresa_id' => $empresaId,
                 'proveedor_id' => $proveedorId > 0 ? $proveedorId : null,
                 'orden_compra_id' => (int) ($_POST['orden_compra_id'] ?? 0) ?: null,
@@ -125,6 +125,9 @@ class InventarioControlador extends Controlador
                 'usuario_id' => (int) ($usuario['id'] ?? 0),
             ], $detalles);
             flash('success', 'Recepción de inventario guardada y stock actualizado correctamente.');
+            if ($recepcionId > 0) {
+                $this->redirigirSegunAccion((string) ($_POST['accion'] ?? 'guardar_salir'), '/app/inventario/recepciones/editar/' . $recepcionId, '/app/inventario/recepciones');
+            }
         } catch (Throwable $e) {
             flash('danger', 'No fue posible guardar la recepción: ' . $e->getMessage());
         }
@@ -142,6 +145,101 @@ class InventarioControlador extends Controlador
         }
 
         $this->vista('empresa/inventario/recepcion_ver', compact('recepcion'), 'empresa');
+    }
+
+    public function editarRecepcion(int $id): void
+    {
+        $this->validarPermiso('inventario_ver_recepciones');
+        $empresaId = (int) empresa_actual_id();
+        $inventario = new Inventario();
+        $recepcion = $inventario->obtenerRecepcion($empresaId, $id);
+        if (!$recepcion) {
+            flash('danger', 'Recepción no encontrada.');
+            $this->redirigir('/app/inventario/recepciones');
+        }
+
+        $proveedores = $inventario->listarProveedores($empresaId);
+        $this->vista('empresa/inventario/recepcion_editar', compact('recepcion', 'proveedores'), 'empresa');
+    }
+
+    public function actualizarRecepcion(int $id): void
+    {
+        $this->validarPermiso('inventario_crear_recepciones');
+        validar_csrf();
+        $empresaId = (int) empresa_actual_id();
+        $inventario = new Inventario();
+        $recepcion = $inventario->obtenerRecepcion($empresaId, $id);
+        if (!$recepcion) {
+            flash('danger', 'Recepción no encontrada.');
+            $this->redirigir('/app/inventario/recepciones');
+        }
+
+        $tiposPermitidos = ['guia_despacho', 'factura'];
+        $tipoDocumento = in_array($_POST['tipo_documento'] ?? '', $tiposPermitidos, true) ? $_POST['tipo_documento'] : 'guia_despacho';
+        $inventario->actualizarRecepcionBasica($empresaId, $id, [
+            'proveedor_id' => (int) ($_POST['proveedor_id'] ?? 0) ?: null,
+            'tipo_documento' => $tipoDocumento,
+            'numero_documento' => trim((string) ($_POST['numero_documento'] ?? '')),
+            'fecha_documento' => trim((string) ($_POST['fecha_documento'] ?? date('Y-m-d'))),
+            'referencia_interna' => trim((string) ($_POST['referencia_interna'] ?? '')),
+            'observacion' => trim((string) ($_POST['observacion'] ?? '')),
+        ]);
+
+        flash('success', 'Recepción actualizada correctamente.');
+        $this->redirigirSegunAccion((string) ($_POST['accion'] ?? 'guardar_salir'), '/app/inventario/recepciones/editar/' . $id, '/app/inventario/recepciones');
+    }
+
+    public function imprimirRecepcion(int $id): void
+    {
+        $this->validarPermiso('inventario_ver_recepciones');
+        $empresaId = (int) empresa_actual_id();
+        $recepcion = (new Inventario())->obtenerRecepcion($empresaId, $id);
+        if (!$recepcion) {
+            flash('danger', 'Recepción no encontrada.');
+            $this->redirigir('/app/inventario/recepciones');
+        }
+        $empresa = (new Empresa())->buscar($empresaId);
+        $this->vista('empresa/inventario/recepcion_imprimir', compact('recepcion', 'empresa'), 'impresion');
+    }
+
+    public function descargarRecepcionPdf(int $id): void
+    {
+        $this->redirigir('/app/inventario/recepciones/imprimir/' . $id . '?modo=pdf');
+    }
+
+    public function enviarRecepcion(int $id): void
+    {
+        $this->validarPermiso('inventario_crear_recepciones');
+        validar_csrf();
+        $empresaId = (int) empresa_actual_id();
+        $recepcion = (new Inventario())->obtenerRecepcion($empresaId, $id);
+        if (!$recepcion) {
+            flash('danger', 'Recepción no encontrada.');
+            $this->redirigir('/app/inventario/recepciones');
+        }
+
+        $destinatario = filter_var((string) ($recepcion['proveedor_correo'] ?? ''), FILTER_VALIDATE_EMAIL);
+        if (!$destinatario) {
+            flash('danger', 'El proveedor de esta recepción no tiene correo válido.');
+            $this->redirigir('/app/inventario/recepciones/editar/' . $id);
+        }
+
+        $empresa = (new Empresa())->buscar($empresaId) ?: [];
+        $urlPdf = $this->construirUrlInterna('/app/inventario/recepciones/pdf/' . $id);
+        (new ServicioCorreo())->enviar(
+            $destinatario,
+            'Recepción de inventario ' . ((string) ($recepcion['numero_documento'] ?? ('#' . $id))),
+            'recepcion_inventario_proveedor',
+            [
+                'empresa' => (string) ($empresa['nombre_comercial'] ?? $empresa['razon_social'] ?? ''),
+                'proveedor' => (string) ($recepcion['proveedor_nombre'] ?? ''),
+                'numero_documento' => (string) ($recepcion['numero_documento'] ?? ''),
+                'link_pdf' => $urlPdf,
+            ]
+        );
+
+        flash('success', 'Recepción enviada por correo al proveedor.');
+        $this->redirigir('/app/inventario/recepciones/editar/' . $id);
     }
 
     public function ajustes(): void
