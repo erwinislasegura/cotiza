@@ -5,6 +5,7 @@ namespace Aplicacion\Controladores\Admin;
 use Aplicacion\Modelos\LogAdministracion;
 use Aplicacion\Nucleo\Controlador;
 use Aplicacion\Modelos\Plan;
+use Throwable;
 
 class PlanesControlador extends Controlador
 {
@@ -31,15 +32,23 @@ class PlanesControlador extends Controlador
     public function editar(int $id): void
     {
         $plan = (new Plan())->buscar($id);
+        if (!$plan) {
+            flash('danger', 'Plan no encontrado.');
+            $this->redirigir('/admin/planes');
+        }
         $this->vista('admin/planes/formulario', compact('plan'), 'admin');
     }
 
     public function actualizar(int $id): void
     {
         validar_csrf();
-        (new Plan())->actualizar($id, $this->obtenerDatosFormulario());
-        (new LogAdministracion())->registrar('planes', 'editar', 'Actualización de plan ID ' . $id);
-        flash('success', 'Plan actualizado.');
+        try {
+            (new Plan())->actualizar($id, $this->obtenerDatosFormulario());
+            (new LogAdministracion())->registrar('planes', 'editar', 'Actualización de plan ID ' . $id);
+            flash('success', 'Plan actualizado.');
+        } catch (Throwable $e) {
+            flash('danger', 'No se pudo actualizar el plan. Verifica slug único y campos obligatorios.');
+        }
         $this->redirigir('/admin/planes');
     }
 

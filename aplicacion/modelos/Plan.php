@@ -30,7 +30,14 @@ class Plan extends Modelo
 
     public function buscarPorSlug(string $slug): ?array
     {
-        $stmt = $this->db->prepare('SELECT * FROM planes WHERE slug = :slug LIMIT 1');
+        $stmt = $this->db->prepare('SELECT * FROM planes WHERE slug = :slug AND fecha_eliminacion IS NULL LIMIT 1');
+        $stmt->execute(['slug' => $slug]);
+        return $stmt->fetch() ?: null;
+    }
+
+    public function buscarPublicoPorSlug(string $slug): ?array
+    {
+        $stmt = $this->db->prepare('SELECT * FROM planes WHERE slug = :slug AND estado = "activo" AND visible = 1 AND fecha_eliminacion IS NULL LIMIT 1');
         $stmt->execute(['slug' => $slug]);
         return $stmt->fetch() ?: null;
     }

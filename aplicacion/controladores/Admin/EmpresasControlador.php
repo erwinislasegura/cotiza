@@ -46,9 +46,13 @@ class EmpresasControlador extends Controlador
     {
         validar_csrf();
         $estado = $_POST['estado'] ?? 'activa';
-        (new Empresa())->actualizarEstado($id, $estado);
-        (new LogAdministracion())->registrar('empresas', 'cambiar_estado', 'Cambio de estado a ' . $estado, $id);
-        flash('success', 'Estado de empresa actualizado.');
+        try {
+            (new Empresa())->actualizarEstado($id, $estado);
+            (new LogAdministracion())->registrar('empresas', 'cambiar_estado', 'Cambio de estado a ' . $estado, $id);
+            flash('success', 'Estado de empresa actualizado.');
+        } catch (\Throwable $e) {
+            flash('danger', 'No se pudo actualizar el estado de la empresa.');
+        }
         $this->redirigir('/admin/empresas/ver/' . $id);
     }
 
@@ -57,9 +61,13 @@ class EmpresasControlador extends Controlador
         validar_csrf();
         $planId = (int) ($_POST['plan_id'] ?? 0);
         $observaciones = trim($_POST['observaciones_internas'] ?? '');
-        (new Empresa())->actualizarPlanYObservacion($id, $planId, $observaciones);
-        (new LogAdministracion())->registrar('empresas', 'cambiar_plan', 'Plan asignado ID ' . $planId, $id);
-        flash('success', 'Plan de empresa actualizado.');
+        try {
+            (new Empresa())->actualizarPlanYObservacion($id, $planId, $observaciones);
+            (new LogAdministracion())->registrar('empresas', 'cambiar_plan', 'Plan asignado ID ' . $planId, $id);
+            flash('success', 'Plan de empresa actualizado.');
+        } catch (\Throwable $e) {
+            flash('danger', 'No se pudo actualizar el plan de la empresa.');
+        }
         $this->redirigir('/admin/empresas/ver/' . $id);
     }
 
