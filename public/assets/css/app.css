@@ -12,7 +12,10 @@ body{font-size:.88rem;color:#253648;background:var(--color-fondo)}
 .sidebar-app .nav-link:hover i{color:#24527c}
 .sidebar-app .nav-link.active{background:#e8f1ff;color:#0c4a8a;box-shadow:inset 3px 0 0 #2f9dff}
 .sidebar-app .nav-link.active i{color:#2f9dff}
-.topbar{height:56px}
+.topbar{min-height:72px}
+.topbar-identidad__avatar{width:2.25rem;height:2.25rem;border-radius:.65rem;background:linear-gradient(145deg,#0d6efd,#1f7bff);display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 10px rgba(13,110,253,.25)}
+.topbar-identidad__empresa{font-size:.95rem;line-height:1.1;color:#20364c}
+.topbar-plan .badge{font-size:.69rem;letter-spacing:.01em}
 .card{border-radius:.55rem;border:1px solid #dde4ec;box-shadow:0 1px 4px rgba(26,43,60,.05)}
 .card-header{background:#f9fbfd;font-weight:600;padding:.55rem .75rem}
 .form-label{font-size:.78rem;font-weight:600;margin-bottom:.2rem;color:#3b4b5d}
@@ -74,6 +77,8 @@ form.form-enviando .btn{pointer-events:none}
 }
 
 @media (max-width: 767.98px){
+  .topbar{min-height:auto}
+  .topbar-identidad__empresa{font-size:.88rem}
   .public-page{padding-bottom:78px}
   .public-page .display-6{font-size:1.75rem}
   .public-page .container{padding-left:1rem;padding-right:1rem}

@@ -1,5 +1,10 @@
 <?php
 
+use Aplicacion\Modelos\Plan;
+use Aplicacion\Modelos\PlanFuncionalidad;
+use Aplicacion\Modelos\Suscripcion;
+use Aplicacion\Modelos\Empresa;
+
 function iniciar_sesion_segura(string $nombre): void
 {
     if (session_status() === PHP_SESSION_ACTIVE) {
@@ -101,4 +106,77 @@ function tiene_rol(string|array $roles): bool
 function empresa_actual_id(): ?int
 {
     return usuario_actual()['empresa_id'] ?? null;
+}
+
+function resumen_plan_empresa_actual(): ?array
+{
+    static $cache = null;
+    static $resuelto = false;
+
+    if ($resuelto) {
+        return $cache;
+    }
+
+    $resuelto = true;
+    $empresaId = empresa_actual_id();
+    if (!$empresaId) {
+        return null;
+    }
+
+    $cache = (new Suscripcion())->obtenerResumenVigenciaEmpresa($empresaId);
+    return $cache;
+}
+
+function funcionalidades_plan_empresa_actual(): array
+{
+    static $cache = null;
+    static $resuelto = false;
+
+    if ($resuelto) {
+        return $cache ?? [];
+    }
+
+    $resuelto = true;
+    $cache = [];
+    $empresaId = empresa_actual_id();
+    if (!$empresaId) {
+        return [];
+    }
+
+    $planActivo = (new Plan())->obtenerPlanActivoEmpresa($empresaId);
+    if (!$planActivo || (int) ($planActivo['plan_id'] ?? 0) <= 0) {
+        return [];
+    }
+
+    foreach ((new PlanFuncionalidad())->listarActivasPorPlan((int) $planActivo['plan_id']) as $fila) {
+        $cache[$fila['codigo_interno']] = $fila;
+    }
+
+    return $cache;
+}
+
+function plan_tiene_funcionalidad_empresa_actual(string $codigo): bool
+{
+    $funcionalidades = funcionalidades_plan_empresa_actual();
+    return isset($funcionalidades[$codigo]);
+}
+
+function nombre_empresa_actual(): ?string
+{
+    static $nombre = null;
+    static $resuelto = false;
+
+    if ($resuelto) {
+        return $nombre;
+    }
+
+    $resuelto = true;
+    $empresaId = empresa_actual_id();
+    if (!$empresaId) {
+        return null;
+    }
+
+    $empresa = (new Empresa())->buscar($empresaId);
+    $nombre = $empresa['nombre_comercial'] ?? $empresa['razon_social'] ?? null;
+    return $nombre;
 }

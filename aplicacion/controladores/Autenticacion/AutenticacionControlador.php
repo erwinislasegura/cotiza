@@ -62,7 +62,8 @@ class AutenticacionControlador extends Controlador
         $planes = (new Plan())->listar(true);
         $planPreseleccionado = 0;
         if (isset($_GET['plan'])) {
-            $planPreseleccionado = (int) $_GET['plan'];
+            $pre = (new Plan())->buscar((int) $_GET['plan']);
+            $planPreseleccionado = ($pre && ($pre['estado'] ?? '') === 'activo' && (int) ($pre['visible'] ?? 0) === 1) ? (int) $pre['id'] : 0;
         }
         $this->vista('autenticacion/registro', ['planes' => $planes, 'planPreseleccionado' => $planPreseleccionado], 'publico');
     }
@@ -89,7 +90,7 @@ class AutenticacionControlador extends Controlador
         }
 
         $plan = (new Plan())->buscar($planId);
-        if (!$plan || ($plan['estado'] ?? '') !== 'activo') {
+        if (!$plan || ($plan['estado'] ?? '') !== 'activo' || (int) ($plan['visible'] ?? 0) !== 1) {
             flash('danger', 'Selecciona un plan válido para continuar con el registro.');
             $this->redirigir('/registro');
         }
