@@ -33,7 +33,13 @@
     </div>
   </div>
 
-  <div><button class="btn btn-primary btn-sm">Guardar orden de compra</button></div>
+  <div class="d-flex gap-2 flex-wrap">
+    <button class="btn btn-primary btn-sm" name="accion" value="guardar">Guardar sin salir</button>
+    <button class="btn btn-success btn-sm" name="accion" value="guardar_salir">Guardar y salir</button>
+    <button class="btn btn-outline-success btn-sm" type="button" onclick="alert('Guarda la orden para poder enviarla por correo al proveedor.')">Enviar por correo</button>
+    <button class="btn btn-outline-dark btn-sm" type="button" onclick="alert('Guarda la orden para descargar el PDF.')">Descargar PDF</button>
+    <a href="<?= e(url('/app/inventario/ordenes-compra')) ?>" class="btn btn-outline-secondary btn-sm">Cancelar</a>
+  </div>
 </form>
 
 <template id="template-linea-oc">
@@ -47,7 +53,7 @@
 </template>
 
 <div class="card mt-3"><div class="card-header">Historial de órdenes</div><div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Número</th><th>Proveedor</th><th>Emisión</th><th>Entrega est.</th><th>Estado</th><th>Usuario</th><th class="text-end">Acción</th></tr></thead><tbody>
-<?php if(empty($ordenes)): ?><tr><td colspan="7" class="text-center text-muted py-3">Sin órdenes de compra registradas.</td></tr><?php else: foreach($ordenes as $o): ?><tr><td><?= e($o['numero']) ?></td><td><?= e($o['proveedor_nombre'] ?? '-') ?></td><td><?= e($o['fecha_emision']) ?></td><td><?= e($o['fecha_entrega_estimada']) ?></td><td><?= e($o['estado']) ?></td><td><?= e($o['usuario_nombre'] ?? '-') ?></td><td class="text-end"><a class="btn btn-outline-secondary btn-sm" href="<?= e(url('/app/inventario/ordenes-compra/ver/' . $o['id'])) ?>">Ver</a></td></tr><?php endforeach; endif; ?>
+<?php if(empty($ordenes)): ?><tr><td colspan="7" class="text-center text-muted py-3">Sin órdenes de compra registradas.</td></tr><?php else: foreach($ordenes as $o): ?><tr><td><?= e($o['numero']) ?></td><td><?= e($o['proveedor_nombre'] ?? '-') ?></td><td><?= e($o['fecha_emision']) ?></td><td><?= e($o['fecha_entrega_estimada']) ?></td><td><?= e($o['estado']) ?></td><td><?= e($o['usuario_nombre'] ?? '-') ?></td><td class="text-end d-flex justify-content-end gap-1"><a class="btn btn-outline-secondary btn-sm" href="<?= e(url('/app/inventario/ordenes-compra/ver/' . $o['id'])) ?>">Ver</a><a class="btn btn-outline-primary btn-sm" href="<?= e(url('/app/inventario/ordenes-compra/editar/' . $o['id'])) ?>">Editar</a><a class="btn btn-outline-dark btn-sm" href="<?= e(url('/app/inventario/ordenes-compra/pdf/' . $o['id'])) ?>">PDF</a></td></tr><?php endforeach; endif; ?>
 </tbody></table></div></div>
 
 <script>
