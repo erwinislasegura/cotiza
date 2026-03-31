@@ -20,27 +20,27 @@ $esPos = $coincideRuta('/app/punto-venta', $rutaActual);
   <nav class="nav flex-column small gap-2">
     <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/panel', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/panel')) ?>">
       <i class="bi bi-house-door mt-1"></i>
-      <span class="d-flex flex-column">
+      <span class="d-flex flex-column w-100">
         <span>Inicio</span>
-        <small class="text-muted">Resumen general de tu operación.</small>
+        <small class="text-muted d-block" style="white-space: normal; line-height: 1.2;">Resumen general de tu operación.</small>
       </span>
     </a>
     <div class="pt-2 border-top">
       <div class="text-uppercase text-muted fw-semibold px-2">Flujo de inventario</div>
-      <small class="text-muted px-2 d-block mb-1">Desde el ingreso de productos hasta su salida.</small>
+      <small class="text-muted px-2 d-block mb-1" style="white-space: normal; line-height: 1.2;">Desde el ingreso de productos hasta su salida.</small>
     </div>
 
     <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/inventario/proveedores', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/inventario/proveedores')) ?>">
       <i class="bi bi-building-add mt-1"></i>
-      <span class="d-flex flex-column"><span>Proveedores</span><small class="text-muted">Base de proveedores y datos de compra.</small></span>
+      <span class="d-flex flex-column w-100"><span>Proveedores</span><small class="text-muted d-block" style="white-space: normal; line-height: 1.2;">Base de proveedores y compra.</small></span>
     </a>
     <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/inventario/ordenes-compra', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/inventario/ordenes-compra')) ?>">
       <i class="bi bi-file-earmark-text mt-1"></i>
-      <span class="d-flex flex-column"><span>Órdenes de compra</span><small class="text-muted">Solicitudes y seguimiento de abastecimiento.</small></span>
+      <span class="d-flex flex-column w-100"><span>Órdenes de compra</span><small class="text-muted d-block" style="white-space: normal; line-height: 1.2;">Solicitudes de abastecimiento.</small></span>
     </a>
     <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/inventario/recepciones', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/inventario/recepciones')) ?>">
       <i class="bi bi-truck mt-1"></i>
-      <span class="d-flex flex-column"><span>Recepciones inventario</span><small class="text-muted">Registro de ingresos al stock.</small></span>
+      <span class="d-flex flex-column w-100"><span>Recepciones inventario</span><small class="text-muted d-block" style="white-space: normal; line-height: 1.2;">Registro de ingresos al stock.</small></span>
     </a>
     <button class="nav-link btn text-start d-flex align-items-center gap-2 <?= $esProductos ? 'active' : '' ?>" type="button" data-bs-toggle="collapse" data-bs-target="#submenuProductos" aria-expanded="<?= $esProductos ? 'true' : 'false' ?>">
       <i class="bi bi-box-seam"></i><span>Servicios / Productos</span><i class="bi ms-auto <?= $esProductos ? 'bi-chevron-up' : 'bi-chevron-down' ?>"></i>
@@ -53,11 +53,11 @@ $esPos = $coincideRuta('/app/punto-venta', $rutaActual);
     </div>
     <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/inventario/ajustes', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/inventario/ajustes')) ?>">
       <i class="bi bi-sliders mt-1"></i>
-      <span class="d-flex flex-column"><span>Ajustes inventario</span><small class="text-muted">Correcciones y regularizaciones de stock.</small></span>
+      <span class="d-flex flex-column w-100"><span>Ajustes inventario</span><small class="text-muted d-block" style="white-space: normal; line-height: 1.2;">Correcciones de stock.</small></span>
     </a>
     <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/inventario/movimientos', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/inventario/movimientos')) ?>">
       <i class="bi bi-arrow-left-right mt-1"></i>
-      <span class="d-flex flex-column"><span>Movimientos inventario</span><small class="text-muted">Trazabilidad completa de entradas y salidas.</small></span>
+      <span class="d-flex flex-column w-100"><span>Movimientos inventario</span><small class="text-muted d-block" style="white-space: normal; line-height: 1.2;">Entradas y salidas registradas.</small></span>
     </a>
 
     <button class="nav-link btn text-start d-flex align-items-center gap-2 <?= $esPos ? 'active' : '' ?>" type="button" data-bs-toggle="collapse" data-bs-target="#submenuPos" aria-expanded="<?= $esPos ? 'true' : 'false' ?>">
@@ -73,25 +73,25 @@ $esPos = $coincideRuta('/app/punto-venta', $rutaActual);
 
     <div class="pt-2 border-top">
       <div class="text-uppercase text-muted fw-semibold px-2">Gestión comercial</div>
-      <small class="text-muted px-2 d-block mb-1">Relación con clientes y seguimiento de oportunidades.</small>
+      <small class="text-muted px-2 d-block mb-1" style="white-space: normal; line-height: 1.2;">Relación con clientes y seguimiento de oportunidades.</small>
     </div>
-    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/clientes', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/clientes')) ?>"><i class="bi bi-building mt-1"></i><span class="d-flex flex-column"><span>Clientes</span><small class="text-muted">Empresas y cuentas comerciales.</small></span></a>
-    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/contactos', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/contactos')) ?>"><i class="bi bi-person-lines-fill mt-1"></i><span class="d-flex flex-column"><span>Contactos</span><small class="text-muted">Personas asociadas a cada cliente.</small></span></a>
-    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/vendedores', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/vendedores')) ?>"><i class="bi bi-person-badge mt-1"></i><span class="d-flex flex-column"><span>Vendedores</span><small class="text-muted">Equipo comercial y responsables.</small></span></a>
-    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/cotizaciones', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/cotizaciones')) ?>"><i class="bi bi-file-earmark-text mt-1"></i><span class="d-flex flex-column"><span>Cotizaciones</span><small class="text-muted">Creación y administración de propuestas.</small></span></a>
-    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/seguimiento', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/seguimiento')) ?>"><i class="bi bi-graph-up-arrow mt-1"></i><span class="d-flex flex-column"><span>Seguimiento comercial</span><small class="text-muted">Estado del embudo y actividades.</small></span></a>
-    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/aprobaciones', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/aprobaciones')) ?>"><i class="bi bi-check2-square mt-1"></i><span class="d-flex flex-column"><span>Aprobaciones</span><small class="text-muted">Validaciones internas y flujos de autorización.</small></span></a>
+    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/clientes', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/clientes')) ?>"><i class="bi bi-building mt-1"></i><span class="d-flex flex-column w-100"><span>Clientes</span><small class="text-muted d-block" style="white-space: normal; line-height: 1.2;">Empresas y cuentas.</small></span></a>
+    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/contactos', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/contactos')) ?>"><i class="bi bi-person-lines-fill mt-1"></i><span class="d-flex flex-column w-100"><span>Contactos</span><small class="text-muted d-block" style="white-space: normal; line-height: 1.2;">Personas de cada cliente.</small></span></a>
+    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/vendedores', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/vendedores')) ?>"><i class="bi bi-person-badge mt-1"></i><span class="d-flex flex-column w-100"><span>Vendedores</span><small class="text-muted d-block" style="white-space: normal; line-height: 1.2;">Equipo comercial.</small></span></a>
+    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/cotizaciones', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/cotizaciones')) ?>"><i class="bi bi-file-earmark-text mt-1"></i><span class="d-flex flex-column w-100"><span>Cotizaciones</span><small class="text-muted d-block" style="white-space: normal; line-height: 1.2;">Propuestas y ofertas.</small></span></a>
+    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/seguimiento', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/seguimiento')) ?>"><i class="bi bi-graph-up-arrow mt-1"></i><span class="d-flex flex-column w-100"><span>Seguimiento comercial</span><small class="text-muted d-block" style="white-space: normal; line-height: 1.2;">Embudo y actividades.</small></span></a>
+    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/aprobaciones', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/aprobaciones')) ?>"><i class="bi bi-check2-square mt-1"></i><span class="d-flex flex-column w-100"><span>Aprobaciones</span><small class="text-muted d-block" style="white-space: normal; line-height: 1.2;">Flujos de validación.</small></span></a>
 
     <div class="pt-2 border-top">
       <div class="text-uppercase text-muted fw-semibold px-2">Configuración</div>
-      <small class="text-muted px-2 d-block mb-1">Ajustes del sistema y administración interna.</small>
+      <small class="text-muted px-2 d-block mb-1" style="white-space: normal; line-height: 1.2;">Ajustes del sistema y administración interna.</small>
     </div>
-    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/documentos', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/documentos')) ?>"><i class="bi bi-code-square mt-1"></i><span class="d-flex flex-column"><span>Plantilla correo cotización</span><small class="text-muted">Define formato de envío de cotizaciones.</small></span></a>
-    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/configuracion/envio-oc-html', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/configuracion/envio-oc-html')) ?>"><i class="bi bi-envelope mt-1"></i><span class="d-flex flex-column"><span>Envío OC HTML</span><small class="text-muted">Configuración de correos para órdenes.</small></span></a>
-    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/configuracion', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/configuracion')) ?>"><i class="bi bi-gear mt-1"></i><span class="d-flex flex-column"><span>Configuración empresa</span><small class="text-muted">Parámetros generales del negocio.</small></span></a>
-    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/configuracion/correos-stock', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/configuracion/correos-stock')) ?>"><i class="bi bi-envelope-paper mt-1"></i><span class="d-flex flex-column"><span>Correos de stock</span><small class="text-muted">Alertas automáticas de inventario.</small></span></a>
-    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/usuarios', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/usuarios')) ?>"><i class="bi bi-people mt-1"></i><span class="d-flex flex-column"><span>Usuarios y permisos</span><small class="text-muted">Control de accesos y roles.</small></span></a>
-    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/notificaciones', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/notificaciones')) ?>"><i class="bi bi-bell mt-1"></i><span class="d-flex flex-column"><span>Notificaciones</span><small class="text-muted">Preferencias de avisos y alertas.</small></span></a>
-    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/historial', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/historial')) ?>"><i class="bi bi-clock-history mt-1"></i><span class="d-flex flex-column"><span>Historial / actividad</span><small class="text-muted">Registro de acciones recientes.</small></span></a>
+    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/documentos', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/documentos')) ?>"><i class="bi bi-code-square mt-1"></i><span class="d-flex flex-column w-100"><span>Plantilla correo cotización</span><small class="text-muted d-block" style="white-space: normal; line-height: 1.2;">Formato de envío de cotizaciones.</small></span></a>
+    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/configuracion/envio-oc-html', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/configuracion/envio-oc-html')) ?>"><i class="bi bi-envelope mt-1"></i><span class="d-flex flex-column w-100"><span>Envío OC HTML</span><small class="text-muted d-block" style="white-space: normal; line-height: 1.2;">Correos para órdenes de compra.</small></span></a>
+    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/configuracion', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/configuracion')) ?>"><i class="bi bi-gear mt-1"></i><span class="d-flex flex-column w-100"><span>Configuración empresa</span><small class="text-muted d-block" style="white-space: normal; line-height: 1.2;">Parámetros del negocio.</small></span></a>
+    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/configuracion/correos-stock', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/configuracion/correos-stock')) ?>"><i class="bi bi-envelope-paper mt-1"></i><span class="d-flex flex-column w-100"><span>Correos de stock</span><small class="text-muted d-block" style="white-space: normal; line-height: 1.2;">Alertas de inventario.</small></span></a>
+    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/usuarios', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/usuarios')) ?>"><i class="bi bi-people mt-1"></i><span class="d-flex flex-column w-100"><span>Usuarios y permisos</span><small class="text-muted d-block" style="white-space: normal; line-height: 1.2;">Accesos y roles.</small></span></a>
+    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/notificaciones', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/notificaciones')) ?>"><i class="bi bi-bell mt-1"></i><span class="d-flex flex-column w-100"><span>Notificaciones</span><small class="text-muted d-block" style="white-space: normal; line-height: 1.2;">Preferencias de avisos.</small></span></a>
+    <a class="nav-link d-flex gap-2 <?= $coincideRuta('/app/historial', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/historial')) ?>"><i class="bi bi-clock-history mt-1"></i><span class="d-flex flex-column w-100"><span>Historial / actividad</span><small class="text-muted d-block" style="white-space: normal; line-height: 1.2;">Acciones recientes.</small></span></a>
   </nav>
 </aside>
