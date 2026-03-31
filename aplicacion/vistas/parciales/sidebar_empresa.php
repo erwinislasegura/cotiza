@@ -35,6 +35,12 @@ $esPos = $coincideRuta('/app/punto-venta', $rutaActual);
 
     <a class="nav-link d-flex align-items-center gap-2 <?= $coincideRuta('/app/cotizaciones', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/cotizaciones')) ?>"><i class="bi bi-file-earmark-text"></i><span>Cotizaciones</span></a>
 
+    <a class="nav-link d-flex align-items-center gap-2 <?= $coincideRuta('/app/inventario/recepciones', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/inventario/recepciones')) ?>"><i class="bi bi-truck"></i><span>Recepciones inventario</span></a>
+    <a class="nav-link d-flex align-items-center gap-2 <?= $coincideRuta('/app/inventario/ordenes-compra', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/inventario/ordenes-compra')) ?>"><i class="bi bi-file-earmark-text"></i><span>Órdenes de compra</span></a>
+    <a class="nav-link d-flex align-items-center gap-2 <?= $coincideRuta('/app/inventario/proveedores', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/inventario/proveedores')) ?>"><i class="bi bi-building-add"></i><span>Proveedores</span></a>
+    <a class="nav-link d-flex align-items-center gap-2 <?= $coincideRuta('/app/inventario/ajustes', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/inventario/ajustes')) ?>"><i class="bi bi-sliders"></i><span>Ajustes inventario</span></a>
+    <a class="nav-link d-flex align-items-center gap-2 <?= $coincideRuta('/app/inventario/movimientos', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/inventario/movimientos')) ?>"><i class="bi bi-arrow-left-right"></i><span>Movimientos inventario</span></a>
+
     <button class="nav-link btn text-start d-flex align-items-center gap-2 <?= $esPos ? 'active' : '' ?>" type="button" data-bs-toggle="collapse" data-bs-target="#submenuPos" aria-expanded="<?= $esPos ? 'true' : 'false' ?>">
       <i class="bi bi-cart-check"></i><span>Punto de venta</span><i class="bi ms-auto <?= $esPos ? 'bi-chevron-up' : 'bi-chevron-down' ?>"></i>
     </button>
@@ -50,6 +56,7 @@ $esPos = $coincideRuta('/app/punto-venta', $rutaActual);
     <a class="nav-link d-flex align-items-center gap-2 <?= $coincideRuta('/app/aprobaciones', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/aprobaciones')) ?>"><i class="bi bi-check2-square"></i><span>Aprobaciones</span></a>
     <a class="nav-link d-flex align-items-center gap-2 <?= $coincideRuta('/app/documentos', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/documentos')) ?>"><i class="bi bi-code-square"></i><span>Plantilla correo cotización</span></a>
     <a class="nav-link d-flex align-items-center gap-2 <?= $coincideRuta('/app/configuracion', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/configuracion')) ?>"><i class="bi bi-gear"></i><span>Configuración empresa</span></a>
+    <a class="nav-link d-flex align-items-center gap-2 <?= $coincideRuta('/app/configuracion/correos-stock', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/configuracion/correos-stock')) ?>"><i class="bi bi-envelope-paper"></i><span>Correos de stock</span></a>
     <a class="nav-link d-flex align-items-center gap-2 <?= $coincideRuta('/app/usuarios', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/usuarios')) ?>"><i class="bi bi-people"></i><span>Usuarios y permisos</span></a>
     <a class="nav-link d-flex align-items-center gap-2 <?= $coincideRuta('/app/notificaciones', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/notificaciones')) ?>"><i class="bi bi-bell"></i><span>Notificaciones</span></a>
     <a class="nav-link d-flex align-items-center gap-2 <?= $coincideRuta('/app/historial', $rutaActual) ? 'active' : '' ?>" href="<?= e(url('/app/historial')) ?>"><i class="bi bi-clock-history"></i><span>Historial / actividad</span></a>

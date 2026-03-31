@@ -1,13 +1,19 @@
 <?php
 $autoImprimir = isset($_GET['imprimir']) && $_GET['imprimir'] === '1';
 $decimalesMonto = max(0, min(6, (int) ($configuracion['cantidad_decimales'] ?? 2)));
-$fmon = static fn(float $monto): string => '$ ' . number_format($monto, $decimalesMonto);
+$monedaPos = (string) ($configuracion['moneda'] ?? 'CLP');
+$simboloMoneda = match ($monedaPos) {
+  'USD' => 'US$',
+  'EU' => '€',
+  default => '$',
+};
+$fmon = static fn(float $monto): string => $simboloMoneda . ' ' . number_format($monto, $decimalesMonto);
 ?>
 <div class="d-flex justify-content-between align-items-center mb-3 no-print">
   <h1 class="h5 mb-0">Boucher de pago <?= e($venta['numero_venta']) ?></h1>
   <div>
     <a class="btn btn-outline-secondary btn-sm" href="<?= e(url('/app/punto-venta/ventas')) ?>">Volver</a>
-    <button class="btn btn-primary btn-sm" onclick="window.print()">Imprimir</button>
+    <a class="btn btn-primary btn-sm" target="_blank" href="<?= e(url('/app/punto-venta/ventas/imprimir/' . (int) $venta['id'])) ?>">Imprimir</a>
   </div>
 </div>
 
@@ -37,7 +43,7 @@ $fmon = static fn(float $monto): string => '$ ' . number_format($monto, $decimal
     <?php foreach ($venta['pagos'] as $pago): ?>
       <div class="d-flex justify-content-between"><span><?= e(ucfirst($pago['metodo_pago'])) ?></span><strong><?= e($fmon((float) $pago['monto'])) ?></strong></div>
     <?php endforeach; ?>
-    <div class="d-flex justify-content-between"><span>Monto recibido</span><strong><?= e($fmon((float) $venta['monto_recibido'])) ?></strong></div>
+    <div class="d-flex justify-content-between"><span>Efectivo recibido</span><strong><?= e($fmon((float) $venta['monto_recibido'])) ?></strong></div>
     <div class="d-flex justify-content-between"><span>Vuelto</span><strong><?= e($fmon((float) $venta['vuelto'])) ?></strong></div>
     <div class="text-center mt-3">Gracias por su compra</div>
   </div>

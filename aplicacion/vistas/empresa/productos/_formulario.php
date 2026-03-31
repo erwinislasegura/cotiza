@@ -14,7 +14,7 @@ $unidadActual = $producto['unidad'] ?? 'unidad';
   <div class="fw-semibold mb-1">Uso y buenas prácticas para productos</div>
   <ul class="mb-0 small ps-3">
     <li>Incluye datos completos para que la cotización sea más clara para el cliente.</li>
-    <li>Usa <strong>stock mínimo</strong> y <strong>stock de aviso</strong> para anticipar reposición.</li>
+    <li>Configura <strong>stock mínimo</strong> y <strong>stock crítico</strong> para alertas automáticas.</li>
     <li>Si el ítem no se ofrece temporalmente, cambia estado a <strong>inactivo</strong>.</li>
   </ul>
 </div>
@@ -96,9 +96,13 @@ $unidadActual = $producto['unidad'] ?? 'unidad';
     <div class="form-text">Nivel base para reposición.</div>
   </div>
   <div class="col-md-2">
-    <label class="form-label">Stock de aviso</label>
-    <input type="number" step="0.01" min="0" name="stock_aviso" class="form-control" value="<?= e((string)($producto['stock_aviso'] ?? 0)) ?>">
-    <div class="form-text">Recibir alerta antes del mínimo.</div>
+    <label class="form-label">Stock crítico</label>
+    <input type="number" step="0.01" min="0" name="stock_critico" class="form-control" value="<?= e((string)($producto['stock_critico'] ?? $producto['stock_aviso'] ?? 0)) ?>">
+    <div class="form-text">Umbral para alerta crítica.</div>
+  </div>
+  <div class="col-md-2">
+    <label class="form-label">Stock actual</label>
+    <input type="number" step="0.01" min="0" name="stock_actual" class="form-control" value="<?= e((string)($producto['stock_actual'] ?? 0)) ?>">
   </div>
   <div class="col-md-2">
     <label class="form-label">Estado</label>
