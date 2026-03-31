@@ -123,6 +123,9 @@ $enrutador->agregar('POST', '/app/historial/eliminar/{id}', fn($id) => (new Gest
 $enrutador->agregar('GET', '/app/inventario/recepciones', [InventarioControlador::class, 'recepciones'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/inventario/recepciones', [InventarioControlador::class, 'guardarRecepcion'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/inventario/recepciones/ver/{id}', [InventarioControlador::class, 'verRecepcion'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/inventario/ordenes-compra', [InventarioControlador::class, 'ordenesCompra'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/inventario/ordenes-compra', [InventarioControlador::class, 'guardarOrdenCompra'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/inventario/ordenes-compra/ver/{id}', [InventarioControlador::class, 'verOrdenCompra'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/inventario/ajustes', [InventarioControlador::class, 'ajustes'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/inventario/ajustes', [InventarioControlador::class, 'guardarAjuste'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/inventario/ajustes/ver/{id}', [InventarioControlador::class, 'verAjuste'], $mwEmpresa);

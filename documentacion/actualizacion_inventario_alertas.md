@@ -29,6 +29,19 @@ Al guardar:
 - crea detalle de recepción
 - registra trazabilidad en `movimientos_inventario`
 
+### Órdenes de compra
+Rutas: `/app/inventario/ordenes-compra` y `/app/inventario/ordenes-compra/ver/{id}`
+
+Permite:
+- crear orden por proveedor con múltiples productos/cantidades
+- definir fecha de entrega estimada y referencia comercial
+- vincular recepción desde la orden para mantener trazabilidad
+
+Estados:
+- `emitida`: orden creada
+- `parcial`: recepción parcial
+- `recibida`: recepción completa
+
 ### Ajustes de inventario
 Ruta: `/app/inventario/ajustes`
 

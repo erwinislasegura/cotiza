@@ -1,4 +1,8 @@
-<?php $hayProveedores = !empty($proveedores); $hayProductos = !empty($productos); ?>
+<?php
+$hayProveedores = !empty($proveedores);
+$hayProductos = !empty($productos);
+$ordenCompraSeleccionada = $ordenCompraSeleccionada ?? null;
+?>
 <h1 class="h4 mb-3">Recepciones de inventario</h1>
 
 <div class="alert alert-info info-modulo mb-3">
@@ -12,6 +16,13 @@
 
 <form method="POST" action="<?= e(url('/app/inventario/recepciones')) ?>" class="d-grid gap-3" id="form-recepcion">
   <?= csrf_campo() ?>
+  <input type="hidden" name="orden_compra_id" value="<?= (int) ($ordenCompraSeleccionada['id'] ?? 0) ?>">
+  <?php if ($ordenCompraSeleccionada): ?>
+    <div class="alert alert-warning mb-0">
+      Recepción asociada a orden de compra <strong><?= e($ordenCompraSeleccionada['numero'] ?? '') ?></strong>.
+      Esta recepción actualizará el estado de la orden automáticamente.
+    </div>
+  <?php endif; ?>
 
   <div class="card">
     <div class="card-header">Datos del documento</div>
@@ -22,14 +33,14 @@
           <select name="proveedor_id" class="form-select" id="proveedor_id">
             <option value="0"><?= $hayProveedores ? 'Seleccionar proveedor' : 'Sin proveedores registrados' ?></option>
             <?php foreach($proveedores as $pr): ?>
-              <option value="<?= (int)$pr['id'] ?>"><?= e($pr['nombre']) ?></option>
+              <option value="<?= (int)$pr['id'] ?>" <?= (int)($ordenCompraSeleccionada['proveedor_id'] ?? 0) === (int)$pr['id'] ? 'selected' : '' ?>><?= e($pr['nombre']) ?></option>
             <?php endforeach; ?>
           </select>
           <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalProveedor">+ Proveedor</button>
         </div>
       </div>
       <div class="col-md-2"><label class="small">Tipo documento</label><select name="tipo_documento" class="form-select"><option value="guia_despacho">Guía de despacho</option><option value="factura">Factura</option></select></div>
-      <div class="col-md-2"><label class="small">Número documento</label><input name="numero_documento" class="form-control" required></div>
+      <div class="col-md-2"><label class="small">Número documento</label><input name="numero_documento" class="form-control" value="<?= e((string)($ordenCompraSeleccionada['numero'] ?? '')) ?>" required></div>
       <div class="col-md-3"><label class="small">Fecha documento</label><input type="date" name="fecha_documento" class="form-control" value="<?= e(date('Y-m-d')) ?>" required></div>
       <div class="col-md-4"><label class="small">Referencia interna</label><input name="referencia_interna" class="form-control" placeholder="OC / Folio interno"></div>
       <div class="col-md-8"><label class="small">Observación</label><input name="observacion" class="form-control" placeholder="Observaciones de recepción"></div>
@@ -125,6 +136,7 @@
 
 <script>
 (function(){
+  const detalleOrden = <?= json_encode($ordenCompraSeleccionada['detalles'] ?? [], JSON_UNESCAPED_UNICODE) ?>;
   const cuerpo = document.getElementById('cuerpo-detalle');
   const template = document.getElementById('fila-detalle-template');
   const btn = document.getElementById('btn-agregar-linea');
@@ -151,16 +163,25 @@
     resumenTotal.textContent = money(total);
   }
 
-  function agregarFila() {
+  function agregarFila(data = null) {
     const frag = template.content.cloneNode(true);
     const tr = frag.querySelector('tr');
+    if (data) {
+      tr.querySelector('.js-producto').value = String(data.producto_id || '');
+      tr.querySelector('.js-cantidad').value = String(data.cantidad || 0);
+      tr.querySelector('.js-costo').value = String(data.costo_unitario || 0);
+    }
     tr.querySelectorAll('input,select').forEach((el) => el.addEventListener('input', recalcular));
     tr.querySelector('.js-eliminar').addEventListener('click', () => { tr.remove(); recalcular(); });
     cuerpo.appendChild(tr);
     recalcular();
   }
 
-  btn.addEventListener('click', agregarFila);
-  agregarFila();
+  btn.addEventListener('click', () => agregarFila());
+  if (Array.isArray(detalleOrden) && detalleOrden.length > 0) {
+    detalleOrden.forEach((d) => agregarFila(d));
+  } else {
+    agregarFila();
+  }
 })();
 </script>

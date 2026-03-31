@@ -51,7 +51,7 @@ class Inventario extends Modelo
     {
         $this->db->beginTransaction();
         try {
-            $stmtCab = $this->db->prepare('INSERT INTO recepciones_inventario (empresa_id,proveedor_id,tipo_documento,numero_documento,fecha_documento,referencia_interna,observacion,usuario_id,fecha_creacion) VALUES (:empresa_id,:proveedor_id,:tipo_documento,:numero_documento,:fecha_documento,:referencia_interna,:observacion,:usuario_id,NOW())');
+            $stmtCab = $this->db->prepare('INSERT INTO recepciones_inventario (empresa_id,proveedor_id,orden_compra_id,tipo_documento,numero_documento,fecha_documento,referencia_interna,observacion,usuario_id,fecha_creacion) VALUES (:empresa_id,:proveedor_id,:orden_compra_id,:tipo_documento,:numero_documento,:fecha_documento,:referencia_interna,:observacion,:usuario_id,NOW())');
             $stmtCab->execute($cabecera);
             $recepcionId = (int) $this->db->lastInsertId();
 
@@ -109,6 +109,10 @@ class Inventario extends Modelo
             }
 
             $this->db->commit();
+
+            if (!empty($cabecera['orden_compra_id'])) {
+                $this->actualizarEstadoOrdenCompra((int) $cabecera['empresa_id'], (int) $cabecera['orden_compra_id']);
+            }
             return $recepcionId;
         } catch (Throwable $e) {
             if ($this->db->inTransaction()) {
@@ -276,5 +280,101 @@ class Inventario extends Modelo
         $stmt = $this->db->prepare('SELECT valor FROM configuraciones_empresa WHERE empresa_id=:empresa_id AND clave = "inventario_permitir_stock_negativo" LIMIT 1');
         $stmt->execute(['empresa_id' => $empresaId]);
         return ((string) $stmt->fetchColumn()) === '1';
+    }
+
+    public function listarOrdenesCompra(int $empresaId): array
+    {
+        $stmt = $this->db->prepare('SELECT o.*, p.nombre AS proveedor_nombre, u.nombre AS usuario_nombre
+            FROM ordenes_compra o
+            LEFT JOIN proveedores_inventario p ON p.id = o.proveedor_id
+            LEFT JOIN usuarios u ON u.id = o.usuario_id
+            WHERE o.empresa_id = :empresa_id
+            ORDER BY o.id DESC LIMIT 300');
+        $stmt->execute(['empresa_id' => $empresaId]);
+        return $stmt->fetchAll();
+    }
+
+    public function siguienteNumeroOrdenCompra(int $empresaId): string
+    {
+        $stmt = $this->db->prepare('SELECT COUNT(*) AS total FROM ordenes_compra WHERE empresa_id = :empresa_id');
+        $stmt->execute(['empresa_id' => $empresaId]);
+        $n = (int) ($stmt->fetch()['total'] ?? 0) + 1;
+        return 'OC-' . str_pad((string) $empresaId, 3, '0', STR_PAD_LEFT) . '-' . str_pad((string) $n, 6, '0', STR_PAD_LEFT);
+    }
+
+    public function crearOrdenCompra(array $cabecera, array $detalles): int
+    {
+        $this->db->beginTransaction();
+        try {
+            $stmtCab = $this->db->prepare('INSERT INTO ordenes_compra (empresa_id,proveedor_id,numero,fecha_emision,fecha_entrega_estimada,estado,referencia,observacion,usuario_id,fecha_creacion) VALUES (:empresa_id,:proveedor_id,:numero,:fecha_emision,:fecha_entrega_estimada,:estado,:referencia,:observacion,:usuario_id,NOW())');
+            $stmtCab->execute($cabecera);
+            $ordenId = (int) $this->db->lastInsertId();
+
+            $stmtDet = $this->db->prepare('INSERT INTO ordenes_compra_detalle (orden_compra_id,producto_id,cantidad,costo_unitario,subtotal,fecha_creacion) VALUES (:orden_compra_id,:producto_id,:cantidad,:costo_unitario,:subtotal,NOW())');
+            foreach ($detalles as $detalle) {
+                $stmtDet->execute([
+                    'orden_compra_id' => $ordenId,
+                    'producto_id' => $detalle['producto_id'],
+                    'cantidad' => $detalle['cantidad'],
+                    'costo_unitario' => $detalle['costo_unitario'],
+                    'subtotal' => $detalle['subtotal'],
+                ]);
+            }
+
+            $this->db->commit();
+            return $ordenId;
+        } catch (Throwable $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            throw $e;
+        }
+    }
+
+    public function obtenerOrdenCompra(int $empresaId, int $id): ?array
+    {
+        $stmt = $this->db->prepare('SELECT o.*, p.nombre AS proveedor_nombre, u.nombre AS usuario_nombre
+            FROM ordenes_compra o
+            LEFT JOIN proveedores_inventario p ON p.id = o.proveedor_id
+            LEFT JOIN usuarios u ON u.id = o.usuario_id
+            WHERE o.empresa_id=:empresa_id AND o.id=:id LIMIT 1');
+        $stmt->execute(['empresa_id' => $empresaId, 'id' => $id]);
+        $orden = $stmt->fetch();
+        if (!$orden) {
+            return null;
+        }
+
+        $stmtDet = $this->db->prepare('SELECT d.*, pr.codigo, pr.nombre
+            FROM ordenes_compra_detalle d
+            INNER JOIN productos pr ON pr.id = d.producto_id
+            WHERE d.orden_compra_id=:orden_compra_id ORDER BY d.id ASC');
+        $stmtDet->execute(['orden_compra_id' => $id]);
+        $orden['detalles'] = $stmtDet->fetchAll();
+
+        return $orden;
+    }
+
+    public function actualizarEstadoOrdenCompra(int $empresaId, int $ordenCompraId): void
+    {
+        $stmtTot = $this->db->prepare('SELECT COALESCE(SUM(cantidad),0) AS solicitado FROM ordenes_compra_detalle WHERE orden_compra_id = :orden_compra_id');
+        $stmtTot->execute(['orden_compra_id' => $ordenCompraId]);
+        $solicitado = (float) ($stmtTot->fetch()['solicitado'] ?? 0);
+
+        $stmtRec = $this->db->prepare('SELECT COALESCE(SUM(rd.cantidad),0) AS recibido
+            FROM recepciones_inventario r
+            INNER JOIN recepciones_inventario_detalle rd ON rd.recepcion_id = r.id
+            WHERE r.empresa_id = :empresa_id AND r.orden_compra_id = :orden_compra_id');
+        $stmtRec->execute(['empresa_id' => $empresaId, 'orden_compra_id' => $ordenCompraId]);
+        $recibido = (float) ($stmtRec->fetch()['recibido'] ?? 0);
+
+        $estado = 'emitida';
+        if ($recibido > 0 && $recibido < $solicitado) {
+            $estado = 'parcial';
+        } elseif ($solicitado > 0 && $recibido >= $solicitado) {
+            $estado = 'recibida';
+        }
+
+        $this->db->prepare('UPDATE ordenes_compra SET estado = :estado, fecha_actualizacion = NOW() WHERE empresa_id = :empresa_id AND id = :id')
+            ->execute(['estado' => $estado, 'empresa_id' => $empresaId, 'id' => $ordenCompraId]);
     }
 }

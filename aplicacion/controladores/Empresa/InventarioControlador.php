@@ -48,12 +48,14 @@ class InventarioControlador extends Controlador
         $this->validarPermiso('inventario_ver_recepciones');
         $empresaId = (int) empresa_actual_id();
         $inventario = new Inventario();
+        $ordenCompraId = (int) ($_GET['orden_compra_id'] ?? 0);
 
         $recepciones = $inventario->listarRecepciones($empresaId);
         $proveedores = $inventario->listarProveedores($empresaId);
         $productos = $inventario->listarProductos($empresaId);
+        $ordenCompraSeleccionada = $ordenCompraId > 0 ? $inventario->obtenerOrdenCompra($empresaId, $ordenCompraId) : null;
 
-        $this->vista('empresa/inventario/recepciones', compact('recepciones', 'proveedores', 'productos'), 'empresa');
+        $this->vista('empresa/inventario/recepciones', compact('recepciones', 'proveedores', 'productos', 'ordenCompraSeleccionada'), 'empresa');
     }
 
     public function guardarRecepcion(): void
@@ -111,6 +113,7 @@ class InventarioControlador extends Controlador
             $inventario->crearRecepcion([
                 'empresa_id' => $empresaId,
                 'proveedor_id' => $proveedorId > 0 ? $proveedorId : null,
+                'orden_compra_id' => (int) ($_POST['orden_compra_id'] ?? 0) ?: null,
                 'tipo_documento' => $tipoDocumento,
                 'numero_documento' => trim((string) ($_POST['numero_documento'] ?? '')),
                 'fecha_documento' => trim((string) ($_POST['fecha_documento'] ?? date('Y-m-d'))),
@@ -268,5 +271,95 @@ class InventarioControlador extends Controlador
         $productos = $inventario->listarProductos($empresaId);
 
         $this->vista('empresa/inventario/movimientos', compact('movimientos', 'productos', 'productoId'), 'empresa');
+    }
+
+    public function ordenesCompra(): void
+    {
+        $this->validarPermiso('inventario_ver_recepciones');
+        $empresaId = (int) empresa_actual_id();
+        $inventario = new Inventario();
+        $ordenes = $inventario->listarOrdenesCompra($empresaId);
+        $proveedores = $inventario->listarProveedores($empresaId);
+        $productos = $inventario->listarProductos($empresaId);
+        $siguienteNumero = $inventario->siguienteNumeroOrdenCompra($empresaId);
+
+        $this->vista('empresa/inventario/ordenes_compra', compact('ordenes', 'proveedores', 'productos', 'siguienteNumero'), 'empresa');
+    }
+
+    public function guardarOrdenCompra(): void
+    {
+        $this->validarPermiso('inventario_crear_recepciones');
+        validar_csrf();
+        $empresaId = (int) empresa_actual_id();
+        $inventario = new Inventario();
+        $usuario = usuario_actual();
+
+        $productoIds = $_POST['producto_id'] ?? [];
+        $cantidades = $_POST['cantidad'] ?? [];
+        $costos = $_POST['costo_unitario'] ?? [];
+        $detalles = [];
+        foreach ((array) $productoIds as $idx => $productoId) {
+            $pid = (int) $productoId;
+            $cantidad = (float) ($cantidades[$idx] ?? 0);
+            if ($pid <= 0 || $cantidad <= 0) {
+                continue;
+            }
+            $costo = (float) ($costos[$idx] ?? 0);
+            $detalles[] = [
+                'producto_id' => $pid,
+                'cantidad' => $cantidad,
+                'costo_unitario' => $costo,
+                'subtotal' => $cantidad * $costo,
+            ];
+        }
+
+        if ($detalles === []) {
+            flash('danger', 'La orden de compra debe incluir al menos un producto con cantidad.');
+            $this->redirigir('/app/inventario/ordenes-compra');
+        }
+
+        $proveedorId = (int) ($_POST['proveedor_id'] ?? 0);
+        if ($proveedorId <= 0) {
+            flash('danger', 'Debes seleccionar un proveedor para la orden de compra.');
+            $this->redirigir('/app/inventario/ordenes-compra');
+        }
+
+        $numero = trim((string) ($_POST['numero'] ?? ''));
+        if ($numero === '') {
+            $numero = $inventario->siguienteNumeroOrdenCompra($empresaId);
+        }
+
+        try {
+            $ordenId = $inventario->crearOrdenCompra([
+                'empresa_id' => $empresaId,
+                'proveedor_id' => $proveedorId,
+                'numero' => $numero,
+                'fecha_emision' => trim((string) ($_POST['fecha_emision'] ?? date('Y-m-d'))),
+                'fecha_entrega_estimada' => trim((string) ($_POST['fecha_entrega_estimada'] ?? date('Y-m-d', strtotime('+7 days')))),
+                'estado' => 'emitida',
+                'referencia' => trim((string) ($_POST['referencia'] ?? '')),
+                'observacion' => trim((string) ($_POST['observacion'] ?? '')),
+                'usuario_id' => (int) ($usuario['id'] ?? 0),
+            ], $detalles);
+
+            flash('success', 'Orden de compra creada correctamente.');
+            $this->redirigir('/app/inventario/ordenes-compra/ver/' . $ordenId);
+        } catch (Throwable $e) {
+            flash('danger', 'No fue posible crear la orden de compra: ' . $e->getMessage());
+            $this->redirigir('/app/inventario/ordenes-compra');
+        }
+    }
+
+    public function verOrdenCompra(int $id): void
+    {
+        $this->validarPermiso('inventario_ver_recepciones');
+        $empresaId = (int) empresa_actual_id();
+        $orden = (new Inventario())->obtenerOrdenCompra($empresaId, $id);
+        if (!$orden) {
+            http_response_code(404);
+            exit('Orden de compra no encontrada.');
+        }
+
+        $this->vista('empresa/inventario/orden_compra_ver', compact('orden'), 'empresa');
     }
 }
