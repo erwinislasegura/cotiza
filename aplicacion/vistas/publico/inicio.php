@@ -2,25 +2,25 @@
     <div class="container">
         <div class="row align-items-center g-4">
             <div class="col-lg-7">
-                <span class="badge bg-info-subtle text-info-emphasis mb-2">Software de cotizaciones para empresas</span>
-                <h1 class="display-6 fw-bold">El sistema de cotizaciones que te ayuda a vender más, con orden y sin depender de Excel</h1>
-                <p class="lead text-secondary">Cotiza en minutos, controla tu proceso comercial y da seguimiento real a cada oportunidad desde una sola plataforma en la nube.</p>
+                <span class="badge bg-info-subtle text-info-emphasis mb-2">Sistema de gestión comercial con POS + inventario</span>
+                <h1 class="display-6 fw-bold">No es solo para cotizar: es para vender más, trabajar con orden y decidir con datos reales</h1>
+                <p class="lead text-secondary">Centraliza cotizaciones, ventas e inventario en un solo sistema para evitar errores, mejorar el control diario y crecer con una operación profesional.</p>
                 <div class="d-flex flex-wrap gap-2">
-                    <a href="<?= e(url('/planes')) ?>" class="btn btn-primary btn-sm">Ver planes</a>
-                    <a href="<?= e(url('/registro')) ?>" class="btn btn-outline-primary btn-sm">Crear cuenta</a>
-                    <a href="<?= e(url('/contacto')) ?>" class="btn btn-outline-secondary btn-sm">Solicitar una demo</a>
+                    <a href="#planes" class="btn btn-primary btn-sm">Ver planes</a>
+                    <a href="<?= e(url('/registro')) ?>" class="btn btn-outline-primary btn-sm">Comenzar ahora</a>
+                    <a href="<?= e(url('/contacto')) ?>" class="btn btn-outline-secondary btn-sm">Hablar con ventas</a>
                 </div>
-                <p class="small text-secondary mt-3 mb-0">Ideal para equipos comerciales, pymes y empresas que buscan cotizaciones profesionales, control de ventas y mejor conversión.</p>
+                <p class="small text-secondary mt-3 mb-0">Cuando cotizaciones, POS e inventario están conectados, tu negocio gana velocidad, control y claridad para crecer sin improvisar.</p>
             </div>
             <div class="col-lg-5">
-                <div class="card card-soft">
+                <div class="card card-soft h-100">
                     <div class="card-body">
-                        <h2 class="h6">Resultados que valoran nuestros clientes</h2>
-                        <ul class="small mb-0">
-                            <li>Reducción de tiempos al crear cotizaciones</li>
-                            <li>Menos errores en precios, impuestos y totales</li>
-                            <li>Seguimiento claro por estado: enviada, aceptada o rechazada</li>
-                            <li>Proceso comercial más ordenado para toda la empresa</li>
+                        <h2 class="h6 mb-3">Impacto operativo en el día a día</h2>
+                        <ul class="small mb-0 ps-3 d-grid gap-2">
+                            <li>Sin control de stock pierdes ventas y credibilidad frente al cliente.</li>
+                            <li>Sin sistema aumentan errores en precios, productos y procesos.</li>
+                            <li>Sin seguimiento comercial se enfrían oportunidades y se pierden cierres.</li>
+                            <li>Sin datos no puedes detectar qué vender más, ni dónde ajustar.</li>
                         </ul>
                     </div>
                 </div>
@@ -29,40 +29,113 @@
     </div>
 </section>
 
-<section class="py-5">
+<section id="planes" class="py-5 bg-white border-bottom">
     <div class="container">
-        <h2 class="h4 mb-3">Una herramienta comercial hecha para trabajar mejor</h2>
-        <p class="text-secondary mb-4">Este programa para hacer cotizaciones combina velocidad, control y profesionalismo. Te permite centralizar clientes, productos y vendedores para que tu empresa tenga un sistema de ventas más predecible y fácil de administrar.</p>
-        <div class="row g-3 small">
-            <div class="col-md-4"><div class="card h-100"><div class="card-body"><strong>Más productividad</strong><p class="mb-0">Crea cotizaciones en pocos pasos y reutiliza información de clientes y productos sin repetir tareas.</p></div></div></div>
-            <div class="col-md-4"><div class="card h-100"><div class="card-body"><strong>Control de cotizaciones</strong><p class="mb-0">Visualiza vencimientos, estados y oportunidades activas para tomar decisiones comerciales con datos.</p></div></div></div>
-            <div class="col-md-4"><div class="card h-100"><div class="card-body"><strong>Imagen profesional</strong><p class="mb-0">Entrega propuestas claras y ordenadas que aumentan la confianza del cliente y mejoran tus cierres.</p></div></div></div>
+        <div class="text-center mb-4">
+            <h2 class="h3 mb-2">Planes diseñados por nivel de control y gestión</h2>
+            <p class="text-secondary mb-0">Todos incluyen cotizaciones, inventario y punto de venta. La diferencia está en cuánto control tienes para crecer.</p>
         </div>
-    </div>
-</section>
-
-
-<section class="py-5 bg-white border-top border-bottom">
-    <div class="container">
-        <div class="row g-4">
-            <div class="col-lg-6">
-                <h2 class="h4 mb-2">Comparación operativa: sin sistema vs con CotizaPro</h2>
-                <p class="text-secondary small mb-3">Visualiza una diferencia más clara en tiempos, errores y productividad comercial usando un sistema de cotizaciones profesional.</p>
-                <div class="card chart-card">
-                    <div class="card-body">
-                        <canvas id="graficoComparativoInicio" height="220"></canvas>
+        <div class="row g-3 align-items-stretch">
+            <div class="col-12 col-lg-4">
+                <div class="card h-100 border-2">
+                    <div class="card-body d-flex flex-column">
+                        <h3 class="h5">Básico</h3>
+                        <p class="text-secondary small">Comienza a ordenar tu negocio.</p>
+                        <div class="h3 mb-0">$15.000 <small class="fs-6">/ mensual</small></div>
+                        <p class="small text-secondary">10% descuento anual</p>
+                        <ul class="small ps-3 d-grid gap-1">
+                            <li>Gestión de clientes, productos y servicios</li>
+                            <li>Cotizaciones + PDF + envío</li>
+                            <li>Punto de venta (ventas simples)</li>
+                            <li>Control básico de inventario</li>
+                            <li>Registro de ventas</li>
+                        </ul>
+                        <p class="small mb-2"><strong>Limitado para crecer:</strong> sin seguimiento comercial, sin reportes avanzados, sin análisis de ventas, sin automatizaciones y sin control de equipo.</p>
+                        <div class="d-grid gap-2 mt-auto">
+                            <a href="<?= e(url('/registro')) ?>" class="btn btn-outline-primary btn-sm">Comenzar ahora</a>
+                            <a href="<?= e(url('/contratar/plan-inicial')) ?>" class="btn btn-primary btn-sm">Contratar</a>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6">
-                <h2 class="h4 mb-2">Evolución de ganancias tras implementar el sistema</h2>
-                <p class="text-secondary small mb-3">Ejemplo realista de crecimiento acumulado cuando la empresa ordena su proceso de ventas y responde más rápido.</p>
-                <div class="card chart-card">
-                    <div class="card-body">
-                        <canvas id="graficoGananciasInicio" height="220"></canvas>
+            <div class="col-12 col-lg-4">
+                <div class="card h-100 border-primary border-3 shadow">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+                            <span class="badge text-bg-primary">RECOMENDADO</span>
+                            <span class="badge text-bg-success">MÁS ELEGIDO</span>
+                        </div>
+                        <h3 class="h5">Profesional</h3>
+                        <p class="text-secondary small">Aquí es donde tu negocio empieza a funcionar de verdad.</p>
+                        <div class="h3 mb-0">$26.000 <small class="fs-6">/ mensual</small></div>
+                        <p class="small text-secondary">10% descuento anual</p>
+                        <ul class="small ps-3 d-grid gap-1">
+                            <li>Todo lo del plan Básico</li>
+                            <li>Inventario completo y control de stock real</li>
+                            <li>Alertas de stock, recepciones y ajustes</li>
+                            <li>Seguimiento comercial y gestión de vendedores</li>
+                            <li>Reportes de ventas e historial completo</li>
+                            <li>Mayor control del negocio para crecer con orden</li>
+                        </ul>
+                        <p class="small mb-2"><strong>Mejor relación valor/control:</strong> por una diferencia menor frente al básico, obtienes el nivel de gestión que evita pérdidas por desorden.</p>
+                        <div class="d-grid gap-2 mt-auto">
+                            <a href="<?= e(url('/registro')) ?>" class="btn btn-primary btn-sm">Comenzar ahora</a>
+                            <a href="<?= e(url('/contratar/plan-profesional')) ?>" class="btn btn-dark btn-sm">Contratar</a>
+                        </div>
                     </div>
                 </div>
-                <p class="small text-secondary mt-2 mb-0">Escenario de referencia: mejora acumulada de hasta <strong>+42%</strong> en 6 meses.</p>
+            </div>
+            <div class="col-12 col-lg-4">
+                <div class="card h-100 border-2">
+                    <div class="card-body d-flex flex-column">
+                        <h3 class="h5">Empresa / Premium</h3>
+                        <p class="text-secondary small">Control total para empresas que necesitan crecer sin perder el control.</p>
+                        <div class="h3 mb-0">$55.000 <small class="fs-6">/ mensual</small></div>
+                        <p class="small text-secondary">15% descuento anual</p>
+                        <ul class="small ps-3 d-grid gap-1">
+                            <li>Todo lo del plan Profesional</li>
+                            <li>POS completo con control de caja</li>
+                            <li>Apertura y cierre de caja</li>
+                            <li>Inventario avanzado y órdenes de compra</li>
+                            <li>Gestión comercial completa y reportes avanzados</li>
+                            <li>Control multiusuario, configuración avanzada y automatizaciones</li>
+                        </ul>
+                        <div class="d-grid gap-2 mt-auto">
+                            <a href="<?= e(url('/registro')) ?>" class="btn btn-outline-primary btn-sm">Comenzar ahora</a>
+                            <a href="<?= e(url('/contratar/plan-corporativo')) ?>" class="btn btn-primary btn-sm">Contratar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p class="small text-secondary mt-3 mb-0 text-center">Si buscas crecer, controlar stock y tomar decisiones con datos, el plan Profesional suele ser la decisión más rentable.</p>
+    </div>
+</section>
+
+<section class="py-5 border-bottom">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-12 col-lg-6">
+                <h2 class="h4 mb-2">Impacto operativo: sin sistema vs con sistema</h2>
+                <p class="small text-secondary mb-3">Referencia realista sobre tiempos, errores y cierres cuando se integra cotización + POS + inventario.</p>
+                <div class="card">
+                    <div class="card-body">
+                        <div style="position: relative; height: 260px;">
+                            <canvas id="graficoComparativoLanding"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-6">
+                <h2 class="h4 mb-2">Evolución de control comercial e inventario</h2>
+                <p class="small text-secondary mb-3">Al operar con datos en tiempo real, el negocio sostiene crecimiento con menos errores y mejor respuesta.</p>
+                <div class="card">
+                    <div class="card-body">
+                        <div style="position: relative; height: 260px;">
+                            <canvas id="graficoEvolucionLanding"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -73,160 +146,198 @@
 (() => {
     if (typeof Chart === 'undefined') return;
 
-    const esMovil = window.innerWidth < 768;
+    const mobile = window.innerWidth < 768;
 
-    const comparativo = document.getElementById('graficoComparativoInicio');
+    const comparativo = document.getElementById('graficoComparativoLanding');
     if (comparativo) {
         new Chart(comparativo, {
             type: 'bar',
             data: {
-                labels: ['Tiempo por cotización (min)', 'Errores en cotizaciones (%)', 'Cierres mensuales'],
+                labels: ['Tiempo por venta (min)', 'Errores operativos (%)', 'Cierres mensuales'],
                 datasets: [
-                    { label: 'Sin sistema', data: [52, 18, 12], backgroundColor: '#8fa0b5', borderRadius: 8 },
-                    { label: 'Con CotizaPro', data: [14, 3, 29], backgroundColor: '#0d6efd', borderRadius: 8 }
+                    { label: 'Sin sistema', data: [28, 19, 15], backgroundColor: '#9aa9bc', borderRadius: 8 },
+                    { label: 'Con sistema', data: [11, 5, 31], backgroundColor: '#0d6efd', borderRadius: 8 }
                 ]
             },
             options: {
-                indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { position: esMovil ? 'top' : 'bottom', labels: { boxWidth: 10, font: { size: esMovil ? 10 : 12 } } } },
-                scales: { x: { beginAtZero: true, grid: { color: '#edf1f7' }, ticks: { font: { size: esMovil ? 10 : 12 } } }, y: { ticks: { font: { size: esMovil ? 10 : 12 } } } }
+                resizeDelay: 150,
+                plugins: {
+                    legend: {
+                        position: mobile ? 'top' : 'bottom',
+                        labels: { boxWidth: 10, font: { size: mobile ? 10 : 12 } }
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { font: { size: mobile ? 10 : 12 } } },
+                    x: { ticks: { font: { size: mobile ? 10 : 12 } } }
+                }
             }
         });
     }
 
-    const ganancias = document.getElementById('graficoGananciasInicio');
-    if (ganancias) {
-        new Chart(ganancias, {
+    const evolucion = document.getElementById('graficoEvolucionLanding');
+    if (evolucion) {
+        new Chart(evolucion, {
             type: 'line',
             data: {
                 labels: ['Mes 1', 'Mes 2', 'Mes 3', 'Mes 4', 'Mes 5', 'Mes 6'],
                 datasets: [{
-                    label: 'Incremento acumulado de ganancias (%)',
-                    data: [4, 11, 18, 26, 34, 42],
+                    label: 'Mejora acumulada de control y eficiencia (%)',
+                    data: [6, 12, 19, 27, 34, 41],
                     fill: true,
                     tension: 0.35,
-                    borderColor: '#0d6efd',
-                    backgroundColor: 'rgba(13,110,253,.15)',
-                    pointBackgroundColor: '#0d6efd',
-                    pointRadius: esMovil ? 3 : 4
+                    borderColor: '#198754',
+                    backgroundColor: 'rgba(25,135,84,.15)',
+                    pointRadius: mobile ? 2 : 4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { position: esMovil ? 'top' : 'bottom', labels: { boxWidth: 10, font: { size: esMovil ? 10 : 12 } } } },
-                scales: { y: { beginAtZero: true, ticks: { callback: (v) => v + '%', font: { size: esMovil ? 10 : 12 } }, grid: { color: '#edf1f7' } }, x: { ticks: { font: { size: esMovil ? 10 : 12 } } } }
+                resizeDelay: 150,
+                plugins: {
+                    legend: {
+                        position: mobile ? 'top' : 'bottom',
+                        labels: { boxWidth: 10, font: { size: mobile ? 10 : 12 } }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { callback: (v) => v + '%', font: { size: mobile ? 10 : 12 } }
+                    },
+                    x: { ticks: { font: { size: mobile ? 10 : 12 } } }
+                }
             }
         });
     }
 })();
 </script>
 
-<section class="py-5 bg-white border-top border-bottom">
+<section class="py-5 border-bottom">
     <div class="container">
-        <h2 class="h4 mb-3">¿Cómo funciona el sistema de cotizaciones?</h2>
-        <div class="row g-3 small">
-            <div class="col-md-3"><div class="card h-100"><div class="card-body"><strong>1. Configura tu empresa</strong><p class="mb-0">Carga tus datos, define usuarios y deja tu cuenta lista en poco tiempo.</p></div></div></div>
-            <div class="col-md-3"><div class="card h-100"><div class="card-body"><strong>2. Registra catálogo y clientes</strong><p class="mb-0">Agrega productos, servicios y cartera comercial para cotizar con rapidez.</p></div></div></div>
-            <div class="col-md-3"><div class="card h-100"><div class="card-body"><strong>3. Genera y envía cotizaciones</strong><p class="mb-0">Calcula totales automáticamente y comparte propuestas por correo o PDF.</p></div></div></div>
-            <div class="col-md-3"><div class="card h-100"><div class="card-body"><strong>4. Da seguimiento y cierra ventas</strong><p class="mb-0">Controla qué cotizaciones avanzan y enfoca al equipo en oportunidades reales.</p></div></div></div>
-        </div>
-    </div>
-</section>
-
-<section class="py-5">
-    <div class="container">
-        <h2 class="h4 mb-3">Sección técnica simple</h2>
-        <div class="row g-3 small">
-            <div class="col-md-6"><div class="card h-100"><div class="card-body"><strong>Acceso en la nube</strong><p class="mb-0">Funciona desde navegador, sin instalaciones complejas. Puedes usar el sistema desde oficina, casa o visita comercial.</p></div></div></div>
-            <div class="col-md-6"><div class="card h-100"><div class="card-body"><strong>Arquitectura multiempresa</strong><p class="mb-0">Cada empresa gestiona su información de forma organizada, con usuarios y permisos para un trabajo seguro y estructurado.</p></div></div></div>
-            <div class="col-md-6"><div class="card h-100"><div class="card-body"><strong>Automatización comercial</strong><p class="mb-0">El software de cotizaciones calcula subtotales, impuestos y totales para reducir errores y acelerar respuestas al cliente.</p></div></div></div>
-            <div class="col-md-6"><div class="card h-100"><div class="card-body"><strong>Escalable para crecimiento</strong><p class="mb-0">Puedes empezar con operación pequeña y ampliar el uso conforme tu empresa crece en clientes, productos y equipo de ventas.</p></div></div></div>
-        </div>
-    </div>
-</section>
-
-<section class="py-5 border-top">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="h4 mb-0">Planes y precios</h2>
-            <a href="<?= e(url('/planes')) ?>" class="btn btn-outline-primary btn-sm">Comparar planes</a>
-        </div>
-        <p class="text-secondary small">Elige el plan que mejor se adapte a tu etapa comercial. Puedes iniciar rápido y escalar cuando tu operación lo necesite.</p>
-        <div class="row g-3 mt-1">
-            <?php foreach ($planes as $plan): ?>
-                <div class="col-md-4">
-                    <div class="card h-100 border-2" style="border-color: <?= e($plan['color_visual']) ?> !important;">
-                        <div class="card-body">
-                            <h3 class="h5"><?= e($plan['nombre']) ?></h3>
-                            <p class="small text-secondary"><?= e($plan['resumen_comercial']) ?></p>
-                            <div class="h4">$<?= number_format((float)$plan['precio_mensual'], 2) ?><small class="fs-6">/mes</small></div>
-                            <a class="btn btn-primary btn-sm w-100" href="<?= e(url('/contratar/' . $plan['slug'])) ?>">Contratar plan</a>
-                        </div>
+        <div class="row g-4">
+            <div class="col-12 col-lg-6">
+                <h2 class="h4 mb-3">Qué pasa cuando NO tienes un sistema</h2>
+                <div class="card h-100 border-danger-subtle">
+                    <div class="card-body">
+                        <ul class="mb-0 small ps-3 d-grid gap-2">
+                            <li>Pierdes ventas por no saber qué tienes disponible en stock.</li>
+                            <li>No sabes cuánto ganas realmente por producto, vendedor o período.</li>
+                            <li>Vendes sin inventario actualizado y luego debes resolver reclamos.</li>
+                            <li>Trabajas desordenado con múltiples planillas, chats y notas sueltas.</li>
+                            <li>Dependes de Excel para tareas críticas que requieren control en tiempo real.</li>
+                        </ul>
                     </div>
                 </div>
-            <?php endforeach; ?>
+            </div>
+            <div class="col-12 col-lg-6">
+                <h2 class="h4 mb-3">Qué cambia cuando usas este sistema</h2>
+                <div class="card h-100 border-success-subtle">
+                    <div class="card-body">
+                        <ul class="mb-0 small ps-3 d-grid gap-2">
+                            <li>Ves ventas en tiempo real y tomas decisiones con información confiable.</li>
+                            <li>Reduces errores humanos al automatizar cálculo, registro y seguimiento.</li>
+                            <li>Controlas inventario y evitas vender productos sin disponibilidad.</li>
+                            <li>Ordenas el trabajo comercial para responder más rápido y cerrar mejor.</li>
+                            <li>Mejoras la experiencia del cliente con procesos claros y profesionales.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
 
-<?php
-$faqDestacadas = [
-    ['q' => '¿Qué es un sistema de cotizaciones?', 'a' => 'Es un software que te permite crear, ordenar y enviar cotizaciones profesionales desde un solo lugar. Así tu empresa trabaja con más control y menos errores.'],
-    ['q' => '¿Para qué sirve un sistema de cotizaciones?', 'a' => 'Sirve para acelerar la respuesta comercial, mantener trazabilidad por estado y mejorar la organización de ventas. En la práctica, te ayuda a cerrar más oportunidades.'],
-    ['q' => '¿Por qué usar un sistema en lugar de Excel?', 'a' => 'Excel se queda corto cuando crecen clientes y vendedores. Un sistema de cotizaciones automatiza cálculos, evita duplicados y centraliza toda la gestión comercial.'],
-    ['q' => '¿Cómo ayuda este sistema a vender más?', 'a' => 'Te ayuda a cotizar más rápido, hacer seguimiento oportuno y presentar propuestas claras. Ese orden comercial mejora tu tasa de respuesta y tus cierres de ventas.'],
-];
-?>
-
-<section class="py-5 bg-white border-top border-bottom">
+<section class="py-5 bg-white border-bottom">
     <div class="container">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-            <h2 class="h4 mb-0">Preguntas frecuentes clave</h2>
-            <a href="<?= e(url('/preguntas-frecuentes')) ?>" class="btn btn-outline-primary btn-sm">Ver todas las preguntas</a>
+        <h2 class="h4 mb-3">Beneficios reales para el negocio</h2>
+        <p class="text-secondary mb-4">Este sistema está diseñado para operar mejor cada día: vender más, evitar errores y mantener control comercial e inventario sin perder tiempo.</p>
+        <div class="row g-3 small">
+            <div class="col-12 col-md-6 col-lg-4"><div class="card h-100"><div class="card-body"><strong>Control en tiempo real</strong><p class="mb-0">Consulta ventas, stock y movimiento comercial sin esperar cierres manuales.</p></div></div></div>
+            <div class="col-12 col-md-6 col-lg-4"><div class="card h-100"><div class="card-body"><strong>Menos errores</strong><p class="mb-0">Estandariza procesos para evitar fallas de carga, cálculos y duplicidades.</p></div></div></div>
+            <div class="col-12 col-md-6 col-lg-4"><div class="card h-100"><div class="card-body"><strong>Más velocidad de venta</strong><p class="mb-0">Cotiza, cobra y registra más rápido para atender más oportunidades.</p></div></div></div>
+            <div class="col-12 col-md-6 col-lg-4"><div class="card h-100"><div class="card-body"><strong>Mejor imagen frente al cliente</strong><p class="mb-0">Proyecta una operación profesional con documentos y respuestas consistentes.</p></div></div></div>
+            <div class="col-12 col-md-6 col-lg-4"><div class="card h-100"><div class="card-body"><strong>Mejor organización</strong><p class="mb-0">Cada área trabaja con la misma información y un flujo comercial claro.</p></div></div></div>
+            <div class="col-12 col-md-6 col-lg-4"><div class="card h-100"><div class="card-body"><strong>Más ventas con control</strong><p class="mb-0">Al combinar seguimiento + stock + reportes, mejoras conversión y rentabilidad.</p></div></div></div>
         </div>
-        <p class="text-secondary small mb-4">Estas son las 4 dudas más importantes antes de contratar un plan. Si quieres el detalle completo, revisa la sección de preguntas frecuentes.</p>
-        <div class="accordion" id="faq-home">
-            <?php foreach ($faqDestacadas as $indice => $faq): ?>
-                <?php
-                    $faqId = 'faq-home-' . ($indice + 1);
-                    $faqHeading = 'faq-home-heading-' . ($indice + 1);
-                    $expandido = $indice === 0;
-                ?>
-                <div class="accordion-item">
-                    <h3 class="accordion-header" id="<?= e($faqHeading) ?>">
-                        <button class="accordion-button <?= $expandido ? '' : 'collapsed' ?>" type="button" data-bs-toggle="collapse" data-bs-target="#<?= e($faqId) ?>" aria-expanded="<?= $expandido ? 'true' : 'false' ?>" aria-controls="<?= e($faqId) ?>">
-                            <?= e($faq['q']) ?>
-                        </button>
-                    </h3>
-                    <div id="<?= e($faqId) ?>" class="accordion-collapse collapse <?= $expandido ? 'show' : '' ?>" aria-labelledby="<?= e($faqHeading) ?>" data-bs-parent="#faq-home">
-                        <div class="accordion-body small text-secondary">
-                            <?= e($faq['a']) ?>
-                        </div>
+    </div>
+</section>
+
+<section class="py-5 border-bottom">
+    <div class="container">
+        <div class="row g-4 align-items-center">
+            <div class="col-12 col-lg-7">
+                <h2 class="h4 mb-3">POS + inventario integrados: la base para operar con orden</h2>
+                <p class="text-secondary">Aquí no gestionas ventas y stock por separado. Cada venta impacta inventario automáticamente para que siempre sepas qué tienes, qué falta y qué debes reponer.</p>
+                <div class="row g-3 small mt-1">
+                    <div class="col-12 col-sm-6"><div class="card h-100"><div class="card-body"><strong>Ventas conectadas al stock</strong><p class="mb-0">Cada transacción descuenta inventario y actualiza disponibilidad real.</p></div></div></div>
+                    <div class="col-12 col-sm-6"><div class="card h-100"><div class="card-body"><strong>Evita quiebres y sobreventas</strong><p class="mb-0">No prometes productos sin existencia, protegiendo margen y confianza.</p></div></div></div>
+                    <div class="col-12 col-sm-6"><div class="card h-100"><div class="card-body"><strong>Decisiones con datos</strong><p class="mb-0">Identifica rotación, productos críticos y oportunidades de mejora.</p></div></div></div>
+                    <div class="col-12 col-sm-6"><div class="card h-100"><div class="card-body"><strong>Operación más eficiente</strong><p class="mb-0">Menos tareas manuales y más tiempo para vender y atender clientes.</p></div></div></div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-5">
+                <div class="card bg-light border-0 h-100">
+                    <div class="card-body">
+                        <h3 class="h6">Mensaje central</h3>
+                        <p class="small mb-0">Este sistema no es solo para cotizar. Es una herramienta de trabajo para vender más, evitar errores, controlar inventario, ordenar el negocio y tomar decisiones con datos reales.</p>
                     </div>
                 </div>
-            <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 border-bottom">
+    <div class="container">
+        <h2 class="h4 mb-3">Tabla comparativa de funcionalidades</h2>
+        <p class="text-secondary small">Compara el avance por nivel para elegir según la madurez de tu operación.</p>
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle small">
+                <thead class="table-light">
+                    <tr>
+                        <th>Funcionalidad</th>
+                        <th>Básico</th>
+                        <th>Profesional</th>
+                        <th>Empresa / Premium</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Cotizaciones</td><td>✔</td><td>✔</td><td>✔</td></tr>
+                    <tr><td>Inventario</td><td>Básico</td><td>Completo + stock real</td><td>Avanzado + compras</td></tr>
+                    <tr><td>Punto de venta</td><td>Ventas simples</td><td>Operación diaria</td><td>POS completo + caja</td></tr>
+                    <tr><td>Seguimiento comercial</td><td>—</td><td>✔</td><td>✔ Avanzado</td></tr>
+                    <tr><td>Gestión de vendedores</td><td>—</td><td>✔</td><td>✔ Multiusuario</td></tr>
+                    <tr><td>Reportes de ventas</td><td>Básico</td><td>✔</td><td>✔ Avanzado</td></tr>
+                    <tr><td>Alertas de stock</td><td>—</td><td>✔</td><td>✔</td></tr>
+                    <tr><td>Ajustes y recepciones inventario</td><td>—</td><td>✔</td><td>✔</td></tr>
+                    <tr><td>Automatizaciones</td><td>—</td><td>—</td><td>✔</td></tr>
+                    <tr><td>Precio mensual</td><td><strong>$15.000</strong></td><td><strong>$26.000</strong></td><td><strong>$55.000</strong></td></tr>
+                    <tr><td>Descuento anual</td><td>10%</td><td>10%</td><td>15%</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </section>
 
 <section class="py-5">
     <div class="container text-center">
-        <h2 class="h4">Empieza hoy con un plan y convierte tu proceso comercial en una ventaja competitiva</h2>
-        <p class="text-secondary">Da el siguiente paso hacia un proceso comercial más claro, medible y escalable para tu empresa.</p>
+        <h2 class="h4">Convierte tu operación comercial en un sistema que realmente impulsa el negocio</h2>
+        <p class="text-secondary">No se trata solo de cotizar: se trata de vender más, controlar mejor y crecer con orden.</p>
         <div class="d-flex justify-content-center gap-2 flex-wrap">
-            <a href="<?= e(url('/registro')) ?>" class="btn btn-primary btn-sm">Crear cuenta empresarial</a>
+            <a href="<?= e(url('/registro')) ?>" class="btn btn-primary btn-sm">Comenzar ahora</a>
             <a href="<?= e(url('/planes')) ?>" class="btn btn-outline-primary btn-sm">Ver planes</a>
-            <a href="<?= e(url('/contacto')) ?>" class="btn btn-outline-secondary btn-sm">Hablar con ventas</a>
+            <a href="<?= e(url('/contacto')) ?>" class="btn btn-outline-secondary btn-sm">Contratar</a>
         </div>
     </div>
 </section>
 
 <div class="d-md-none mobile-buy-bar">
-    <div class="d-flex gap-2">
-        <a href="<?= e(url('/planes')) ?>" class="btn btn-primary btn-sm">Ver planes</a>
-        <a href="<?= e(url('/contacto')) ?>" class="btn btn-outline-secondary btn-sm">Contactar</a>
+    <div class="d-flex gap-2 w-100">
+        <a href="#planes" class="btn btn-primary btn-sm flex-fill">Ver planes</a>
+        <a href="<?= e(url('/registro')) ?>" class="btn btn-outline-secondary btn-sm flex-fill">Comenzar ahora</a>
     </div>
 </div>
