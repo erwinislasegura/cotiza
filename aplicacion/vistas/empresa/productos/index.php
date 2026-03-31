@@ -38,12 +38,12 @@
     <table class="table table-hover table-sm mb-0 tabla-admin">
       <thead class="table-light">
         <tr>
-          <th>Código</th><th>SKU</th><th>Nombre</th><th>Tipo</th><th>Categoría</th><th>Precio</th><th>Stock mín.</th><th>Stock aviso</th><th>Estado</th><th class="text-end">Acciones</th>
+          <th>Código</th><th>SKU</th><th>Nombre</th><th>Tipo</th><th>Categoría</th><th>Precio</th><th>Stock actual</th><th>Stock mín.</th><th>Stock crítico</th><th>Estado stock</th><th>Estado</th><th class="text-end">Acciones</th>
         </tr>
       </thead>
       <tbody>
         <?php if (empty($productos)): ?>
-          <tr><td colspan="10" class="text-center py-4 text-muted">No hay productos registrados con este criterio.</td></tr>
+          <tr><td colspan="12" class="text-center py-4 text-muted">No hay productos registrados con este criterio.</td></tr>
         <?php else: ?>
           <?php foreach($productos as $p): ?>
             <tr>
@@ -53,8 +53,11 @@
               <td><?= e($p['tipo'] ?? 'producto') ?></td>
               <td><?= e($p['categoria'] ?? '-') ?></td>
               <td>$<?= number_format((float)$p['precio'],2) ?></td>
-              <td><?= number_format((float)($p['stock_minimo'] ?? 0), 2) ?></td>
-              <td><?= number_format((float)($p['stock_aviso'] ?? 0), 2) ?></td>
+              <?php $stockActual = (float)($p['stock_actual'] ?? 0); $stockMin = (float)($p['stock_minimo'] ?? 0); $stockCrit = (float)($p['stock_critico'] ?? $p['stock_aviso'] ?? 0); $estadoStock = $stockActual <= $stockCrit ? 'crítico' : ($stockActual <= $stockMin ? 'bajo' : 'normal'); $badgeStock = $estadoStock === 'crítico' ? 'text-bg-danger' : ($estadoStock === 'bajo' ? 'text-bg-warning' : 'text-bg-success'); ?>
+              <td><strong><?= number_format($stockActual, 2) ?></strong></td>
+              <td><?= number_format($stockMin, 2) ?></td>
+              <td><?= number_format($stockCrit, 2) ?></td>
+              <td><span class="badge <?= e($badgeStock) ?>"><?= e($estadoStock) ?></span></td>
               <td><span class="badge <?= ($p['estado'] === 'activo') ? 'badge-estado-activo' : 'badge-estado-inactivo' ?>"><?= e($p['estado']) ?></span></td>
               <td class="text-end"><div class="dropdown dropup"><button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">Acciones</button><ul class="dropdown-menu dropdown-menu-end"><li><a class="dropdown-item" href="<?= e(url('/app/productos/ver/' . $p['id'])) ?>">Ver</a></li><li><a class="dropdown-item" href="<?= e(url('/app/productos/editar/' . $p['id'])) ?>">Editar</a></li><li><form method="POST" action="<?= e(url('/app/productos/eliminar/' . $p['id'])) ?>" onsubmit="return confirm('¿Confirmas eliminar este producto?')"><?= csrf_campo() ?><button class="dropdown-item text-danger" type="submit">Eliminar</button></form></li></ul></div></td>
             </tr>
