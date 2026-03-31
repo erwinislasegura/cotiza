@@ -105,6 +105,8 @@ $enrutador->agregar('POST', '/app/aprobaciones/editar/{id}', fn($id) => (new Ges
 $enrutador->agregar('POST', '/app/aprobaciones/eliminar/{id}', fn($id) => (new GestionComercialControlador())->eliminarRegistro('aprobaciones', (int) $id), $mwEmpresa);
 $enrutador->agregar('GET', '/app/documentos', [DocumentosControlador::class, 'index'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/documentos', [DocumentosControlador::class, 'index'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/configuracion/envio-oc-html', [DocumentosControlador::class, 'ordenCompra'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/configuracion/envio-oc-html', [DocumentosControlador::class, 'ordenCompra'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/notificaciones', fn() => (new GestionComercialControlador())->moduloBase('notificaciones'), $mwEmpresa);
 $enrutador->agregar('POST', '/app/notificaciones', fn() => (new GestionComercialControlador())->guardarModuloBase('notificaciones'), $mwEmpresa);
 $enrutador->agregar('GET', '/app/notificaciones/ver/{id}', fn($id) => (new GestionComercialControlador())->verRegistro('notificaciones', (int) $id), $mwEmpresa);
@@ -122,14 +124,26 @@ $enrutador->agregar('POST', '/app/historial/eliminar/{id}', fn($id) => (new Gest
 
 $enrutador->agregar('GET', '/app/inventario/recepciones', [InventarioControlador::class, 'recepciones'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/inventario/recepciones', [InventarioControlador::class, 'guardarRecepcion'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/inventario/recepciones/editar/{id}', [InventarioControlador::class, 'editarRecepcion'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/inventario/recepciones/editar/{id}', [InventarioControlador::class, 'actualizarRecepcion'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/inventario/recepciones/ver/{id}', [InventarioControlador::class, 'verRecepcion'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/inventario/recepciones/imprimir/{id}', [InventarioControlador::class, 'imprimirRecepcion'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/inventario/recepciones/pdf/{id}', [InventarioControlador::class, 'descargarRecepcionPdf'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/inventario/recepciones/enviar/{id}', [InventarioControlador::class, 'enviarRecepcion'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/inventario/ordenes-compra', [InventarioControlador::class, 'ordenesCompra'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/inventario/ordenes-compra', [InventarioControlador::class, 'guardarOrdenCompra'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/inventario/ordenes-compra/editar/{id}', [InventarioControlador::class, 'editarOrdenCompra'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/inventario/ordenes-compra/editar/{id}', [InventarioControlador::class, 'actualizarOrdenCompra'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/inventario/ordenes-compra/ver/{id}', [InventarioControlador::class, 'verOrdenCompra'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/inventario/ordenes-compra/imprimir/{id}', [InventarioControlador::class, 'imprimirOrdenCompra'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/inventario/ordenes-compra/pdf/{id}', [InventarioControlador::class, 'descargarOrdenCompraPdf'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/inventario/ordenes-compra/enviar/{id}', [InventarioControlador::class, 'enviarOrdenCompra'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/inventario/ajustes', [InventarioControlador::class, 'ajustes'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/inventario/ajustes', [InventarioControlador::class, 'guardarAjuste'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/inventario/ajustes/ver/{id}', [InventarioControlador::class, 'verAjuste'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/inventario/ajustes/exportar/excel', [InventarioControlador::class, 'exportarAjustesExcel'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/inventario/movimientos', [InventarioControlador::class, 'movimientos'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/inventario/movimientos/exportar/excel', [InventarioControlador::class, 'exportarMovimientosExcel'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/inventario/proveedores', [InventarioControlador::class, 'proveedores'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/inventario/proveedores', [InventarioControlador::class, 'guardarProveedor'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/configuracion/correos-stock', [ConfiguracionControlador::class, 'correosStock'], $mwEmpresa);
