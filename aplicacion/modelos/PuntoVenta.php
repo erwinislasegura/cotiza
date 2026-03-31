@@ -102,7 +102,7 @@ class PuntoVenta extends Modelo
             $ventaId = (int) $this->db->lastInsertId();
 
             $stmtItem = $this->db->prepare('INSERT INTO items_venta_pos (venta_pos_id,producto_id,codigo_producto,nombre_producto,cantidad,precio_unitario,descuento,impuesto,subtotal,total) VALUES (:venta_pos_id,:producto_id,:codigo_producto,:nombre_producto,:cantidad,:precio_unitario,:descuento,:impuesto,:subtotal,:total)');
-            $stmtStock = $this->db->prepare('SELECT nombre, COALESCE(stock_actual, 0) AS stock_actual FROM productos WHERE id = :id AND empresa_id = :empresa_id AND fecha_eliminacion IS NULL LIMIT 1 FOR UPDATE');
+            $stmtStock = $this->db->prepare('SELECT nombre, tipo, COALESCE(stock_actual, 0) AS stock_actual FROM productos WHERE id = :id AND empresa_id = :empresa_id AND fecha_eliminacion IS NULL LIMIT 1 FOR UPDATE');
             $stmtUpdStock = $this->db->prepare('UPDATE productos SET stock_actual = GREATEST(0, COALESCE(stock_actual, 0) - :cantidad), fecha_actualizacion = NOW() WHERE id = :id AND empresa_id = :empresa_id');
             $stmtMovInv = $this->db->prepare('INSERT INTO movimientos_inventario_pos (empresa_id,venta_pos_id,producto_id,tipo_movimiento,cantidad,stock_anterior,stock_actual,usuario_id,fecha_movimiento) VALUES (:empresa_id,:venta_pos_id,:producto_id,"salida_venta",:cantidad,:stock_anterior,:stock_actual,:usuario_id,NOW())');
 
@@ -125,6 +125,10 @@ class PuntoVenta extends Modelo
                 $stock = $stmtStock->fetch();
                 if (!$stock) {
                     throw new \RuntimeException('Producto no encontrado para descontar stock.');
+                }
+                $tipoProducto = (string) ($stock['tipo'] ?? 'producto');
+                if ($tipoProducto === 'servicio') {
+                    continue;
                 }
                 $stockAnterior = (float) $stock['stock_actual'];
                 $cantidad = (float) $item['cantidad'];

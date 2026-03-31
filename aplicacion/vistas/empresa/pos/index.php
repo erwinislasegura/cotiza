@@ -120,7 +120,7 @@ $fmon = static fn(float $monto): string => $simboloMoneda . ' ' . number_format(
           <h2 class="h6">Productos</h2>
           <div class="d-grid gap-2" style="max-height: 560px; overflow:auto;">
             <?php foreach ($productos as $producto): ?>
-              <button type="button" class="btn btn-light border text-start py-2 js-producto" <?= $apertura ? '' : 'disabled' ?> data-id="<?= (int) $producto['id'] ?>" data-nombre="<?= e($producto['nombre']) ?>" data-codigo="<?= e($producto['codigo'] ?? '') ?>" data-precio="<?= e((string) ($producto['precio'] ?? 0)) ?>" data-impuesto="<?= e((string) ($producto['impuesto'] ?? 0)) ?>" data-stock="<?= e((string) ($producto['stock_actual'] ?? 0)) ?>">
+              <button type="button" class="btn btn-light border text-start py-2 js-producto" <?= $apertura ? '' : 'disabled' ?> data-id="<?= (int) $producto['id'] ?>" data-nombre="<?= e($producto['nombre']) ?>" data-codigo="<?= e($producto['codigo'] ?? '') ?>" data-precio="<?= e((string) ($producto['precio'] ?? 0)) ?>" data-impuesto="<?= e((string) ($producto['impuesto'] ?? 0)) ?>" data-stock="<?= e((string) ($producto['stock_actual'] ?? 0)) ?>" data-tipo="<?= e((string) ($producto['tipo'] ?? 'producto')) ?>">
                 <div class="fw-semibold small"><?= e($producto['nombre']) ?></div>
                 <div class="small text-muted">Cod: <?= e($producto['codigo'] ?? '') ?> · Stock: <?= e(number_format((float) ($producto['stock_actual'] ?? 0), 2)) ?></div>
                 <div class="text-primary fw-bold small"><?= e($fmon((float) ($producto['precio'] ?? 0))) ?></div>
@@ -238,7 +238,10 @@ $fmon = static fn(float $monto): string => $simboloMoneda . ' ' . number_format(
     carrito.forEach((item, idx) => {
       const row = document.createElement('tr');
       const linea = item.cantidad * item.precio;
-      row.innerHTML = `<td><div class="fw-semibold">${item.nombre}</div><small class="text-muted">${item.codigo}</small></td>
+      const requiereStock = item.tipo !== 'servicio';
+      const sinStock = requiereStock && Number(item.cantidad) > Number(item.stock);
+      if (sinStock) row.classList.add('table-danger');
+      row.innerHTML = `<td><div class="fw-semibold">${item.nombre}</div><small class="${sinStock ? 'text-danger' : 'text-muted'}">${item.codigo}${sinStock ? ' · Stock insuficiente' : ''}</small></td>
         <td><input class="form-control form-control-sm" type="number" min="1" step="${pasoCantidad()}" value="${fmtNum(item.cantidad)}" data-idx="${idx}" data-tipo="cantidad"></td>
         <td><input class="form-control form-control-sm" type="number" min="0" step="0.01" value="${Number(item.precio).toFixed(2)}" data-idx="${idx}" data-tipo="precio"></td>
         <td>${fmtMoney(linea)}</td>
@@ -265,6 +268,7 @@ $fmon = static fn(float $monto): string => $simboloMoneda . ' ' . number_format(
           descuento: 0,
           cantidad: 1,
           stock: Number(btn.dataset.stock || 0),
+          tipo: btn.dataset.tipo || 'producto',
         });
       }
       render();
@@ -336,6 +340,21 @@ $fmon = static fn(float $monto): string => $simboloMoneda . ' ' . number_format(
       return;
     }
     document.getElementById('pagos_json').value = JSON.stringify(pagos);
+
+    // Deja el formulario listo para registrar una nueva venta
+    // mientras el boucher se abre/imprime en la nueva pestaña.
+    setTimeout(() => {
+      carrito.splice(0, carrito.length);
+      pagos.splice(0, pagos.length);
+      document.getElementById('selector_tipo_venta').value = 'rapida';
+      document.getElementById('selector_cliente').value = '';
+      document.getElementById('tipo_venta').value = 'rapida';
+      document.getElementById('cliente_id').value = '';
+      document.getElementById('monto_pago').value = '';
+      document.getElementById('referencia_pago').value = '';
+      render();
+      pintarPagos();
+    }, 0);
   });
 
   render();
