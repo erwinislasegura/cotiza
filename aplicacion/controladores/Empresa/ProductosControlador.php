@@ -46,7 +46,9 @@ class ProductosControlador extends Controlador
             'impuesto' => (float) ($_POST['impuesto'] ?? 0),
             'descuento_maximo' => (float) ($_POST['descuento_maximo'] ?? 0),
             'stock_minimo' => (float) ($_POST['stock_minimo'] ?? 0),
-            'stock_aviso' => (float) ($_POST['stock_aviso'] ?? 0),
+            'stock_aviso' => (float) ($_POST['stock_critico'] ?? 0),
+            'stock_actual' => (float) ($_POST['stock_actual'] ?? 0),
+            'stock_critico' => (float) ($_POST['stock_critico'] ?? 0),
             'estado' => $_POST['estado'] ?? 'activo',
         ]);
         flash('success', 'Producto creado correctamente.');
@@ -127,7 +129,9 @@ class ProductosControlador extends Controlador
                 'impuesto' => (float) ($fila['impuesto'] ?? 0),
                 'descuento_maximo' => (float) ($fila['descuento_maximo'] ?? 0),
                 'stock_minimo' => (float) ($fila['stock_minimo'] ?? 0),
-                'stock_aviso' => (float) ($fila['stock_aviso'] ?? 0),
+                'stock_aviso' => (float) ($fila['stock_aviso'] ?? ($fila['stock_critico'] ?? 0)),
+                'stock_actual' => (float) ($fila['stock_actual'] ?? 0),
+                'stock_critico' => (float) ($fila['stock_critico'] ?? ($fila['stock_aviso'] ?? 0)),
                 'estado' => $this->normalizarEstado((string) ($fila['estado'] ?? 'activo')),
             ]);
             $creados++;
@@ -202,9 +206,9 @@ class ProductosControlador extends Controlador
         echo "\xEF\xBB\xBF";
         echo '<html><head><meta charset="UTF-8"></head><body>';
         echo '<table border="1" cellspacing="0" cellpadding="4" style="' . ExcelExpoFormato::TABLA_ESTILO . '">';
-        echo '<tr style="' . ExcelExpoFormato::ENCABEZADO_ESTILO . '"><th>tipo</th><th>categoria</th><th>codigo</th><th>sku</th><th>codigo_barras</th><th>nombre</th><th>descripcion</th><th>unidad</th><th>precio</th><th>costo</th><th>impuesto</th><th>descuento_maximo</th><th>stock_minimo</th><th>stock_aviso</th><th>estado</th></tr>';
-        echo '<tr><td>producto</td><td>Bebidas</td><td>P-001</td><td>SKU-001</td><td>7701234567890</td><td>Agua 600ml</td><td>Botella de agua sin gas</td><td>unidad</td><td>2.50</td><td>1.10</td><td>19</td><td>10</td><td>30</td><td>40</td><td>activo</td></tr>';
-        echo '<tr><td>servicio</td><td>Soporte</td><td>S-001</td><td>SRV-001</td><td></td><td>Mantenimiento mensual</td><td>Servicio técnico preventivo</td><td>servicio</td><td>120.00</td><td>0</td><td>19</td><td>0</td><td>0</td><td>0</td><td>activo</td></tr>';
+        echo '<tr style="' . ExcelExpoFormato::ENCABEZADO_ESTILO . '"><th>tipo</th><th>categoria</th><th>codigo</th><th>sku</th><th>codigo_barras</th><th>nombre</th><th>descripcion</th><th>unidad</th><th>precio</th><th>costo</th><th>impuesto</th><th>descuento_maximo</th><th>stock_minimo</th><th>stock_critico</th><th>stock_actual</th><th>estado</th></tr>';
+        echo '<tr><td>producto</td><td>Bebidas</td><td>P-001</td><td>SKU-001</td><td>7701234567890</td><td>Agua 600ml</td><td>Botella de agua sin gas</td><td>unidad</td><td>2.50</td><td>1.10</td><td>19</td><td>10</td><td>30</td><td>10</td><td>50</td><td>activo</td></tr>';
+        echo '<tr><td>servicio</td><td>Soporte</td><td>S-001</td><td>SRV-001</td><td></td><td>Mantenimiento mensual</td><td>Servicio técnico preventivo</td><td>servicio</td><td>120.00</td><td>0</td><td>19</td><td>0</td><td>0</td><td>0</td><td>0</td><td>activo</td></tr>';
         echo '</table></body></html>';
         exit;
     }
@@ -259,7 +263,8 @@ class ProductosControlador extends Controlador
         echo '<th>Impuesto %</th>';
         echo '<th>Desc. máximo %</th>';
         echo '<th>Stock mínimo</th>';
-        echo '<th>Stock aviso</th>';
+        echo '<th>Stock crítico</th>';
+        echo '<th>Stock actual</th>';
         echo '<th>Estado</th>';
         echo '<th>Fecha creación</th>';
         echo '<th>Fecha actualización</th>';
@@ -285,7 +290,8 @@ class ProductosControlador extends Controlador
             echo '<td>' . $this->escapeExcelHtml(number_format((float) ($producto['impuesto'] ?? 0), 2)) . '</td>';
             echo '<td>' . $this->escapeExcelHtml(number_format((float) ($producto['descuento_maximo'] ?? 0), 2)) . '</td>';
             echo '<td>' . $this->escapeExcelHtml(number_format((float) ($producto['stock_minimo'] ?? 0), 2)) . '</td>';
-            echo '<td>' . $this->escapeExcelHtml(number_format((float) ($producto['stock_aviso'] ?? 0), 2)) . '</td>';
+            echo '<td>' . $this->escapeExcelHtml(number_format((float) ($producto['stock_critico'] ?? $producto['stock_aviso'] ?? 0), 2)) . '</td>';
+            echo '<td>' . $this->escapeExcelHtml(number_format((float) ($producto['stock_actual'] ?? 0), 2)) . '</td>';
             echo '<td>' . $this->escapeExcelHtml(ucfirst((string) ($producto['estado'] ?? 'activo'))) . '</td>';
             echo '<td>' . $this->escapeExcelHtml($producto['fecha_creacion'] ?? '') . '</td>';
             echo '<td>' . $this->escapeExcelHtml($producto['fecha_actualizacion'] ?? '') . '</td>';
@@ -420,6 +426,8 @@ class ProductosControlador extends Controlador
             'cod_barras' => 'codigo_barras',
             'stock_min' => 'stock_minimo',
             'stock_alerta' => 'stock_aviso',
+            'stock_critico' => 'stock_critico',
+            'stock_actual' => 'stock_actual',
             'descuento_max' => 'descuento_maximo',
         ];
 
@@ -496,7 +504,9 @@ class ProductosControlador extends Controlador
             'impuesto' => (float) ($_POST['impuesto'] ?? 0),
             'descuento_maximo' => (float) ($_POST['descuento_maximo'] ?? 0),
             'stock_minimo' => (float) ($_POST['stock_minimo'] ?? 0),
-            'stock_aviso' => (float) ($_POST['stock_aviso'] ?? 0),
+            'stock_aviso' => (float) ($_POST['stock_critico'] ?? 0),
+            'stock_actual' => (float) ($_POST['stock_actual'] ?? 0),
+            'stock_critico' => (float) ($_POST['stock_critico'] ?? 0),
             'estado' => $_POST['estado'] ?? 'activo',
         ]);
         flash('success', 'Producto actualizado correctamente.');

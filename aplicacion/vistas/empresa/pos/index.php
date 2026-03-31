@@ -4,7 +4,18 @@ $esperado = $apertura ? (float) $apertura['monto_inicial'] + (float) ($resumenCi
 $usarDecimales = (int) ($configuracion['usar_decimales'] ?? 1) === 1;
 $cantidadDecimales = (int) ($configuracion['cantidad_decimales'] ?? 2);
 $decimalesMonto = max(0, min(6, (int) ($configuracion['cantidad_decimales'] ?? 2)));
-$fmon = static fn(float $monto): string => '$ ' . number_format($monto, $decimalesMonto);
+$monedaPos = (string) ($configuracion['moneda'] ?? 'CLP');
+$simboloMoneda = match ($monedaPos) {
+  'USD' => 'US$',
+  'EU' => '€',
+  default => '$',
+};
+$codigoMonedaJs = match ($monedaPos) {
+  'USD' => 'USD',
+  'EU' => 'EUR',
+  default => 'CLP',
+};
+$fmon = static fn(float $monto): string => $simboloMoneda . ' ' . number_format($monto, $decimalesMonto);
 ?>
 <div class="d-flex justify-content-between align-items-center mb-3">
   <div>
@@ -38,7 +49,7 @@ $fmon = static fn(float $monto): string => '$ ' . number_format($monto, $decimal
   <div class="col-md-2 d-grid"><button class="btn btn-sm btn-outline-primary">Filtrar</button></div>
 </form>
 
-<form method="POST" action="<?= e(url('/app/punto-venta/venta/guardar')) ?>" id="form_pos">
+<form method="POST" action="<?= e(url('/app/punto-venta/venta/guardar')) ?>" id="form_pos" target="_blank">
   <?= csrf_campo() ?>
   <input type="hidden" name="tipo_venta" id="tipo_venta" value="rapida">
   <input type="hidden" name="cliente_id" id="cliente_id" value="">
@@ -86,12 +97,12 @@ $fmon = static fn(float $monto): string => '$ ' . number_format($monto, $decimal
 
           <div class="row g-2 mt-2">
             <div class="col-md-6">
-              <label class="form-label small">Monto recibido (solo efectivo)</label>
-              <input class="form-control form-control-sm" type="number" step="0.01" min="0" id="monto_recibido" placeholder="Monto recibido">
+              <label class="form-label small">Efectivo recibido (pagos)</label>
+              <input class="form-control form-control-sm" id="monto_efectivo_recibido" readonly>
             </div>
             <div class="col-md-6">
               <label class="form-label small">Vuelto</label>
-              <input class="form-control form-control-sm" id="monto_vuelto" readonly placeholder="$0.00">
+              <input class="form-control form-control-sm" id="monto_vuelto" readonly>
             </div>
           </div>
 
@@ -109,7 +120,7 @@ $fmon = static fn(float $monto): string => '$ ' . number_format($monto, $decimal
           <h2 class="h6">Productos</h2>
           <div class="d-grid gap-2" style="max-height: 560px; overflow:auto;">
             <?php foreach ($productos as $producto): ?>
-              <button type="button" class="btn btn-light border text-start py-2 js-producto" <?= $apertura ? '' : 'disabled' ?> data-id="<?= (int) $producto['id'] ?>" data-nombre="<?= e($producto['nombre']) ?>" data-codigo="<?= e($producto['codigo'] ?? '') ?>" data-precio="<?= e((string) ($producto['precio'] ?? 0)) ?>" data-impuesto="<?= e((string) ($producto['impuesto'] ?? 0)) ?>" data-stock="<?= e((string) ($producto['stock_actual'] ?? 0)) ?>">
+              <button type="button" class="btn btn-light border text-start py-2 js-producto" <?= $apertura ? '' : 'disabled' ?> data-id="<?= (int) $producto['id'] ?>" data-nombre="<?= e($producto['nombre']) ?>" data-codigo="<?= e($producto['codigo'] ?? '') ?>" data-precio="<?= e((string) ($producto['precio'] ?? 0)) ?>" data-impuesto="<?= e((string) ($producto['impuesto'] ?? 0)) ?>" data-stock="<?= e((string) ($producto['stock_actual'] ?? 0)) ?>" data-tipo="<?= e((string) ($producto['tipo'] ?? 'producto')) ?>">
                 <div class="fw-semibold small"><?= e($producto['nombre']) ?></div>
                 <div class="small text-muted">Cod: <?= e($producto['codigo'] ?? '') ?> · Stock: <?= e(number_format((float) ($producto['stock_actual'] ?? 0), 2)) ?></div>
                 <div class="text-primary fw-bold small"><?= e($fmon((float) ($producto['precio'] ?? 0))) ?></div>
@@ -135,7 +146,7 @@ $fmon = static fn(float $monto): string => '$ ' . number_format($monto, $decimal
   const usarDecimales = Number('<?= $usarDecimales ? '1' : '0' ?>') === 1;
   const decRaw = parseInt('<?= e((string) $cantidadDecimales) ?>', 10);
   const decimales = usarDecimales ? (Number.isFinite(decRaw) ? Math.min(6, Math.max(0, decRaw)) : 2) : 0;
-  const money = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'USD', minimumFractionDigits: decimales, maximumFractionDigits: decimales });
+  const money = new Intl.NumberFormat('es-CL', { style: 'currency', currency: '<?= e($codigoMonedaJs) ?>', minimumFractionDigits: decimales, maximumFractionDigits: decimales });
 
   function fmtNum(n) { return Number(n || 0).toFixed(decimales); }
   function fmtMoney(n) { return money.format(Number(n || 0)); }
@@ -143,6 +154,9 @@ $fmon = static fn(float $monto): string => '$ ' . number_format($monto, $decimal
 
   function totalPagadoEfectivo() {
     return pagos.filter((p) => p.metodo_pago === 'efectivo').reduce((acc, p) => acc + Number(p.monto || 0), 0);
+  }
+  function totalPagadoNoEfectivo() {
+    return pagos.filter((p) => p.metodo_pago !== 'efectivo').reduce((acc, p) => acc + Number(p.monto || 0), 0);
   }
 
   function calcularTotales() {
@@ -168,12 +182,14 @@ $fmon = static fn(float $monto): string => '$ ' . number_format($monto, $decimal
     document.getElementById('input_impuesto').value = impuesto.toFixed(2);
     document.getElementById('input_total').value = total.toFixed(2);
 
-    const recibido = Number(document.getElementById('monto_recibido').value || 0);
-    const tienePagoEfectivo = totalPagadoEfectivo() > 0;
-    const vuelto = tienePagoEfectivo ? Math.max(0, recibido - total) : 0;
+    const recibidoEfectivo = totalPagadoEfectivo();
+    const pagadoNoEfectivo = totalPagadoNoEfectivo();
+    const saldoPorEfectivo = Math.max(0, total - pagadoNoEfectivo);
+    const vuelto = Math.max(0, recibidoEfectivo - saldoPorEfectivo);
 
     document.getElementById('monto_vuelto').value = fmtMoney(vuelto);
-    document.getElementById('input_recibido').value = recibido.toFixed(2);
+    document.getElementById('monto_efectivo_recibido').value = fmtMoney(recibidoEfectivo);
+    document.getElementById('input_recibido').value = recibidoEfectivo.toFixed(2);
     document.getElementById('input_vuelto').value = vuelto.toFixed(2);
 
     document.getElementById('items_json').value = JSON.stringify(carrito.map((i) => ({
@@ -222,7 +238,10 @@ $fmon = static fn(float $monto): string => '$ ' . number_format($monto, $decimal
     carrito.forEach((item, idx) => {
       const row = document.createElement('tr');
       const linea = item.cantidad * item.precio;
-      row.innerHTML = `<td><div class="fw-semibold">${item.nombre}</div><small class="text-muted">${item.codigo}</small></td>
+      const requiereStock = item.tipo !== 'servicio';
+      const sinStock = requiereStock && Number(item.cantidad) > Number(item.stock);
+      if (sinStock) row.classList.add('table-danger');
+      row.innerHTML = `<td><div class="fw-semibold">${item.nombre}</div><small class="${sinStock ? 'text-danger' : 'text-muted'}">${item.codigo}${sinStock ? ' · Stock insuficiente' : ''}</small></td>
         <td><input class="form-control form-control-sm" type="number" min="1" step="${pasoCantidad()}" value="${fmtNum(item.cantidad)}" data-idx="${idx}" data-tipo="cantidad"></td>
         <td><input class="form-control form-control-sm" type="number" min="0" step="0.01" value="${Number(item.precio).toFixed(2)}" data-idx="${idx}" data-tipo="precio"></td>
         <td>${fmtMoney(linea)}</td>
@@ -249,6 +268,7 @@ $fmon = static fn(float $monto): string => '$ ' . number_format($monto, $decimal
           descuento: 0,
           cantidad: 1,
           stock: Number(btn.dataset.stock || 0),
+          tipo: btn.dataset.tipo || 'producto',
         });
       }
       render();
@@ -297,14 +317,12 @@ $fmon = static fn(float $monto): string => '$ ' . number_format($monto, $decimal
     pintarPagos();
   });
 
-  document.getElementById('monto_recibido').addEventListener('input', calcularTotales);
   document.getElementById('selector_tipo_venta').addEventListener('change', (e) => { document.getElementById('tipo_venta').value = e.target.value; });
   document.getElementById('selector_cliente').addEventListener('change', (e) => { document.getElementById('cliente_id').value = e.target.value; });
 
   document.getElementById('cancelar_venta').addEventListener('click', () => {
     carrito.splice(0, carrito.length);
     pagos.splice(0, pagos.length);
-    document.getElementById('monto_recibido').value = '';
     render();
     pintarPagos();
   });
@@ -322,6 +340,21 @@ $fmon = static fn(float $monto): string => '$ ' . number_format($monto, $decimal
       return;
     }
     document.getElementById('pagos_json').value = JSON.stringify(pagos);
+
+    // Deja el formulario listo para registrar una nueva venta
+    // mientras el boucher se abre/imprime en la nueva pestaña.
+    setTimeout(() => {
+      carrito.splice(0, carrito.length);
+      pagos.splice(0, pagos.length);
+      document.getElementById('selector_tipo_venta').value = 'rapida';
+      document.getElementById('selector_cliente').value = '';
+      document.getElementById('tipo_venta').value = 'rapida';
+      document.getElementById('cliente_id').value = '';
+      document.getElementById('monto_pago').value = '';
+      document.getElementById('referencia_pago').value = '';
+      render();
+      pintarPagos();
+    }, 0);
   });
 
   render();
