@@ -129,6 +129,7 @@ $enrutador->agregar('GET', '/app/inventario/ordenes-compra/ver/{id}', [Inventari
 $enrutador->agregar('GET', '/app/inventario/ajustes', [InventarioControlador::class, 'ajustes'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/inventario/ajustes', [InventarioControlador::class, 'guardarAjuste'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/inventario/ajustes/ver/{id}', [InventarioControlador::class, 'verAjuste'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/inventario/ajustes/exportar/excel', [InventarioControlador::class, 'exportarAjustesExcel'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/inventario/movimientos', [InventarioControlador::class, 'movimientos'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/inventario/movimientos/exportar/excel', [InventarioControlador::class, 'exportarMovimientosExcel'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/inventario/proveedores', [InventarioControlador::class, 'proveedores'], $mwEmpresa);

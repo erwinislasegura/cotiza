@@ -161,6 +161,59 @@ class InventarioControlador extends Controlador
         $this->vista('empresa/inventario/ajustes', compact('ajustes', 'productos', 'motivos', 'filtros'), 'empresa');
     }
 
+    public function exportarAjustesExcel(): void
+    {
+        $this->validarPermiso('inventario_ver_ajustes');
+        $empresaId = (int) empresa_actual_id();
+        $inventario = new Inventario();
+        $filtros = [
+            'producto_id' => (int) ($_GET['producto_id'] ?? 0),
+            'tipo_ajuste' => trim((string) ($_GET['tipo_ajuste'] ?? '')),
+            'fecha_desde' => trim((string) ($_GET['fecha_desde'] ?? '')),
+            'fecha_hasta' => trim((string) ($_GET['fecha_hasta'] ?? '')),
+        ];
+        $ajustes = $inventario->listarAjustes($empresaId, $filtros);
+
+        $nombreArchivo = 'ajustes_inventario_' . date('Ymd_His') . '.xls';
+        header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $nombreArchivo . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        echo "\xEF\xBB\xBF";
+        echo '<html><head><meta charset="UTF-8"></head><body>';
+        echo '<table border="1" cellspacing="0" cellpadding="4" style="' . ExcelExpoFormato::TABLA_ESTILO . '">';
+        echo '<tr style="' . ExcelExpoFormato::ENCABEZADO_ESTILO . '">';
+        echo '<th>Fecha</th>';
+        echo '<th>Código</th>';
+        echo '<th>Producto</th>';
+        echo '<th>Tipo</th>';
+        echo '<th>Cantidad</th>';
+        echo '<th>Motivo</th>';
+        echo '<th>Observación</th>';
+        echo '<th>Usuario</th>';
+        echo '</tr>';
+
+        foreach ($ajustes as $ajuste) {
+            $motivoCodigo = (string) ($ajuste['motivo'] ?? '');
+            $motivo = self::MOTIVOS_AJUSTE[$motivoCodigo] ?? $motivoCodigo;
+
+            echo '<tr>';
+            echo '<td>' . $this->escapeExcelHtml($ajuste['fecha_creacion'] ?? '') . '</td>';
+            echo '<td style="' . ExcelExpoFormato::CELDA_TEXTO_EXCEL . '">' . $this->escapeExcelHtml($ajuste['codigo'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($ajuste['producto_nombre'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($ajuste['tipo_ajuste'] ?? '') . '</td>';
+            echo '<td>' . number_format((float) ($ajuste['cantidad'] ?? 0), 2, '.', '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($motivo) . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($ajuste['observacion'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($ajuste['usuario_nombre'] ?? '') . '</td>';
+            echo '</tr>';
+        }
+
+        echo '</table></body></html>';
+        exit;
+    }
+
     public function guardarAjuste(): void
     {
         $this->validarPermiso('inventario_crear_ajustes');
