@@ -29,7 +29,7 @@ class Producto extends Modelo
 
     public function crear(array $data): int
     {
-        $sql = 'INSERT INTO productos (empresa_id,categoria_id,tipo,codigo,sku,codigo_barras,nombre,descripcion,unidad,precio,costo,impuesto,descuento_maximo,stock_minimo,stock_aviso,estado,fecha_creacion) VALUES (:empresa_id,:categoria_id,:tipo,:codigo,:sku,:codigo_barras,:nombre,:descripcion,:unidad,:precio,:costo,:impuesto,:descuento_maximo,:stock_minimo,:stock_aviso,:estado,NOW())';
+        $sql = 'INSERT INTO productos (empresa_id,categoria_id,tipo,codigo,sku,codigo_barras,nombre,descripcion,unidad,precio,costo,impuesto,descuento_maximo,stock_minimo,stock_aviso,stock_actual,stock_critico,estado,fecha_creacion) VALUES (:empresa_id,:categoria_id,:tipo,:codigo,:sku,:codigo_barras,:nombre,:descripcion,:unidad,:precio,:costo,:impuesto,:descuento_maximo,:stock_minimo,:stock_aviso,:stock_actual,:stock_critico,:estado,NOW())';
         $this->db->prepare($sql)->execute($data);
         return (int) $this->db->lastInsertId();
     }
@@ -43,7 +43,7 @@ class Producto extends Modelo
 
     public function actualizar(int $empresaId, int $id, array $data): void
     {
-        $sql = 'UPDATE productos SET categoria_id=:categoria_id, tipo=:tipo, codigo=:codigo, sku=:sku, codigo_barras=:codigo_barras, nombre=:nombre, descripcion=:descripcion, unidad=:unidad, precio=:precio, costo=:costo, impuesto=:impuesto, descuento_maximo=:descuento_maximo, stock_minimo=:stock_minimo, stock_aviso=:stock_aviso, estado=:estado, fecha_actualizacion=NOW() WHERE empresa_id=:empresa_id AND id=:id AND fecha_eliminacion IS NULL';
+        $sql = 'UPDATE productos SET categoria_id=:categoria_id, tipo=:tipo, codigo=:codigo, sku=:sku, codigo_barras=:codigo_barras, nombre=:nombre, descripcion=:descripcion, unidad=:unidad, precio=:precio, costo=:costo, impuesto=:impuesto, descuento_maximo=:descuento_maximo, stock_minimo=:stock_minimo, stock_aviso=:stock_aviso, stock_critico=:stock_critico, estado=:estado, fecha_actualizacion=NOW() WHERE empresa_id=:empresa_id AND id=:id AND fecha_eliminacion IS NULL';
         $data['empresa_id'] = $empresaId;
         $data['id'] = $id;
         $this->db->prepare($sql)->execute($data);

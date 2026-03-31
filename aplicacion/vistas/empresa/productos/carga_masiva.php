@@ -22,7 +22,7 @@
       </div>
       <div class="card-body">
         <p class="mb-2">Campos esperados (mismo orden de la plantilla):</p>
-        <code>tipo, categoria, codigo, sku, codigo_barras, nombre, descripcion, unidad, precio, costo, impuesto, descuento_maximo, stock_minimo, stock_aviso, estado</code>
+        <code>tipo, categoria, codigo, sku, codigo_barras, nombre, descripcion, unidad, precio, costo, impuesto, descuento_maximo, stock_minimo, stock_critico, stock_actual, estado</code>
         <ul class="mt-3 mb-3 small text-muted">
           <li><strong>Obligatorios:</strong> <code>codigo</code> y <code>nombre</code>.</li>
           <li><strong>tipo:</strong> producto o servicio.</li>
