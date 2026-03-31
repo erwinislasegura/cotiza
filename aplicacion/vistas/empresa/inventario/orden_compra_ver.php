@@ -14,6 +14,9 @@
 </tbody></table></div></div>
 
 <div class="d-flex gap-2">
+  <a class="btn btn-outline-primary btn-sm" href="<?= e(url('/app/inventario/ordenes-compra/editar/' . $orden['id'])) ?>">Editar</a>
+  <a class="btn btn-outline-dark btn-sm" href="<?= e(url('/app/inventario/ordenes-compra/pdf/' . $orden['id'])) ?>">Descargar PDF</a>
+  <form method="POST" action="<?= e(url('/app/inventario/ordenes-compra/enviar/' . $orden['id'])) ?>" class="d-inline"><?= csrf_campo() ?><button class="btn btn-outline-success btn-sm" onclick="return confirm('¿Enviar orden por correo al proveedor?')">Enviar por correo</button></form>
   <a class="btn btn-primary btn-sm" href="<?= e(url('/app/inventario/recepciones?orden_compra_id=' . $orden['id'])) ?>">Recepcionar esta orden</a>
   <a class="btn btn-outline-secondary btn-sm" href="<?= e(url('/app/inventario/ordenes-compra')) ?>">Volver</a>
 </div>

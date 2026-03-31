@@ -3,9 +3,11 @@
 namespace Aplicacion\Controladores\Empresa;
 
 use Aplicacion\Nucleo\Controlador;
+use Aplicacion\Modelos\Empresa;
 use Aplicacion\Modelos\Inventario;
 use Aplicacion\Servicios\ExcelExpoFormato;
 use Aplicacion\Servicios\ServicioAlertaStock;
+use Aplicacion\Servicios\ServicioCorreo;
 use Throwable;
 
 class InventarioControlador extends Controlador
@@ -397,24 +399,7 @@ class InventarioControlador extends Controlador
         $inventario = new Inventario();
         $usuario = usuario_actual();
 
-        $productoIds = $_POST['producto_id'] ?? [];
-        $cantidades = $_POST['cantidad'] ?? [];
-        $costos = $_POST['costo_unitario'] ?? [];
-        $detalles = [];
-        foreach ((array) $productoIds as $idx => $productoId) {
-            $pid = (int) $productoId;
-            $cantidad = (float) ($cantidades[$idx] ?? 0);
-            if ($pid <= 0 || $cantidad <= 0) {
-                continue;
-            }
-            $costo = (float) ($costos[$idx] ?? 0);
-            $detalles[] = [
-                'producto_id' => $pid,
-                'cantidad' => $cantidad,
-                'costo_unitario' => $costo,
-                'subtotal' => $cantidad * $costo,
-            ];
-        }
+        $detalles = $this->extraerDetalleOrdenCompra();
 
         if ($detalles === []) {
             flash('danger', 'La orden de compra debe incluir al menos un producto con cantidad.');
@@ -446,10 +431,74 @@ class InventarioControlador extends Controlador
             ], $detalles);
 
             flash('success', 'Orden de compra creada correctamente.');
-            $this->redirigir('/app/inventario/ordenes-compra/ver/' . $ordenId);
+            $this->redirigirSegunAccion((string) ($_POST['accion'] ?? 'guardar_salir'), '/app/inventario/ordenes-compra/editar/' . $ordenId, '/app/inventario/ordenes-compra');
         } catch (Throwable $e) {
             flash('danger', 'No fue posible crear la orden de compra: ' . $e->getMessage());
             $this->redirigir('/app/inventario/ordenes-compra');
+        }
+    }
+
+    public function editarOrdenCompra(int $id): void
+    {
+        $this->validarPermiso('inventario_ver_recepciones');
+        $empresaId = (int) empresa_actual_id();
+        $inventario = new Inventario();
+        $orden = $inventario->obtenerOrdenCompra($empresaId, $id);
+        if (!$orden) {
+            flash('danger', 'Orden de compra no encontrada.');
+            $this->redirigir('/app/inventario/ordenes-compra');
+        }
+
+        $proveedores = $inventario->listarProveedores($empresaId);
+        $productos = $inventario->listarProductos($empresaId);
+        $this->vista('empresa/inventario/orden_compra_editar', compact('orden', 'proveedores', 'productos'), 'empresa');
+    }
+
+    public function actualizarOrdenCompra(int $id): void
+    {
+        $this->validarPermiso('inventario_crear_recepciones');
+        validar_csrf();
+        $empresaId = (int) empresa_actual_id();
+        $inventario = new Inventario();
+        $orden = $inventario->obtenerOrdenCompra($empresaId, $id);
+        if (!$orden) {
+            flash('danger', 'Orden de compra no encontrada.');
+            $this->redirigir('/app/inventario/ordenes-compra');
+        }
+
+        $detalles = $this->extraerDetalleOrdenCompra();
+        if ($detalles === []) {
+            flash('danger', 'La orden de compra debe incluir al menos un producto con cantidad.');
+            $this->redirigir('/app/inventario/ordenes-compra/editar/' . $id);
+        }
+
+        $proveedorId = (int) ($_POST['proveedor_id'] ?? 0);
+        if ($proveedorId <= 0) {
+            flash('danger', 'Debes seleccionar un proveedor para la orden de compra.');
+            $this->redirigir('/app/inventario/ordenes-compra/editar/' . $id);
+        }
+
+        $numero = trim((string) ($_POST['numero'] ?? ''));
+        if ($numero === '') {
+            $numero = (string) ($orden['numero'] ?? ('OC-' . $id));
+        }
+
+        try {
+            $inventario->actualizarOrdenCompra($empresaId, $id, [
+                'proveedor_id' => $proveedorId,
+                'numero' => $numero,
+                'fecha_emision' => trim((string) ($_POST['fecha_emision'] ?? date('Y-m-d'))),
+                'fecha_entrega_estimada' => trim((string) ($_POST['fecha_entrega_estimada'] ?? date('Y-m-d', strtotime('+7 days')))),
+                'referencia' => trim((string) ($_POST['referencia'] ?? '')),
+                'observacion' => trim((string) ($_POST['observacion'] ?? '')),
+                'usuario_id' => (int) ((usuario_actual()['id'] ?? 0)),
+            ], $detalles);
+
+            flash('success', 'Orden de compra actualizada correctamente.');
+            $this->redirigirSegunAccion((string) ($_POST['accion'] ?? 'guardar_salir'), '/app/inventario/ordenes-compra/editar/' . $id, '/app/inventario/ordenes-compra');
+        } catch (Throwable $e) {
+            flash('danger', 'No fue posible actualizar la orden de compra: ' . $e->getMessage());
+            $this->redirigir('/app/inventario/ordenes-compra/editar/' . $id);
         }
     }
 
@@ -464,6 +513,109 @@ class InventarioControlador extends Controlador
         }
 
         $this->vista('empresa/inventario/orden_compra_ver', compact('orden'), 'empresa');
+    }
+
+    public function imprimirOrdenCompra(int $id): void
+    {
+        $this->validarPermiso('inventario_ver_recepciones');
+        $empresaId = (int) empresa_actual_id();
+        $orden = (new Inventario())->obtenerOrdenCompra($empresaId, $id);
+        if (!$orden) {
+            flash('danger', 'Orden de compra no encontrada.');
+            $this->redirigir('/app/inventario/ordenes-compra');
+        }
+
+        $empresa = (new Empresa())->buscar($empresaId);
+        $this->vista('empresa/inventario/orden_compra_imprimir', compact('orden', 'empresa'), 'impresion');
+    }
+
+    public function descargarOrdenCompraPdf(int $id): void
+    {
+        $this->redirigir('/app/inventario/ordenes-compra/imprimir/' . $id . '?modo=pdf');
+    }
+
+    public function enviarOrdenCompra(int $id): void
+    {
+        $this->validarPermiso('inventario_crear_recepciones');
+        validar_csrf();
+        $empresaId = (int) empresa_actual_id();
+        $orden = (new Inventario())->obtenerOrdenCompra($empresaId, $id);
+        if (!$orden) {
+            flash('danger', 'Orden de compra no encontrada.');
+            $this->redirigir('/app/inventario/ordenes-compra');
+        }
+
+        $destinatario = filter_var((string) ($orden['proveedor_correo'] ?? ''), FILTER_VALIDATE_EMAIL);
+        if (!$destinatario) {
+            flash('danger', 'El proveedor no tiene un correo válido para enviar la orden.');
+            $this->redirigir('/app/inventario/ordenes-compra/editar/' . $id);
+        }
+
+        $empresa = (new Empresa())->buscar($empresaId) ?: [];
+        $urlPdf = $this->construirUrlInterna('/app/inventario/ordenes-compra/pdf/' . $id);
+        $asunto = 'Orden de compra ' . ((string) ($orden['numero'] ?? ('#' . $id)));
+        $mensajeHtml = '<p>Estimado proveedor,</p><p>Adjuntamos la orden de compra <strong>' . htmlspecialchars((string) ($orden['numero'] ?? ''), ENT_QUOTES, 'UTF-8') . '</strong>.</p><p>Puedes descargarla desde este enlace: <a href="' . htmlspecialchars($urlPdf, ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($urlPdf, ENT_QUOTES, 'UTF-8') . '</a></p>';
+
+        (new ServicioCorreo())->enviar(
+            $destinatario,
+            $asunto,
+            'orden_compra_proveedor',
+            [
+                'empresa' => (string) ($empresa['nombre_comercial'] ?? $empresa['razon_social'] ?? ''),
+                'proveedor' => (string) ($orden['proveedor_nombre'] ?? ''),
+                'numero' => (string) ($orden['numero'] ?? ''),
+                'mensaje_html' => $mensajeHtml,
+                'link_pdf' => $urlPdf,
+            ]
+        );
+
+        flash('success', 'Orden de compra enviada al correo del proveedor.');
+        $this->redirigir('/app/inventario/ordenes-compra/editar/' . $id);
+    }
+
+    private function extraerDetalleOrdenCompra(): array
+    {
+        $productoIds = $_POST['producto_id'] ?? [];
+        $cantidades = $_POST['cantidad'] ?? [];
+        $costos = $_POST['costo_unitario'] ?? [];
+        $detalles = [];
+        foreach ((array) $productoIds as $idx => $productoId) {
+            $pid = (int) $productoId;
+            $cantidad = (float) ($cantidades[$idx] ?? 0);
+            if ($pid <= 0 || $cantidad <= 0) {
+                continue;
+            }
+            $costo = (float) ($costos[$idx] ?? 0);
+            $detalles[] = [
+                'producto_id' => $pid,
+                'cantidad' => $cantidad,
+                'costo_unitario' => $costo,
+                'subtotal' => $cantidad * $costo,
+            ];
+        }
+
+        return $detalles;
+    }
+
+    private function redirigirSegunAccion(string $accion, string $rutaMantener, string $rutaSalir): void
+    {
+        if ($accion === 'guardar') {
+            $this->redirigir($rutaMantener);
+        }
+        $this->redirigir($rutaSalir);
+    }
+
+    private function construirUrlInterna(string $ruta): string
+    {
+        $config = require __DIR__ . '/../../../configuracion/aplicacion.php';
+        $base = rtrim((string) ($config['url'] ?? ''), '/');
+        if ($base === '') {
+            $esHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+            $host = (string) ($_SERVER['HTTP_HOST'] ?? 'localhost:8000');
+            $base = ($esHttps ? 'https://' : 'http://') . $host;
+        }
+
+        return $base . url($ruta);
     }
 
     private function escapeExcelHtml(mixed $valor): string
