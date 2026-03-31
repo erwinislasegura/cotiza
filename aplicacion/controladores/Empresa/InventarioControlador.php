@@ -4,6 +4,7 @@ namespace Aplicacion\Controladores\Empresa;
 
 use Aplicacion\Nucleo\Controlador;
 use Aplicacion\Modelos\Empresa;
+use Aplicacion\Modelos\GestionComercial;
 use Aplicacion\Modelos\Inventario;
 use Aplicacion\Servicios\ExcelExpoFormato;
 use Aplicacion\Servicios\ServicioAlertaStock;
@@ -651,8 +652,28 @@ class InventarioControlador extends Controlador
 
         $empresa = (new Empresa())->buscar($empresaId) ?: [];
         $urlPdf = $this->construirUrlInterna('/app/inventario/ordenes-compra/pdf/' . $id);
-        $asunto = 'Orden de compra ' . ((string) ($orden['numero'] ?? ('#' . $id)));
-        $mensajeHtml = '<p>Estimado proveedor,</p><p>Adjuntamos la orden de compra <strong>' . htmlspecialchars((string) ($orden['numero'] ?? ''), ENT_QUOTES, 'UTF-8') . '</strong>.</p><p>Puedes descargarla desde este enlace: <a href="' . htmlspecialchars($urlPdf, ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($urlPdf, ENT_QUOTES, 'UTF-8') . '</a></p>';
+        $variablesPlantilla = [
+            '{{empresa_nombre}}' => (string) ($empresa['nombre_comercial'] ?? $empresa['razon_social'] ?? 'Tu empresa'),
+            '{{proveedor_nombre}}' => (string) ($orden['proveedor_nombre'] ?? 'Proveedor'),
+            '{{correo_destino}}' => $destinatario,
+            '{{numero_orden}}' => (string) ($orden['numero'] ?? ('#' . $id)),
+            '{{estado_orden}}' => (string) ($orden['estado'] ?? ''),
+            '{{fecha_emision}}' => (string) ($orden['fecha_emision'] ?? date('Y-m-d')),
+            '{{fecha_entrega}}' => (string) ($orden['fecha_entrega_estimada'] ?? ''),
+            '{{total_orden}}' => '$' . number_format((float) ($orden['total'] ?? 0), 2, ',', '.'),
+            '{{url_pdf}}' => $urlPdf,
+            '{{remitente_nombre}}' => (string) ($empresa['imap_remitente_nombre'] ?? $empresa['nombre_comercial'] ?? ''),
+            '{{remitente_correo}}' => (string) ($empresa['imap_remitente_correo'] ?? $empresa['correo'] ?? ''),
+        ];
+        $plantillaCorreo = (new GestionComercial())->obtenerPlantillaCorreoOrdenCompra($empresaId);
+        $asuntoPlantilla = trim((string) ($plantillaCorreo['terminos_defecto'] ?? ''));
+        $htmlPlantilla = trim((string) ($plantillaCorreo['observaciones_defecto'] ?? ''));
+        $asunto = $asuntoPlantilla !== ''
+            ? $this->renderizarPlantillaCorreo($asuntoPlantilla, $variablesPlantilla)
+            : ('Orden de compra ' . ((string) ($orden['numero'] ?? ('#' . $id))));
+        $mensajeHtml = $htmlPlantilla !== ''
+            ? $this->renderizarPlantillaCorreo($htmlPlantilla, $variablesPlantilla)
+            : '<p>Estimado proveedor,</p><p>Adjuntamos la orden de compra <strong>' . htmlspecialchars((string) ($orden['numero'] ?? ''), ENT_QUOTES, 'UTF-8') . '</strong>.</p><p>Puedes descargarla desde este enlace: <a href="' . htmlspecialchars($urlPdf, ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($urlPdf, ENT_QUOTES, 'UTF-8') . '</a></p>';
 
         (new ServicioCorreo())->enviar(
             $destinatario,
@@ -714,6 +735,15 @@ class InventarioControlador extends Controlador
         }
 
         return $base . url($ruta);
+    }
+
+    private function renderizarPlantillaCorreo(string $contenido, array $variables): string
+    {
+        $reemplazos = [];
+        foreach ($variables as $clave => $valor) {
+            $reemplazos[$clave] = htmlspecialchars((string) $valor, ENT_QUOTES, 'UTF-8');
+        }
+        return strtr($contenido, $reemplazos);
     }
 
     private function escapeExcelHtml(mixed $valor): string

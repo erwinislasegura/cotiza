@@ -105,6 +105,8 @@ $enrutador->agregar('POST', '/app/aprobaciones/editar/{id}', fn($id) => (new Ges
 $enrutador->agregar('POST', '/app/aprobaciones/eliminar/{id}', fn($id) => (new GestionComercialControlador())->eliminarRegistro('aprobaciones', (int) $id), $mwEmpresa);
 $enrutador->agregar('GET', '/app/documentos', [DocumentosControlador::class, 'index'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/documentos', [DocumentosControlador::class, 'index'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/configuracion/envio-oc-html', [DocumentosControlador::class, 'ordenCompra'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/configuracion/envio-oc-html', [DocumentosControlador::class, 'ordenCompra'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/notificaciones', fn() => (new GestionComercialControlador())->moduloBase('notificaciones'), $mwEmpresa);
 $enrutador->agregar('POST', '/app/notificaciones', fn() => (new GestionComercialControlador())->guardarModuloBase('notificaciones'), $mwEmpresa);
 $enrutador->agregar('GET', '/app/notificaciones/ver/{id}', fn($id) => (new GestionComercialControlador())->verRegistro('notificaciones', (int) $id), $mwEmpresa);

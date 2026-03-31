@@ -420,6 +420,51 @@ class GestionComercial extends Modelo
         ]);
     }
 
+    public function obtenerPlantillaCorreoOrdenCompra(int $empresaId): ?array
+    {
+        $this->asegurarTablaDocumentosPlantillas();
+        $stmt = $this->db->prepare('SELECT *
+            FROM documentos_plantillas
+            WHERE empresa_id = :empresa_id
+              AND tipo_documento = :tipo_documento
+            ORDER BY id DESC
+            LIMIT 1');
+        $stmt->execute([
+            'empresa_id' => $empresaId,
+            'tipo_documento' => 'correo_orden_compra',
+        ]);
+        return $stmt->fetch() ?: null;
+    }
+
+    public function guardarPlantillaCorreoOrdenCompra(int $empresaId, string $asunto, string $html): int
+    {
+        $this->asegurarTablaDocumentosPlantillas();
+        $plantilla = $this->obtenerPlantillaCorreoOrdenCompra($empresaId);
+
+        $data = [
+            'nombre' => 'Plantilla correo orden de compra',
+            'terminos_defecto' => $asunto,
+            'observaciones_defecto' => $html,
+            'estado' => 'activo',
+            'tipo_documento' => 'correo_orden_compra',
+        ];
+
+        if ($plantilla) {
+            $this->actualizarDinamico('documentos_plantillas', $empresaId, (int) $plantilla['id'], $data);
+            return (int) $plantilla['id'];
+        }
+
+        return $this->crear('documentos_plantillas', [
+            'empresa_id' => $empresaId,
+            'nombre' => $data['nombre'],
+            'tipo_documento' => $data['tipo_documento'],
+            'terminos_defecto' => $data['terminos_defecto'],
+            'observaciones_defecto' => $data['observaciones_defecto'],
+            'estado' => $data['estado'],
+            'fecha_creacion' => date('Y-m-d H:i:s'),
+        ]);
+    }
+
     private function asegurarTablaClientesListas(): void
     {
         $this->db->exec('CREATE TABLE IF NOT EXISTS clientes_listas_precios (
