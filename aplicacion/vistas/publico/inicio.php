@@ -29,81 +29,6 @@
     </div>
 </section>
 
-<section class="py-5 border-bottom">
-    <div class="container">
-        <div class="row g-4">
-            <div class="col-lg-6">
-                <h2 class="h4 mb-3">Qué pasa cuando NO tienes un sistema</h2>
-                <div class="card h-100 border-danger-subtle">
-                    <div class="card-body">
-                        <ul class="mb-0 small ps-3 d-grid gap-2">
-                            <li>Pierdes ventas por no saber qué tienes disponible en stock.</li>
-                            <li>No sabes cuánto ganas realmente por producto, vendedor o período.</li>
-                            <li>Vendes sin inventario actualizado y luego debes resolver reclamos.</li>
-                            <li>Trabajas desordenado con múltiples planillas, chats y notas sueltas.</li>
-                            <li>Dependes de Excel para tareas críticas que requieren control en tiempo real.</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <h2 class="h4 mb-3">Qué cambia cuando usas este sistema</h2>
-                <div class="card h-100 border-success-subtle">
-                    <div class="card-body">
-                        <ul class="mb-0 small ps-3 d-grid gap-2">
-                            <li>Ves ventas en tiempo real y tomas decisiones con información confiable.</li>
-                            <li>Reduces errores humanos al automatizar cálculo, registro y seguimiento.</li>
-                            <li>Controlas inventario y evitas vender productos sin disponibilidad.</li>
-                            <li>Ordenas el trabajo comercial para responder más rápido y cerrar mejor.</li>
-                            <li>Mejoras la experiencia del cliente con procesos claros y profesionales.</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="py-5 bg-white border-bottom">
-    <div class="container">
-        <h2 class="h4 mb-3">Beneficios reales para el negocio</h2>
-        <p class="text-secondary mb-4">Este sistema está diseñado para operar mejor cada día: vender más, evitar errores y mantener control comercial e inventario sin perder tiempo.</p>
-        <div class="row g-3 small">
-            <div class="col-md-4"><div class="card h-100"><div class="card-body"><strong>Control en tiempo real</strong><p class="mb-0">Consulta ventas, stock y movimiento comercial sin esperar cierres manuales.</p></div></div></div>
-            <div class="col-md-4"><div class="card h-100"><div class="card-body"><strong>Menos errores</strong><p class="mb-0">Estandariza procesos para evitar fallas de carga, cálculos y duplicidades.</p></div></div></div>
-            <div class="col-md-4"><div class="card h-100"><div class="card-body"><strong>Más velocidad de venta</strong><p class="mb-0">Cotiza, cobra y registra más rápido para atender más oportunidades.</p></div></div></div>
-            <div class="col-md-4"><div class="card h-100"><div class="card-body"><strong>Mejor imagen frente al cliente</strong><p class="mb-0">Proyecta una operación profesional con documentos y respuestas consistentes.</p></div></div></div>
-            <div class="col-md-4"><div class="card h-100"><div class="card-body"><strong>Mejor organización</strong><p class="mb-0">Cada área trabaja con la misma información y un flujo comercial claro.</p></div></div></div>
-            <div class="col-md-4"><div class="card h-100"><div class="card-body"><strong>Más ventas con control</strong><p class="mb-0">Al combinar seguimiento + stock + reportes, mejoras conversión y rentabilidad.</p></div></div></div>
-        </div>
-    </div>
-</section>
-
-<section class="py-5 border-bottom">
-    <div class="container">
-        <div class="row g-4 align-items-center">
-            <div class="col-lg-7">
-                <h2 class="h4 mb-3">POS + inventario integrados: la base para operar con orden</h2>
-                <p class="text-secondary">Aquí no gestionas ventas y stock por separado. Cada venta impacta inventario automáticamente para que siempre sepas qué tienes, qué falta y qué debes reponer.</p>
-                <div class="row g-3 small mt-1">
-                    <div class="col-sm-6"><div class="card h-100"><div class="card-body"><strong>Ventas conectadas al stock</strong><p class="mb-0">Cada transacción descuenta inventario y actualiza disponibilidad real.</p></div></div></div>
-                    <div class="col-sm-6"><div class="card h-100"><div class="card-body"><strong>Evita quiebres y sobreventas</strong><p class="mb-0">No prometes productos sin existencia, protegiendo margen y confianza.</p></div></div></div>
-                    <div class="col-sm-6"><div class="card h-100"><div class="card-body"><strong>Decisiones con datos</strong><p class="mb-0">Identifica rotación, productos críticos y oportunidades de mejora.</p></div></div></div>
-                    <div class="col-sm-6"><div class="card h-100"><div class="card-body"><strong>Operación más eficiente</strong><p class="mb-0">Menos tareas manuales y más tiempo para vender y atender clientes.</p></div></div></div>
-                </div>
-            </div>
-            <div class="col-lg-5">
-                <div class="card bg-light border-0 h-100">
-                    <div class="card-body">
-                        <h3 class="h6">Mensaje central</h3>
-                        <p class="small mb-0">Este sistema no es solo para cotizar. Es una herramienta de trabajo para vender más, evitar errores, controlar inventario, ordenar el negocio y tomar decisiones con datos reales.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
 <section id="planes" class="py-5 bg-white border-bottom">
     <div class="container">
         <div class="text-center mb-4">
@@ -111,7 +36,7 @@
             <p class="text-secondary mb-0">Todos incluyen cotizaciones, inventario y punto de venta. La diferencia está en cuánto control tienes para crecer.</p>
         </div>
         <div class="row g-3 align-items-stretch">
-            <div class="col-lg-4">
+            <div class="col-12 col-lg-4">
                 <div class="card h-100 border-2">
                     <div class="card-body d-flex flex-column">
                         <h3 class="h5">Básico</h3>
@@ -133,7 +58,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-4">
+            <div class="col-12 col-lg-4">
                 <div class="card h-100 border-primary border-3 shadow">
                     <div class="card-body d-flex flex-column">
                         <div class="d-flex flex-wrap gap-2 mb-2">
@@ -160,7 +85,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-4">
+            <div class="col-12 col-lg-4">
                 <div class="card h-100 border-2">
                     <div class="card-body d-flex flex-column">
                         <h3 class="h5">Empresa / Premium</h3>
@@ -179,6 +104,180 @@
                             <a href="<?= e(url('/registro')) ?>" class="btn btn-outline-primary btn-sm">Comenzar ahora</a>
                             <a href="<?= e(url('/contratar/plan-corporativo')) ?>" class="btn btn-primary btn-sm">Contratar</a>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p class="small text-secondary mt-3 mb-0 text-center">Si buscas crecer, controlar stock y tomar decisiones con datos, el plan Profesional suele ser la decisión más rentable.</p>
+    </div>
+</section>
+
+<section class="py-5 border-bottom">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-12 col-lg-6">
+                <h2 class="h4 mb-2">Impacto operativo: sin sistema vs con sistema</h2>
+                <p class="small text-secondary mb-3">Referencia realista sobre tiempos, errores y cierres cuando se integra cotización + POS + inventario.</p>
+                <div class="card h-100">
+                    <div class="card-body">
+                        <canvas id="graficoComparativoLanding" height="230"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-6">
+                <h2 class="h4 mb-2">Evolución de control comercial e inventario</h2>
+                <p class="small text-secondary mb-3">Al operar con datos en tiempo real, el negocio sostiene crecimiento con menos errores y mejor respuesta.</p>
+                <div class="card h-100">
+                    <div class="card-body">
+                        <canvas id="graficoEvolucionLanding" height="230"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+(() => {
+    if (typeof Chart === 'undefined') return;
+
+    const mobile = window.innerWidth < 768;
+
+    const comparativo = document.getElementById('graficoComparativoLanding');
+    if (comparativo) {
+        new Chart(comparativo, {
+            type: 'bar',
+            data: {
+                labels: ['Tiempo por venta (min)', 'Errores operativos (%)', 'Cierres mensuales'],
+                datasets: [
+                    { label: 'Sin sistema', data: [28, 19, 15], backgroundColor: '#9aa9bc', borderRadius: 8 },
+                    { label: 'Con sistema', data: [11, 5, 31], backgroundColor: '#0d6efd', borderRadius: 8 }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: mobile ? 'top' : 'bottom',
+                        labels: { boxWidth: 10, font: { size: mobile ? 10 : 12 } }
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { font: { size: mobile ? 10 : 12 } } },
+                    x: { ticks: { font: { size: mobile ? 10 : 12 } } }
+                }
+            }
+        });
+    }
+
+    const evolucion = document.getElementById('graficoEvolucionLanding');
+    if (evolucion) {
+        new Chart(evolucion, {
+            type: 'line',
+            data: {
+                labels: ['Mes 1', 'Mes 2', 'Mes 3', 'Mes 4', 'Mes 5', 'Mes 6'],
+                datasets: [{
+                    label: 'Mejora acumulada de control y eficiencia (%)',
+                    data: [6, 12, 19, 27, 34, 41],
+                    fill: true,
+                    tension: 0.35,
+                    borderColor: '#198754',
+                    backgroundColor: 'rgba(25,135,84,.15)',
+                    pointRadius: mobile ? 2 : 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: mobile ? 'top' : 'bottom',
+                        labels: { boxWidth: 10, font: { size: mobile ? 10 : 12 } }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { callback: (v) => v + '%', font: { size: mobile ? 10 : 12 } }
+                    },
+                    x: { ticks: { font: { size: mobile ? 10 : 12 } } }
+                }
+            }
+        });
+    }
+})();
+</script>
+
+<section class="py-5 border-bottom">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-12 col-lg-6">
+                <h2 class="h4 mb-3">Qué pasa cuando NO tienes un sistema</h2>
+                <div class="card h-100 border-danger-subtle">
+                    <div class="card-body">
+                        <ul class="mb-0 small ps-3 d-grid gap-2">
+                            <li>Pierdes ventas por no saber qué tienes disponible en stock.</li>
+                            <li>No sabes cuánto ganas realmente por producto, vendedor o período.</li>
+                            <li>Vendes sin inventario actualizado y luego debes resolver reclamos.</li>
+                            <li>Trabajas desordenado con múltiples planillas, chats y notas sueltas.</li>
+                            <li>Dependes de Excel para tareas críticas que requieren control en tiempo real.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-6">
+                <h2 class="h4 mb-3">Qué cambia cuando usas este sistema</h2>
+                <div class="card h-100 border-success-subtle">
+                    <div class="card-body">
+                        <ul class="mb-0 small ps-3 d-grid gap-2">
+                            <li>Ves ventas en tiempo real y tomas decisiones con información confiable.</li>
+                            <li>Reduces errores humanos al automatizar cálculo, registro y seguimiento.</li>
+                            <li>Controlas inventario y evitas vender productos sin disponibilidad.</li>
+                            <li>Ordenas el trabajo comercial para responder más rápido y cerrar mejor.</li>
+                            <li>Mejoras la experiencia del cliente con procesos claros y profesionales.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-white border-bottom">
+    <div class="container">
+        <h2 class="h4 mb-3">Beneficios reales para el negocio</h2>
+        <p class="text-secondary mb-4">Este sistema está diseñado para operar mejor cada día: vender más, evitar errores y mantener control comercial e inventario sin perder tiempo.</p>
+        <div class="row g-3 small">
+            <div class="col-12 col-md-6 col-lg-4"><div class="card h-100"><div class="card-body"><strong>Control en tiempo real</strong><p class="mb-0">Consulta ventas, stock y movimiento comercial sin esperar cierres manuales.</p></div></div></div>
+            <div class="col-12 col-md-6 col-lg-4"><div class="card h-100"><div class="card-body"><strong>Menos errores</strong><p class="mb-0">Estandariza procesos para evitar fallas de carga, cálculos y duplicidades.</p></div></div></div>
+            <div class="col-12 col-md-6 col-lg-4"><div class="card h-100"><div class="card-body"><strong>Más velocidad de venta</strong><p class="mb-0">Cotiza, cobra y registra más rápido para atender más oportunidades.</p></div></div></div>
+            <div class="col-12 col-md-6 col-lg-4"><div class="card h-100"><div class="card-body"><strong>Mejor imagen frente al cliente</strong><p class="mb-0">Proyecta una operación profesional con documentos y respuestas consistentes.</p></div></div></div>
+            <div class="col-12 col-md-6 col-lg-4"><div class="card h-100"><div class="card-body"><strong>Mejor organización</strong><p class="mb-0">Cada área trabaja con la misma información y un flujo comercial claro.</p></div></div></div>
+            <div class="col-12 col-md-6 col-lg-4"><div class="card h-100"><div class="card-body"><strong>Más ventas con control</strong><p class="mb-0">Al combinar seguimiento + stock + reportes, mejoras conversión y rentabilidad.</p></div></div></div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 border-bottom">
+    <div class="container">
+        <div class="row g-4 align-items-center">
+            <div class="col-12 col-lg-7">
+                <h2 class="h4 mb-3">POS + inventario integrados: la base para operar con orden</h2>
+                <p class="text-secondary">Aquí no gestionas ventas y stock por separado. Cada venta impacta inventario automáticamente para que siempre sepas qué tienes, qué falta y qué debes reponer.</p>
+                <div class="row g-3 small mt-1">
+                    <div class="col-12 col-sm-6"><div class="card h-100"><div class="card-body"><strong>Ventas conectadas al stock</strong><p class="mb-0">Cada transacción descuenta inventario y actualiza disponibilidad real.</p></div></div></div>
+                    <div class="col-12 col-sm-6"><div class="card h-100"><div class="card-body"><strong>Evita quiebres y sobreventas</strong><p class="mb-0">No prometes productos sin existencia, protegiendo margen y confianza.</p></div></div></div>
+                    <div class="col-12 col-sm-6"><div class="card h-100"><div class="card-body"><strong>Decisiones con datos</strong><p class="mb-0">Identifica rotación, productos críticos y oportunidades de mejora.</p></div></div></div>
+                    <div class="col-12 col-sm-6"><div class="card h-100"><div class="card-body"><strong>Operación más eficiente</strong><p class="mb-0">Menos tareas manuales y más tiempo para vender y atender clientes.</p></div></div></div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-5">
+                <div class="card bg-light border-0 h-100">
+                    <div class="card-body">
+                        <h3 class="h6">Mensaje central</h3>
+                        <p class="small mb-0">Este sistema no es solo para cotizar. Es una herramienta de trabajo para vender más, evitar errores, controlar inventario, ordenar el negocio y tomar decisiones con datos reales.</p>
                     </div>
                 </div>
             </div>
@@ -232,8 +331,8 @@
 </section>
 
 <div class="d-md-none mobile-buy-bar">
-    <div class="d-flex gap-2">
-        <a href="#planes" class="btn btn-primary btn-sm">Ver planes</a>
-        <a href="<?= e(url('/registro')) ?>" class="btn btn-outline-secondary btn-sm">Comenzar ahora</a>
+    <div class="d-flex gap-2 w-100">
+        <a href="#planes" class="btn btn-primary btn-sm flex-fill">Ver planes</a>
+        <a href="<?= e(url('/registro')) ?>" class="btn btn-outline-secondary btn-sm flex-fill">Comenzar ahora</a>
     </div>
 </div>
