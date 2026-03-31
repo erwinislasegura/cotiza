@@ -160,19 +160,25 @@ class PuntoVentaControlador extends Controlador
     public function ventas(): void
     {
         $this->validarPermiso('ver_historial_pos');
-        $ventas = (new PuntoVenta())->listarVentas((int) empresa_actual_id());
-        $this->vista('empresa/pos/ventas', compact('ventas'), 'empresa');
+        $pos = new PuntoVenta();
+        $empresaId = (int) empresa_actual_id();
+        $ventas = $pos->listarVentas($empresaId);
+        $configuracion = $pos->obtenerConfiguracion($empresaId);
+        $this->vista('empresa/pos/ventas', compact('ventas', 'configuracion'), 'empresa');
     }
 
     public function verVenta(int $id): void
     {
         $this->validarPermiso('ver_historial_pos');
-        $venta = (new PuntoVenta())->obtenerVenta((int) empresa_actual_id(), $id);
+        $pos = new PuntoVenta();
+        $empresaId = (int) empresa_actual_id();
+        $venta = $pos->obtenerVenta($empresaId, $id);
         if (!$venta) {
             http_response_code(404);
             exit('Venta no encontrada.');
         }
-        $this->vista('empresa/pos/ver_venta', compact('venta'), 'empresa');
+        $configuracion = $pos->obtenerConfiguracion($empresaId);
+        $this->vista('empresa/pos/ver_venta', compact('venta', 'configuracion'), 'empresa');
     }
 
     public function cierreCaja(): void
@@ -187,8 +193,9 @@ class PuntoVentaControlador extends Controlador
             $resumen = $pos->resumenCierre($empresaId, (int) $apertura['id']);
         }
         $historialCierres = $pos->listarHistorialCierres($empresaId);
+        $configuracion = $pos->obtenerConfiguracion($empresaId);
 
-        $this->vista('empresa/pos/cierre_caja', compact('apertura', 'resumen', 'historialCierres'), 'empresa');
+        $this->vista('empresa/pos/cierre_caja', compact('apertura', 'resumen', 'historialCierres', 'configuracion'), 'empresa');
     }
 
     public function guardarCierreCaja(): void
@@ -252,8 +259,11 @@ class PuntoVentaControlador extends Controlador
     public function movimientosCaja(): void
     {
         $this->validarPermiso('ver_historial_pos');
-        $movimientos = (new PuntoVenta())->listarMovimientosCaja((int) empresa_actual_id());
-        $this->vista('empresa/pos/movimientos', compact('movimientos'), 'empresa');
+        $pos = new PuntoVenta();
+        $empresaId = (int) empresa_actual_id();
+        $movimientos = $pos->listarMovimientosCaja($empresaId);
+        $configuracion = $pos->obtenerConfiguracion($empresaId);
+        $this->vista('empresa/pos/movimientos', compact('movimientos', 'configuracion'), 'empresa');
     }
 
     public function configuracion(): void

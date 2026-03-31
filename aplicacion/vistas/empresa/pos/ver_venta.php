@@ -1,4 +1,8 @@
-<?php $autoImprimir = isset($_GET['imprimir']) && $_GET['imprimir'] === '1'; ?>
+<?php
+$autoImprimir = isset($_GET['imprimir']) && $_GET['imprimir'] === '1';
+$decimalesMonto = max(0, min(6, (int) ($configuracion['cantidad_decimales'] ?? 2)));
+$fmon = static fn(float $monto): string => '$ ' . number_format($monto, $decimalesMonto);
+?>
 <div class="d-flex justify-content-between align-items-center mb-3 no-print">
   <h1 class="h5 mb-0">Boucher de pago <?= e($venta['numero_venta']) ?></h1>
   <div>
@@ -20,21 +24,21 @@
     <hr>
     <?php foreach ($venta['items'] as $item): ?>
       <div class="d-flex justify-content-between">
-        <span><?= e($item['nombre_producto']) ?> x <?= number_format((float) $item['cantidad'], 2) ?></span>
-        <strong>$ <?= number_format((float) $item['total'], 2) ?></strong>
+        <span><?= e($item['nombre_producto']) ?> x <?= number_format((float) $item['cantidad'], $decimalesMonto) ?></span>
+        <strong><?= e($fmon((float) $item['total'])) ?></strong>
       </div>
     <?php endforeach; ?>
     <hr>
-    <div class="d-flex justify-content-between"><span>Subtotal</span><strong>$ <?= number_format((float) $venta['subtotal'], 2) ?></strong></div>
-    <div class="d-flex justify-content-between"><span>Descuento</span><strong>$ <?= number_format((float) $venta['descuento'], 2) ?></strong></div>
-    <div class="d-flex justify-content-between"><span>Impuesto</span><strong>$ <?= number_format((float) $venta['impuesto'], 2) ?></strong></div>
-    <div class="d-flex justify-content-between fs-6"><span>Total</span><strong>$ <?= number_format((float) $venta['total'], 2) ?></strong></div>
+    <div class="d-flex justify-content-between"><span>Subtotal</span><strong><?= e($fmon((float) $venta['subtotal'])) ?></strong></div>
+    <div class="d-flex justify-content-between"><span>Descuento</span><strong><?= e($fmon((float) $venta['descuento'])) ?></strong></div>
+    <div class="d-flex justify-content-between"><span>Impuesto</span><strong><?= e($fmon((float) $venta['impuesto'])) ?></strong></div>
+    <div class="d-flex justify-content-between fs-6"><span>Total</span><strong><?= e($fmon((float) $venta['total'])) ?></strong></div>
     <hr>
     <?php foreach ($venta['pagos'] as $pago): ?>
-      <div class="d-flex justify-content-between"><span><?= e(ucfirst($pago['metodo_pago'])) ?></span><strong>$ <?= number_format((float) $pago['monto'], 2) ?></strong></div>
+      <div class="d-flex justify-content-between"><span><?= e(ucfirst($pago['metodo_pago'])) ?></span><strong><?= e($fmon((float) $pago['monto'])) ?></strong></div>
     <?php endforeach; ?>
-    <div class="d-flex justify-content-between"><span>Monto recibido</span><strong>$ <?= number_format((float) $venta['monto_recibido'], 2) ?></strong></div>
-    <div class="d-flex justify-content-between"><span>Vuelto</span><strong>$ <?= number_format((float) $venta['vuelto'], 2) ?></strong></div>
+    <div class="d-flex justify-content-between"><span>Monto recibido</span><strong><?= e($fmon((float) $venta['monto_recibido'])) ?></strong></div>
+    <div class="d-flex justify-content-between"><span>Vuelto</span><strong><?= e($fmon((float) $venta['vuelto'])) ?></strong></div>
     <div class="text-center mt-3">Gracias por su compra</div>
   </div>
 </div>

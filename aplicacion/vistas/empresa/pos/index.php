@@ -3,6 +3,8 @@ $aperturaTexto = $apertura ? ($apertura['caja_nombre'] . ' · Apertura #' . $ape
 $esperado = $apertura ? (float) $apertura['monto_inicial'] + (float) ($resumenCierre['total_ventas'] ?? 0) : 0;
 $usarDecimales = (int) ($configuracion['usar_decimales'] ?? 1) === 1;
 $cantidadDecimales = (int) ($configuracion['cantidad_decimales'] ?? 2);
+$decimalesMonto = max(0, min(6, (int) ($configuracion['cantidad_decimales'] ?? 2)));
+$fmon = static fn(float $monto): string => '$ ' . number_format($monto, $decimalesMonto);
 ?>
 <div class="d-flex justify-content-between align-items-center mb-3">
   <div>
@@ -110,7 +112,7 @@ $cantidadDecimales = (int) ($configuracion['cantidad_decimales'] ?? 2);
               <button type="button" class="btn btn-light border text-start py-2 js-producto" <?= $apertura ? '' : 'disabled' ?> data-id="<?= (int) $producto['id'] ?>" data-nombre="<?= e($producto['nombre']) ?>" data-codigo="<?= e($producto['codigo'] ?? '') ?>" data-precio="<?= e((string) ($producto['precio'] ?? 0)) ?>" data-impuesto="<?= e((string) ($producto['impuesto'] ?? 0)) ?>" data-stock="<?= e((string) ($producto['stock_actual'] ?? 0)) ?>">
                 <div class="fw-semibold small"><?= e($producto['nombre']) ?></div>
                 <div class="small text-muted">Cod: <?= e($producto['codigo'] ?? '') ?> · Stock: <?= e(number_format((float) ($producto['stock_actual'] ?? 0), 2)) ?></div>
-                <div class="text-primary fw-bold small">$ <?= e(number_format((float) ($producto['precio'] ?? 0), 2)) ?></div>
+                <div class="text-primary fw-bold small"><?= e($fmon((float) ($producto['precio'] ?? 0))) ?></div>
               </button>
             <?php endforeach; ?>
           </div>
@@ -122,7 +124,7 @@ $cantidadDecimales = (int) ($configuracion['cantidad_decimales'] ?? 2);
 
 <div class="modal fade" id="modalAperturaCaja" tabindex="-1" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><form method="POST" action="<?= e(url('/app/punto-venta/apertura-caja')) ?>"><?= csrf_campo() ?><div class="modal-header"><h5 class="modal-title">Apertura de caja</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body row g-2"><div class="col-12"><label class="form-label">Caja / terminal</label><select name="caja_id" class="form-select" required><option value="">Selecciona...</option><?php foreach ($cajas as $caja): ?><option value="<?= (int) $caja['id'] ?>"><?= e($caja['nombre']) ?> (<?= e($caja['codigo']) ?>)</option><?php endforeach; ?></select></div><div class="col-12"><label class="form-label">Monto inicial</label><input class="form-control" type="number" step="0.01" min="0" name="monto_inicial" required></div><div class="col-12"><label class="form-label">Observación</label><input class="form-control" name="observacion" placeholder="Opcional"></div></div><div class="modal-footer"><button class="btn btn-primary">Abrir caja</button></div></form></div></div></div>
 
-<div class="modal fade" id="modalCierreCaja" tabindex="-1" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><form method="POST" action="<?= e(url('/app/punto-venta/cierre-caja')) ?>"><?= csrf_campo() ?><div class="modal-header"><h5 class="modal-title">Cierre de caja</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><?php if ($apertura): ?><ul class="small"><li>Monto inicial: <strong>$ <?= number_format((float) $apertura['monto_inicial'], 2) ?></strong></li><li>Ventas efectivo: <strong>$ <?= number_format((float) ($resumenCierre['efectivo'] ?? 0), 2) ?></strong></li><li>Ventas transferencia: <strong>$ <?= number_format((float) ($resumenCierre['transferencia'] ?? 0), 2) ?></strong></li><li>Ventas tarjeta: <strong>$ <?= number_format((float) ($resumenCierre['tarjeta'] ?? 0), 2) ?></strong></li><li>Total esperado: <strong>$ <?= number_format((float) $esperado, 2) ?></strong></li></ul><label class="form-label">Monto contado</label><input class="form-control mb-2" type="number" step="0.01" min="0" name="monto_contado" required><label class="form-label">Observación de cierre</label><input class="form-control" name="observacion"><?php else: ?><p class="text-muted">No hay caja abierta.</p><?php endif; ?></div><div class="modal-footer"><button class="btn btn-danger" <?= $apertura ? '' : 'disabled' ?>>Cerrar caja</button></div></form></div></div></div>
+<div class="modal fade" id="modalCierreCaja" tabindex="-1" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><form method="POST" action="<?= e(url('/app/punto-venta/cierre-caja')) ?>"><?= csrf_campo() ?><div class="modal-header"><h5 class="modal-title">Cierre de caja</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><?php if ($apertura): ?><ul class="small"><li>Monto inicial: <strong><?= e($fmon((float) $apertura['monto_inicial'])) ?></strong></li><li>Ventas efectivo: <strong><?= e($fmon((float) ($resumenCierre['efectivo'] ?? 0))) ?></strong></li><li>Ventas transferencia: <strong><?= e($fmon((float) ($resumenCierre['transferencia'] ?? 0))) ?></strong></li><li>Ventas tarjeta: <strong><?= e($fmon((float) ($resumenCierre['tarjeta'] ?? 0))) ?></strong></li><li>Total esperado: <strong><?= e($fmon((float) $esperado)) ?></strong></li></ul><label class="form-label">Monto contado</label><input class="form-control mb-2" type="number" step="0.01" min="0" name="monto_contado" required><label class="form-label">Observación de cierre</label><input class="form-control" name="observacion"><?php else: ?><p class="text-muted">No hay caja abierta.</p><?php endif; ?></div><div class="modal-footer"><button class="btn btn-danger" <?= $apertura ? '' : 'disabled' ?>>Cerrar caja</button></div></form></div></div></div>
 
 <script>
 (() => {
@@ -133,7 +135,7 @@ $cantidadDecimales = (int) ($configuracion['cantidad_decimales'] ?? 2);
   const usarDecimales = Number('<?= $usarDecimales ? '1' : '0' ?>') === 1;
   const decRaw = parseInt('<?= e((string) $cantidadDecimales) ?>', 10);
   const decimales = usarDecimales ? (Number.isFinite(decRaw) ? Math.min(6, Math.max(0, decRaw)) : 2) : 0;
-  const money = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
+  const money = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'USD', minimumFractionDigits: decimales, maximumFractionDigits: decimales });
 
   function fmtNum(n) { return Number(n || 0).toFixed(decimales); }
   function fmtMoney(n) { return money.format(Number(n || 0)); }
