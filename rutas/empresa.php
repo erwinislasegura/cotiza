@@ -11,6 +11,7 @@ use Aplicacion\Controladores\Empresa\UsuariosControlador;
 use Aplicacion\Controladores\Empresa\GestionComercialControlador;
 use Aplicacion\Controladores\Empresa\DocumentosControlador;
 use Aplicacion\Controladores\Empresa\PuntoVentaControlador;
+use Aplicacion\Controladores\Empresa\InventarioControlador;
 
 $mwEmpresa = [AutenticadoMiddleware::class, EmpresaMiddleware::class];
 
@@ -118,6 +119,22 @@ $enrutador->agregar('POST', '/app/historial/editar/{id}', fn($id) => (new Gestio
 $enrutador->agregar('POST', '/app/historial/eliminar/{id}', fn($id) => (new GestionComercialControlador())->eliminarRegistro('historial', (int) $id), $mwEmpresa);
 
 
+
+$enrutador->agregar('GET', '/app/inventario/recepciones', [InventarioControlador::class, 'recepciones'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/inventario/recepciones', [InventarioControlador::class, 'guardarRecepcion'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/inventario/recepciones/ver/{id}', [InventarioControlador::class, 'verRecepcion'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/inventario/ordenes-compra', [InventarioControlador::class, 'ordenesCompra'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/inventario/ordenes-compra', [InventarioControlador::class, 'guardarOrdenCompra'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/inventario/ordenes-compra/ver/{id}', [InventarioControlador::class, 'verOrdenCompra'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/inventario/ajustes', [InventarioControlador::class, 'ajustes'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/inventario/ajustes', [InventarioControlador::class, 'guardarAjuste'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/inventario/ajustes/ver/{id}', [InventarioControlador::class, 'verAjuste'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/inventario/movimientos', [InventarioControlador::class, 'movimientos'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/inventario/proveedores', [InventarioControlador::class, 'proveedores'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/inventario/proveedores', [InventarioControlador::class, 'guardarProveedor'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/configuracion/correos-stock', [ConfiguracionControlador::class, 'correosStock'], $mwEmpresa);
+$enrutador->agregar('POST', '/app/configuracion/correos-stock', [ConfiguracionControlador::class, 'correosStock'], $mwEmpresa);
+
 $enrutador->agregar('GET', '/app/punto-venta', [PuntoVentaControlador::class, 'index'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/punto-venta/venta/guardar', [PuntoVentaControlador::class, 'guardarVenta'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/punto-venta/apertura-caja', [PuntoVentaControlador::class, 'aperturaCaja'], $mwEmpresa);
@@ -126,6 +143,7 @@ $enrutador->agregar('GET', '/app/punto-venta/cierre-caja', [PuntoVentaControlado
 $enrutador->agregar('POST', '/app/punto-venta/cierre-caja', [PuntoVentaControlador::class, 'guardarCierreCaja'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/punto-venta/ventas', [PuntoVentaControlador::class, 'ventas'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/punto-venta/ventas/ver/{id}', [PuntoVentaControlador::class, 'verVenta'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/punto-venta/ventas/imprimir/{id}', [PuntoVentaControlador::class, 'imprimirVenta'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/punto-venta/cajas', [PuntoVentaControlador::class, 'cajas'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/punto-venta/cajas', [PuntoVentaControlador::class, 'guardarCaja'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/punto-venta/movimientos', [PuntoVentaControlador::class, 'movimientosCaja'], $mwEmpresa);

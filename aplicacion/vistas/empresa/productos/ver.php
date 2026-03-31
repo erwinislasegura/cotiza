@@ -10,7 +10,8 @@
       <dt class="col-sm-3">Unidad</dt><dd class="col-sm-9"><?= e($producto['unidad'] ?? '-') ?></dd>
       <dt class="col-sm-3">Precio</dt><dd class="col-sm-9">$<?= number_format((float)$producto['precio'],2) ?></dd>
       <dt class="col-sm-3">Stock mínimo</dt><dd class="col-sm-9"><?= e((string)($producto['stock_minimo'] ?? 0)) ?></dd>
-      <dt class="col-sm-3">Stock de aviso</dt><dd class="col-sm-9"><?= e((string)($producto['stock_aviso'] ?? 0)) ?></dd>
+      <dt class="col-sm-3">Stock actual</dt><dd class="col-sm-9"><?= e((string)($producto['stock_actual'] ?? 0)) ?></dd>
+      <dt class="col-sm-3">Stock crítico</dt><dd class="col-sm-9"><?= e((string)($producto['stock_critico'] ?? $producto['stock_aviso'] ?? 0)) ?></dd>
       <dt class="col-sm-3">Estado</dt><dd class="col-sm-9"><?= e($producto['estado']) ?></dd>
     </dl>
   </div>
