@@ -4,6 +4,7 @@ namespace Aplicacion\Controladores\Empresa;
 
 use Aplicacion\Nucleo\Controlador;
 use Aplicacion\Modelos\Inventario;
+use Aplicacion\Servicios\ExcelExpoFormato;
 use Aplicacion\Servicios\ServicioAlertaStock;
 use Throwable;
 
@@ -273,6 +274,55 @@ class InventarioControlador extends Controlador
         $this->vista('empresa/inventario/movimientos', compact('movimientos', 'productos', 'productoId'), 'empresa');
     }
 
+    public function exportarMovimientosExcel(): void
+    {
+        $this->validarPermiso('inventario_ver_movimientos');
+        $empresaId = (int) empresa_actual_id();
+        $productoId = (int) ($_GET['producto_id'] ?? 0) ?: null;
+        $inventario = new Inventario();
+        $movimientos = $inventario->listarMovimientos($empresaId, $productoId);
+
+        $nombreArchivo = 'movimientos_inventario_' . date('Ymd_His') . '.xls';
+        header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $nombreArchivo . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        echo "\xEF\xBB\xBF";
+        echo '<html><head><meta charset="UTF-8"></head><body>';
+        echo '<table border="1" cellspacing="0" cellpadding="4" style="' . ExcelExpoFormato::TABLA_ESTILO . '">';
+        echo '<tr style="' . ExcelExpoFormato::ENCABEZADO_ESTILO . '">';
+        echo '<th>Fecha</th>';
+        echo '<th>Código</th>';
+        echo '<th>Producto</th>';
+        echo '<th>Movimiento</th>';
+        echo '<th>Origen</th>';
+        echo '<th>Entrada</th>';
+        echo '<th>Salida</th>';
+        echo '<th>Saldo resultante</th>';
+        echo '<th>Usuario</th>';
+        echo '<th>Observación</th>';
+        echo '</tr>';
+
+        foreach ($movimientos as $movimiento) {
+            echo '<tr>';
+            echo '<td>' . $this->escapeExcelHtml($movimiento['fecha_creacion'] ?? '') . '</td>';
+            echo '<td style="' . ExcelExpoFormato::CELDA_TEXTO_EXCEL . '">' . $this->escapeExcelHtml($movimiento['codigo'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($movimiento['producto_nombre'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($movimiento['tipo_movimiento'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($movimiento['documento_origen'] ?? '') . '</td>';
+            echo '<td>' . number_format((float) ($movimiento['entrada'] ?? 0), 2, '.', '') . '</td>';
+            echo '<td>' . number_format((float) ($movimiento['salida'] ?? 0), 2, '.', '') . '</td>';
+            echo '<td>' . number_format((float) ($movimiento['saldo_resultante'] ?? 0), 2, '.', '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($movimiento['usuario_nombre'] ?? '') . '</td>';
+            echo '<td>' . $this->escapeExcelHtml($movimiento['observacion'] ?? '') . '</td>';
+            echo '</tr>';
+        }
+
+        echo '</table></body></html>';
+        exit;
+    }
+
     public function ordenesCompra(): void
     {
         $this->validarPermiso('inventario_ver_recepciones');
@@ -361,5 +411,16 @@ class InventarioControlador extends Controlador
         }
 
         $this->vista('empresa/inventario/orden_compra_ver', compact('orden'), 'empresa');
+    }
+
+    private function escapeExcelHtml(mixed $valor): string
+    {
+        $texto = trim(str_replace(["\r\n", "\r", "\n", "\t"], ' ', (string) $valor));
+
+        if ($texto !== '' && preg_match('/^[=+\-@]/', $texto) === 1) {
+            $texto = "'" . $texto;
+        }
+
+        return htmlspecialchars($texto, ENT_QUOTES, 'UTF-8');
     }
 }
