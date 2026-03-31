@@ -59,6 +59,75 @@ foreach (($resumen['cotizaciones_ultimos_meses'] ?? []) as $fila) {
   </div>
 
   <div class="row g-3 mb-3">
+    <div class="col-12">
+      <div class="card card-dashboard">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>KPIs operativos de módulos integrados</span>
+          <span class="small text-muted">Inventario · POS · Gestión comercial</span>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-sm-6 col-xl-3">
+              <article class="metric-card metric-card-amber">
+                <div class="metric-card__icon"><i class="bi bi-box-seam"></i></div>
+                <div class="metric-card__meta">Stock bajo</div>
+                <div class="metric-card__value"><?= (int) ($resumen['stock_bajo'] ?? 0) ?></div>
+              </article>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+              <article class="metric-card metric-card-red">
+                <div class="metric-card__icon"><i class="bi bi-exclamation-octagon"></i></div>
+                <div class="metric-card__meta">Stock crítico</div>
+                <div class="metric-card__value"><?= (int) ($resumen['stock_critico'] ?? 0) ?></div>
+              </article>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+              <article class="metric-card metric-card-sky">
+                <div class="metric-card__icon"><i class="bi bi-receipt"></i></div>
+                <div class="metric-card__meta">Ventas POS hoy</div>
+                <div class="metric-card__value"><?= (int) ($resumen['ventas_hoy'] ?? 0) ?></div>
+              </article>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+              <article class="metric-card metric-card-green">
+                <div class="metric-card__icon"><i class="bi bi-cash-coin"></i></div>
+                <div class="metric-card__meta">Ingresos POS hoy</div>
+                <div class="metric-card__value">$<?= number_format((float) ($resumen['monto_ventas_hoy'] ?? 0), 2) ?></div>
+              </article>
+            </div>
+          </div>
+          <div class="row g-3 mt-1">
+            <div class="col-md-3">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small">Órdenes de compra pendientes</div>
+                <div class="h4 mb-0"><?= (int) ($resumen['ordenes_compra_pendientes'] ?? 0) ?></div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small">Seguimientos abiertos</div>
+                <div class="h4 mb-0"><?= (int) ($resumen['seguimientos_abiertos'] ?? 0) ?></div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small">Aprobaciones pendientes</div>
+                <div class="h4 mb-0"><?= (int) ($resumen['aprobaciones_pendientes'] ?? 0) ?></div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small">Notificaciones por revisar</div>
+                <div class="h4 mb-0"><?= (int) ($resumen['notificaciones_pendientes'] ?? 0) ?></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
     <div class="col-xl-8">
       <div class="card card-dashboard h-100">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -138,6 +207,29 @@ foreach (($resumen['cotizaciones_ultimos_meses'] ?? []) as $fila) {
           </table>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div class="card card-dashboard mb-3">
+    <div class="card-header">Actividad reciente del negocio</div>
+    <div class="table-responsive">
+      <table class="table table-sm table-hover mb-0">
+        <thead><tr><th>Usuario</th><th>Módulo</th><th>Acción</th><th>Fecha</th></tr></thead>
+        <tbody>
+        <?php if (!empty($resumen['historial_reciente'])): ?>
+          <?php foreach ($resumen['historial_reciente'] as $h): ?>
+            <tr>
+              <td><?= e($h['usuario_nombre']) ?></td>
+              <td><?= e($h['modulo']) ?></td>
+              <td><?= e($h['accion']) ?></td>
+              <td><?= e($h['fecha_creacion']) ?></td>
+            </tr>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <tr><td colspan="4" class="text-center text-muted py-3">Sin actividad reciente.</td></tr>
+        <?php endif; ?>
+        </tbody>
+      </table>
     </div>
   </div>
 
