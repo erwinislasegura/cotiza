@@ -5,6 +5,7 @@ namespace Aplicacion\Controladores\Empresa;
 use Aplicacion\Nucleo\Controlador;
 use Aplicacion\Modelos\PuntoVenta;
 use Aplicacion\Modelos\GestionComercial;
+use Aplicacion\Servicios\ServicioAlertaStock;
 
 class PuntoVentaControlador extends Controlador
 {
@@ -148,6 +149,11 @@ class PuntoVentaControlador extends Controlador
                 'monto_recibido' => (float) ($_POST['monto_recibido'] ?? 0),
                 'vuelto' => (float) ($_POST['vuelto'] ?? 0),
             ], $items, $pagos, (bool) ($configuracion['permitir_venta_sin_stock'] ?? false));
+
+            $alertas = new ServicioAlertaStock();
+            foreach ($pos->obtenerTransicionesStock() as $transicion) {
+                $alertas->evaluarYNotificar($empresaId, (int) $transicion['producto_id'], (float) $transicion['stock_anterior'], (float) $transicion['stock_actual'], (string) (usuario_actual()['nombre'] ?? ''));
+            }
 
             flash('success', 'Venta registrada correctamente.');
             $this->redirigir('/app/punto-venta/ventas/ver/' . $ventaId . '?imprimir=1');

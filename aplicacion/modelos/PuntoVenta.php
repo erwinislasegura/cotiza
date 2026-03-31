@@ -8,6 +8,7 @@ use Throwable;
 
 class PuntoVenta extends Modelo
 {
+    private array $ultimasTransicionesStock = [];
     public function listarCajas(int $empresaId): array
     {
         $stmt = $this->db->prepare('SELECT * FROM cajas_pos WHERE empresa_id = :empresa_id ORDER BY id DESC');
@@ -104,6 +105,7 @@ class PuntoVenta extends Modelo
             $stmtUpdStock = $this->db->prepare('UPDATE productos SET stock_actual = GREATEST(0, COALESCE(stock_actual, 0) - :cantidad), fecha_actualizacion = NOW() WHERE id = :id AND empresa_id = :empresa_id');
             $stmtMovInv = $this->db->prepare('INSERT INTO movimientos_inventario_pos (empresa_id,venta_pos_id,producto_id,tipo_movimiento,cantidad,stock_anterior,stock_actual,usuario_id,fecha_movimiento) VALUES (:empresa_id,:venta_pos_id,:producto_id,"salida_venta",:cantidad,:stock_anterior,:stock_actual,:usuario_id,NOW())');
 
+            $this->ultimasTransicionesStock = [];
             foreach ($items as $item) {
                 $stmtItem->execute([
                     'venta_pos_id' => $ventaId,
@@ -145,6 +147,27 @@ class PuntoVenta extends Modelo
                     'stock_actual' => $stockNuevo,
                     'usuario_id' => $ventaData['usuario_id'],
                 ]);
+
+                $this->db->prepare('INSERT INTO movimientos_inventario (empresa_id,producto_id,tipo_movimiento,modulo_origen,documento_origen,referencia_id,entrada,salida,saldo_resultante,observacion,usuario_id,fecha_creacion) VALUES (:empresa_id,:producto_id,:tipo_movimiento,:modulo_origen,:documento_origen,:referencia_id,:entrada,:salida,:saldo_resultante,:observacion,:usuario_id,NOW())')
+                    ->execute([
+                        'empresa_id' => $ventaData['empresa_id'],
+                        'producto_id' => $item['producto_id'],
+                        'tipo_movimiento' => 'venta_pos',
+                        'modulo_origen' => 'punto_venta',
+                        'documento_origen' => $ventaData['numero_venta'],
+                        'referencia_id' => $ventaId,
+                        'entrada' => 0,
+                        'salida' => $cantidad,
+                        'saldo_resultante' => $stockNuevo,
+                        'observacion' => 'Salida por venta POS',
+                        'usuario_id' => $ventaData['usuario_id'],
+                    ]);
+
+                $this->ultimasTransicionesStock[] = [
+                    'producto_id' => (int) $item['producto_id'],
+                    'stock_anterior' => $stockAnterior,
+                    'stock_actual' => $stockNuevo,
+                ];
             }
 
             $stmtPago = $this->db->prepare('INSERT INTO pagos_venta_pos (venta_pos_id,metodo_pago,monto,referencia,fecha_pago) VALUES (:venta_pos_id,:metodo_pago,:monto,:referencia,NOW())');
@@ -276,6 +299,11 @@ class PuntoVenta extends Modelo
             'usar_decimales' => $data['usar_decimales'],
             'cantidad_decimales' => $data['cantidad_decimales'],
         ]);
+    }
+
+    public function obtenerTransicionesStock(): array
+    {
+        return $this->ultimasTransicionesStock;
     }
 
     public function siguienteNumeroVenta(int $empresaId): string
