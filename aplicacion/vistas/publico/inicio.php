@@ -33,82 +33,35 @@
     <div class="container">
         <div class="text-center mb-4">
             <h2 class="h3 mb-2">Planes diseñados por nivel de control y gestión</h2>
-            <p class="text-secondary mb-0">Todos incluyen cotizaciones, inventario y punto de venta. La diferencia está en cuánto control tienes para crecer.</p>
+            <p class="text-secondary mb-0">Planes activos configurados desde el panel de administración.</p>
         </div>
         <div class="row g-3 align-items-stretch">
-            <div class="col-12 col-lg-4">
-                <div class="card h-100 border-2">
-                    <div class="card-body d-flex flex-column">
-                        <h3 class="h5">Básico</h3>
-                        <p class="text-secondary small">Comienza a ordenar tu negocio.</p>
-                        <div class="h3 mb-0">$15.000 <small class="fs-6">/ mensual</small></div>
-                        <p class="small text-secondary">10% descuento anual</p>
-                        <ul class="small ps-3 d-grid gap-1">
-                            <li>Gestión de clientes, productos y servicios</li>
-                            <li>Cotizaciones + PDF + envío</li>
-                            <li>Punto de venta (ventas simples)</li>
-                            <li>Control básico de inventario</li>
-                            <li>Registro de ventas</li>
-                        </ul>
-                        <p class="small mb-2"><strong>Limitado para crecer:</strong> sin seguimiento comercial, sin reportes avanzados, sin análisis de ventas, sin automatizaciones y sin control de equipo.</p>
-                        <div class="d-grid gap-2 mt-auto">
-                            <a href="<?= e(url('/registro')) ?>" class="btn btn-outline-primary btn-sm">Comenzar ahora</a>
-                            <a href="<?= e(url('/contratar/plan-inicial')) ?>" class="btn btn-primary btn-sm">Contratar</a>
+            <?php foreach ($planes as $plan): ?>
+                <div class="col-12 col-lg-4">
+                    <div class="card h-100 border-2 <?= !empty($plan['recomendado']) ? 'border-primary border-3 shadow' : '' ?>" style="border-color: <?= e($plan['color_visual'] ?: '#dce3eb') ?> !important;">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex flex-wrap gap-2 mb-2">
+                                <?php if (!empty($plan['recomendado'])): ?><span class="badge text-bg-primary">RECOMENDADO</span><?php endif; ?>
+                                <?php if (!empty($plan['destacado'])): ?><span class="badge text-bg-success">DESTACADO</span><?php endif; ?>
+                            </div>
+                            <h3 class="h5"><?= e($plan['nombre']) ?></h3>
+                            <p class="text-secondary small"><?= e($plan['resumen_comercial'] ?: $plan['descripcion_comercial']) ?></p>
+                            <div class="h3 mb-0">$<?= number_format((float) $plan['precio_mensual'], 0, ',', '.') ?> <small class="fs-6">/ mensual</small></div>
+                            <p class="small text-secondary"><?= e((string) $plan['descuento_anual_pct']) ?>% descuento anual</p>
+                            <ul class="small ps-3 d-grid gap-1">
+                                <?php foreach ($plan['funcionalidades'] as $funcionalidad): ?>
+                                    <li><?= e($funcionalidad['descripcion'] ?: $funcionalidad['nombre']) ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                            <div class="d-grid gap-2 mt-auto">
+                                <a href="<?= e(url('/registro')) ?>" class="btn btn-outline-primary btn-sm">Comenzar ahora</a>
+                                <a href="<?= e(url('/contratar/' . $plan['slug'])) ?>" class="btn btn-primary btn-sm">Contratar</a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-12 col-lg-4">
-                <div class="card h-100 border-primary border-3 shadow">
-                    <div class="card-body d-flex flex-column">
-                        <div class="d-flex flex-wrap gap-2 mb-2">
-                            <span class="badge text-bg-primary">RECOMENDADO</span>
-                            <span class="badge text-bg-success">MÁS ELEGIDO</span>
-                        </div>
-                        <h3 class="h5">Profesional</h3>
-                        <p class="text-secondary small">Aquí es donde tu negocio empieza a funcionar de verdad.</p>
-                        <div class="h3 mb-0">$26.000 <small class="fs-6">/ mensual</small></div>
-                        <p class="small text-secondary">10% descuento anual</p>
-                        <ul class="small ps-3 d-grid gap-1">
-                            <li>Todo lo del plan Básico</li>
-                            <li>Inventario completo y control de stock real</li>
-                            <li>Alertas de stock, recepciones y ajustes</li>
-                            <li>Seguimiento comercial y gestión de vendedores</li>
-                            <li>Reportes de ventas e historial completo</li>
-                            <li>Mayor control del negocio para crecer con orden</li>
-                        </ul>
-                        <p class="small mb-2"><strong>Mejor relación valor/control:</strong> por una diferencia menor frente al básico, obtienes el nivel de gestión que evita pérdidas por desorden.</p>
-                        <div class="d-grid gap-2 mt-auto">
-                            <a href="<?= e(url('/registro')) ?>" class="btn btn-primary btn-sm">Comenzar ahora</a>
-                            <a href="<?= e(url('/contratar/plan-profesional')) ?>" class="btn btn-dark btn-sm">Contratar</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-lg-4">
-                <div class="card h-100 border-2">
-                    <div class="card-body d-flex flex-column">
-                        <h3 class="h5">Empresa / Premium</h3>
-                        <p class="text-secondary small">Control total para empresas que necesitan crecer sin perder el control.</p>
-                        <div class="h3 mb-0">$55.000 <small class="fs-6">/ mensual</small></div>
-                        <p class="small text-secondary">15% descuento anual</p>
-                        <ul class="small ps-3 d-grid gap-1">
-                            <li>Todo lo del plan Profesional</li>
-                            <li>POS completo con control de caja</li>
-                            <li>Apertura y cierre de caja</li>
-                            <li>Inventario avanzado y órdenes de compra</li>
-                            <li>Gestión comercial completa y reportes avanzados</li>
-                            <li>Control multiusuario, configuración avanzada y automatizaciones</li>
-                        </ul>
-                        <div class="d-grid gap-2 mt-auto">
-                            <a href="<?= e(url('/registro')) ?>" class="btn btn-outline-primary btn-sm">Comenzar ahora</a>
-                            <a href="<?= e(url('/contratar/plan-corporativo')) ?>" class="btn btn-primary btn-sm">Contratar</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <?php endforeach; ?>
         </div>
-        <p class="small text-secondary mt-3 mb-0 text-center">Si buscas crecer, controlar stock y tomar decisiones con datos, el plan Profesional suele ser la decisión más rentable.</p>
     </div>
 </section>
 
@@ -295,29 +248,41 @@
 <section class="py-5 border-bottom">
     <div class="container">
         <h2 class="h4 mb-3">Tabla comparativa de funcionalidades</h2>
-        <p class="text-secondary small">Compara el avance por nivel para elegir según la madurez de tu operación.</p>
+        <p class="text-secondary small">Comparativa automática según funcionalidades activas por plan.</p>
         <div class="table-responsive">
             <table class="table table-bordered align-middle small">
                 <thead class="table-light">
                     <tr>
                         <th>Funcionalidad</th>
-                        <th>Básico</th>
-                        <th>Profesional</th>
-                        <th>Empresa / Premium</th>
+                        <?php foreach ($planes as $plan): ?><th><?= e($plan['nombre']) ?></th><?php endforeach; ?>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td>Cotizaciones</td><td>✔</td><td>✔</td><td>✔</td></tr>
-                    <tr><td>Inventario</td><td>Básico</td><td>Completo + stock real</td><td>Avanzado + compras</td></tr>
-                    <tr><td>Punto de venta</td><td>Ventas simples</td><td>Operación diaria</td><td>POS completo + caja</td></tr>
-                    <tr><td>Seguimiento comercial</td><td>—</td><td>✔</td><td>✔ Avanzado</td></tr>
-                    <tr><td>Gestión de vendedores</td><td>—</td><td>✔</td><td>✔ Multiusuario</td></tr>
-                    <tr><td>Reportes de ventas</td><td>Básico</td><td>✔</td><td>✔ Avanzado</td></tr>
-                    <tr><td>Alertas de stock</td><td>—</td><td>✔</td><td>✔</td></tr>
-                    <tr><td>Ajustes y recepciones inventario</td><td>—</td><td>✔</td><td>✔</td></tr>
-                    <tr><td>Automatizaciones</td><td>—</td><td>—</td><td>✔</td></tr>
-                    <tr><td>Precio mensual</td><td><strong>$15.000</strong></td><td><strong>$26.000</strong></td><td><strong>$55.000</strong></td></tr>
-                    <tr><td>Descuento anual</td><td>10%</td><td>10%</td><td>15%</td></tr>
+                    <?php
+                    $funcionalidadesUnicas = [];
+                    foreach ($planes as $plan) {
+                        foreach ($plan['funcionalidades'] as $funcionalidad) {
+                            $funcionalidadesUnicas[$funcionalidad['codigo_interno']] = $funcionalidad['descripcion'] ?: $funcionalidad['nombre'];
+                        }
+                    }
+                    ?>
+                    <?php foreach ($funcionalidadesUnicas as $codigo => $nombre): ?>
+                        <tr>
+                            <td><?= e($nombre) ?></td>
+                            <?php foreach ($planes as $plan): ?>
+                                <?php
+                                $incluida = false;
+                                foreach ($plan['funcionalidades'] as $funcionalidad) {
+                                    if ($funcionalidad['codigo_interno'] === $codigo) {
+                                        $incluida = true;
+                                        break;
+                                    }
+                                }
+                                ?>
+                                <td><?= $incluida ? '✔' : '—' ?></td>
+                            <?php endforeach; ?>
+                        </tr>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
