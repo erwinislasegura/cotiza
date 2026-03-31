@@ -107,15 +107,16 @@
       <?= csrf_campo() ?>
       <input type="hidden" name="redirect_to" value="/app/inventario/recepciones">
       <div class="modal-body row g-2">
-        <div class="col-md-4"><input class="form-control" name="nombre" placeholder="Nombre proveedor" required></div>
-        <div class="col-md-2"><input class="form-control" name="identificador_fiscal" placeholder="RUT/NIT"></div>
-        <div class="col-md-3"><input class="form-control" name="contacto" placeholder="Contacto"></div>
-        <div class="col-md-3"><input type="email" class="form-control" name="correo" placeholder="Correo"></div>
-        <div class="col-md-3"><input class="form-control" name="telefono" placeholder="Teléfono"></div>
-        <div class="col-md-3"><input class="form-control" name="ciudad" placeholder="Ciudad"></div>
-        <div class="col-md-4"><input class="form-control" name="direccion" placeholder="Dirección"></div>
-        <div class="col-md-2"><select name="estado" class="form-select"><option value="activo">Activo</option><option value="inactivo">Inactivo</option></select></div>
-        <div class="col-12"><input class="form-control" name="observacion" placeholder="Observación"></div>
+        <div class="col-md-4"><label class="form-label">Razón social</label><input class="form-control" name="razon_social" placeholder="Razón social" required></div>
+        <div class="col-md-4"><label class="form-label">Nombre comercial</label><input class="form-control" name="nombre_comercial" placeholder="Nombre comercial"></div>
+        <div class="col-md-4"><label class="form-label">Nombre contacto</label><input class="form-control" name="nombre_contacto" placeholder="Contacto"></div>
+        <div class="col-md-3"><label class="form-label">RUT/NIT</label><input class="form-control" name="identificador_fiscal" placeholder="RUT/NIT"></div>
+        <div class="col-md-3"><label class="form-label">Correo</label><input type="email" class="form-control" name="correo" placeholder="Correo"></div>
+        <div class="col-md-3"><label class="form-label">Teléfono</label><input class="form-control" name="telefono" placeholder="Teléfono"></div>
+        <div class="col-md-3"><label class="form-label">Ciudad</label><input class="form-control" name="ciudad" placeholder="Ciudad"></div>
+        <div class="col-md-9"><label class="form-label">Dirección</label><input class="form-control" name="direccion" placeholder="Dirección"></div>
+        <div class="col-md-3"><label class="form-label">Estado</label><select name="estado" class="form-select"><option value="activo">Activo</option><option value="inactivo">Inactivo</option></select></div>
+        <div class="col-12"><label class="form-label">Observación</label><input class="form-control" name="observacion" placeholder="Observación"></div>
       </div>
       <div class="modal-footer"><button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary btn-sm">Guardar proveedor</button></div>
     </form>

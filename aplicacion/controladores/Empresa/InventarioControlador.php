@@ -229,7 +229,13 @@ class InventarioControlador extends Controlador
         $this->validarPermiso('inventario_crear_recepciones');
         validar_csrf();
         $empresaId = (int) empresa_actual_id();
-        $nombre = trim((string) ($_POST['nombre'] ?? ''));
+        $nombre = trim((string) ($_POST['razon_social'] ?? ''));
+        if ($nombre === '') {
+            $nombre = trim((string) ($_POST['nombre_comercial'] ?? ''));
+        }
+        if ($nombre === '') {
+            $nombre = trim((string) ($_POST['nombre'] ?? ''));
+        }
         if ($nombre === '') {
             flash('danger', 'El nombre del proveedor es obligatorio.');
             $this->redirigir('/app/inventario/proveedores');
@@ -238,7 +244,7 @@ class InventarioControlador extends Controlador
         (new Inventario())->crearProveedor($empresaId, [
             'nombre' => $nombre,
             'identificador_fiscal' => trim((string) ($_POST['identificador_fiscal'] ?? '')),
-            'contacto' => trim((string) ($_POST['contacto'] ?? '')),
+            'contacto' => trim((string) ($_POST['nombre_contacto'] ?? $_POST['contacto'] ?? '')),
             'correo' => trim((string) ($_POST['correo'] ?? '')),
             'telefono' => trim((string) ($_POST['telefono'] ?? '')),
             'direccion' => trim((string) ($_POST['direccion'] ?? '')),
