@@ -118,18 +118,22 @@
             <div class="col-12 col-lg-6">
                 <h2 class="h4 mb-2">Impacto operativo: sin sistema vs con sistema</h2>
                 <p class="small text-secondary mb-3">Referencia realista sobre tiempos, errores y cierres cuando se integra cotización + POS + inventario.</p>
-                <div class="card h-100">
+                <div class="card">
                     <div class="card-body">
-                        <canvas id="graficoComparativoLanding" height="230"></canvas>
+                        <div style="position: relative; height: 260px;">
+                            <canvas id="graficoComparativoLanding"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-12 col-lg-6">
                 <h2 class="h4 mb-2">Evolución de control comercial e inventario</h2>
                 <p class="small text-secondary mb-3">Al operar con datos en tiempo real, el negocio sostiene crecimiento con menos errores y mejor respuesta.</p>
-                <div class="card h-100">
+                <div class="card">
                     <div class="card-body">
-                        <canvas id="graficoEvolucionLanding" height="230"></canvas>
+                        <div style="position: relative; height: 260px;">
+                            <canvas id="graficoEvolucionLanding"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -158,6 +162,7 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                resizeDelay: 150,
                 plugins: {
                     legend: {
                         position: mobile ? 'top' : 'bottom',
@@ -191,6 +196,7 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                resizeDelay: 150,
                 plugins: {
                     legend: {
                         position: mobile ? 'top' : 'bottom',
