@@ -5,6 +5,7 @@ namespace Aplicacion\Controladores\Empresa;
 use Aplicacion\Nucleo\Controlador;
 use Aplicacion\Modelos\PuntoVenta;
 use Aplicacion\Modelos\GestionComercial;
+use Aplicacion\Servicios\ServicioAlertaStock;
 
 class PuntoVentaControlador extends Controlador
 {
@@ -149,6 +150,11 @@ class PuntoVentaControlador extends Controlador
                 'vuelto' => (float) ($_POST['vuelto'] ?? 0),
             ], $items, $pagos, (bool) ($configuracion['permitir_venta_sin_stock'] ?? false));
 
+            $alertas = new ServicioAlertaStock();
+            foreach ($pos->obtenerTransicionesStock() as $transicion) {
+                $alertas->evaluarYNotificar($empresaId, (int) $transicion['producto_id'], (float) $transicion['stock_anterior'], (float) $transicion['stock_actual'], (string) (usuario_actual()['nombre'] ?? ''));
+            }
+
             flash('success', 'Venta registrada correctamente.');
             $this->redirigir('/app/punto-venta/ventas/ver/' . $ventaId . '?imprimir=1');
         } catch (\Throwable $e) {
@@ -282,6 +288,7 @@ class PuntoVentaControlador extends Controlador
             'impuesto_por_defecto' => (float) ($_POST['impuesto_por_defecto'] ?? 0),
             'usar_decimales' => isset($_POST['usar_decimales']) ? 1 : 0,
             'cantidad_decimales' => max(0, min(6, (int) ($_POST['cantidad_decimales'] ?? 2))),
+            'moneda' => in_array((string) ($_POST['moneda'] ?? 'CLP'), ['CLP', 'USD', 'EU'], true) ? (string) $_POST['moneda'] : 'CLP',
         ]);
 
         flash('success', 'Configuración POS actualizada.');
