@@ -56,6 +56,12 @@ class Plan extends Modelo
         $this->db->prepare($sql)->execute($data);
     }
 
+    public function eliminar(int $id): void
+    {
+        $stmt = $this->db->prepare('UPDATE planes SET fecha_eliminacion = NOW(), fecha_actualizacion = NOW() WHERE id = :id AND fecha_eliminacion IS NULL');
+        $stmt->execute(['id' => $id]);
+    }
+
     public function obtenerPlanActivoEmpresa(int $empresaId): ?array
     {
         $sql = 'SELECT s.plan_id, s.fecha_vencimiento, s.estado FROM suscripciones s WHERE s.empresa_id = :empresa_id ORDER BY s.id DESC LIMIT 1';
