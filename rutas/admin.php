@@ -52,4 +52,5 @@ $enrutador->agregar('POST', '/admin/suscripciones/editar/{id}', [SuscripcionesCo
 $enrutador->agregar('GET', '/admin/pagos', [PagosControlador::class, 'index'], $mw);
 $enrutador->agregar('GET', '/admin/reportes', [ReportesControlador::class, 'index'], $mw);
 $enrutador->agregar('GET', '/admin/configuracion', [ConfiguracionGeneralControlador::class, 'index'], $mw);
+$enrutador->agregar('POST', '/admin/configuracion', [ConfiguracionGeneralControlador::class, 'guardar'], $mw);
 $enrutador->agregar('GET', '/admin/historial', [HistorialAdminControlador::class, 'index'], $mw);
