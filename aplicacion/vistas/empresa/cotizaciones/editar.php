@@ -121,7 +121,7 @@ if ($listaPrecioCotizacionId > 0) {
                                     <select class="form-select js-producto" name="producto_id[]">
                                         <option value="">Seleccionar</option>
                                         <?php foreach ($productos as $p): ?>
-                                            <option value="<?= $p['id'] ?>" data-nombre="<?= e($p['nombre']) ?>" data-descripcion="<?= e($p['descripcion'] ?? '') ?>" <?= (int) ($item['producto_id'] ?? 0) === (int) $p['id'] ? 'selected' : '' ?>><?= e($p['nombre']) ?></option>
+                                            <option value="<?= $p['id'] ?>" data-nombre="<?= e($p['nombre']) ?>" data-descripcion="<?= e($p['descripcion'] ?? '') ?>" data-precio="<?= e((string) ($p['precio'] ?? 0)) ?>" data-impuesto="<?= e((string) ($p['impuesto'] ?? 0)) ?>" <?= (int) ($item['producto_id'] ?? 0) === (int) $p['id'] ? 'selected' : '' ?>><?= e($p['nombre']) ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                     <button class="btn btn-outline-secondary js-editar-descripcion" type="button" title="Descripción">+</button>
@@ -200,7 +200,7 @@ if ($listaPrecioCotizacionId > 0) {
                 <select class="form-select js-producto" name="producto_id[]">
                     <option value="">Seleccionar</option>
                     <?php foreach ($productos as $p): ?>
-                        <option value="<?= $p['id'] ?>" data-nombre="<?= e($p['nombre']) ?>" data-descripcion="<?= e($p['descripcion'] ?? '') ?>"><?= e($p['nombre']) ?></option>
+                        <option value="<?= $p['id'] ?>" data-nombre="<?= e($p['nombre']) ?>" data-descripcion="<?= e($p['descripcion'] ?? '') ?>" data-precio="<?= e((string) ($p['precio'] ?? 0)) ?>" data-impuesto="<?= e((string) ($p['impuesto'] ?? 0)) ?>"><?= e($p['nombre']) ?></option>
                     <?php endforeach; ?>
                 </select>
                 <button class="btn btn-outline-secondary js-editar-descripcion" type="button" title="Descripción">+</button>
@@ -231,16 +231,19 @@ if ($listaPrecioCotizacionId > 0) {
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Descripción del ítem</h5>
+                <h5 class="modal-title">Información del producto</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
-                <label class="small mb-1">Detalle para cotización</label>
-                <textarea class="form-control" id="descripcion_item_modal" rows="4" placeholder="Escribe el detalle del producto o servicio"></textarea>
+                <div class="mb-2"><span class="small text-muted">Nombre</span><div class="fw-semibold" id="info_producto_nombre">—</div></div>
+                <div class="mb-2"><span class="small text-muted">Descripción</span><div id="info_producto_descripcion">—</div></div>
+                <div class="row g-2">
+                    <div class="col-6"><span class="small text-muted">Precio</span><div id="info_producto_precio">—</div></div>
+                    <div class="col-6"><span class="small text-muted">Impuesto (%)</span><div id="info_producto_impuesto">—</div></div>
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary btn-sm" id="guardar_descripcion_item">Guardar descripción</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
@@ -260,10 +263,11 @@ if ($listaPrecioCotizacionId > 0) {
     const listasPorCliente = <?= json_encode($listasPreciosPorCliente ?? [], JSON_UNESCAPED_UNICODE) ?>;
     const clientes = <?= json_encode($clientes ?? [], JSON_UNESCAPED_UNICODE) ?>;
     const modalDescripcionEl = document.getElementById('modalDescripcionItem');
-    const inputDescripcionModal = document.getElementById('descripcion_item_modal');
-    const btnGuardarDescripcion = document.getElementById('guardar_descripcion_item');
     const modalDescripcion = (modalDescripcionEl && window.bootstrap) ? new bootstrap.Modal(modalDescripcionEl) : null;
-    let filaDescripcionActiva = null;
+    const infoProductoNombre = document.getElementById('info_producto_nombre');
+    const infoProductoDescripcion = document.getElementById('info_producto_descripcion');
+    const infoProductoPrecio = document.getElementById('info_producto_precio');
+    const infoProductoImpuesto = document.getElementById('info_producto_impuesto');
 
     function fmt(v) { return '$' + (Math.round((v + Number.EPSILON) * 100) / 100).toFixed(2); }
     function esc(valor) {
@@ -405,10 +409,17 @@ if ($listaPrecioCotizacionId > 0) {
                 recalcular();
             });
         }
-        if (btnEditarDescripcion && inputDescripcionModal && modalDescripcion) {
+        if (btnEditarDescripcion && modalDescripcion) {
             btnEditarDescripcion.addEventListener('click', () => {
-                filaDescripcionActiva = fila;
-                inputDescripcionModal.value = inputDescripcion ? String(inputDescripcion.value || '') : '';
+                const opcion = selectProducto ? selectProducto.options[selectProducto.selectedIndex] : null;
+                if (!opcion || !opcion.value) {
+                    alert('Selecciona un producto para ver su información.');
+                    return;
+                }
+                if (infoProductoNombre) { infoProductoNombre.textContent = opcion.dataset.nombre || '—'; }
+                if (infoProductoDescripcion) { infoProductoDescripcion.textContent = opcion.dataset.descripcion || '—'; }
+                if (infoProductoPrecio) { infoProductoPrecio.textContent = fmt(parseFloat(opcion.dataset.precio || '0')); }
+                if (infoProductoImpuesto) { infoProductoImpuesto.textContent = (opcion.dataset.impuesto || '0') + '%'; }
                 modalDescripcion.show();
             });
         }
