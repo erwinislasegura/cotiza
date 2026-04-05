@@ -34,6 +34,7 @@ $enrutador->agregar('POST', '/admin/planes/crear', [PlanesControlador::class, 'g
 $enrutador->agregar('GET', '/admin/planes/editar/{id}', [PlanesControlador::class, 'editar'], $mw);
 $enrutador->agregar('POST', '/admin/planes/editar/{id}', [PlanesControlador::class, 'actualizar'], $mw);
 $enrutador->agregar('POST', '/admin/planes/estado/{id}', [PlanesControlador::class, 'cambiarEstado'], $mw);
+$enrutador->agregar('POST', '/admin/planes/eliminar/{id}', [PlanesControlador::class, 'eliminar'], $mw);
 
 $enrutador->agregar('GET', '/admin/funcionalidades', [FuncionalidadesControlador::class, 'index'], $mw);
 $enrutador->agregar('GET', '/admin/funcionalidades/crear', [FuncionalidadesControlador::class, 'crear'], $mw);
@@ -51,4 +52,5 @@ $enrutador->agregar('POST', '/admin/suscripciones/editar/{id}', [SuscripcionesCo
 $enrutador->agregar('GET', '/admin/pagos', [PagosControlador::class, 'index'], $mw);
 $enrutador->agregar('GET', '/admin/reportes', [ReportesControlador::class, 'index'], $mw);
 $enrutador->agregar('GET', '/admin/configuracion', [ConfiguracionGeneralControlador::class, 'index'], $mw);
+$enrutador->agregar('POST', '/admin/configuracion', [ConfiguracionGeneralControlador::class, 'guardar'], $mw);
 $enrutador->agregar('GET', '/admin/historial', [HistorialAdminControlador::class, 'index'], $mw);
