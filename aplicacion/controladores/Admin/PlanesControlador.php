@@ -62,12 +62,36 @@ class PlanesControlador extends Controlador
         }
 
         $nuevoEstado = $plan['estado'] === 'activo' ? 'inactivo' : 'activo';
-        $data = $plan;
+        $data = $this->normalizarDatosPlan($plan);
         $data['estado'] = $nuevoEstado;
-        (new Plan())->actualizar($id, $data);
-        (new LogAdministracion())->registrar('planes', 'cambiar_estado', "Plan ID {$id} pasó a {$nuevoEstado}");
+        try {
+            (new Plan())->actualizar($id, $data);
+            (new LogAdministracion())->registrar('planes', 'cambiar_estado', "Plan ID {$id} pasó a {$nuevoEstado}");
+            flash('success', 'Estado del plan actualizado.');
+        } catch (Throwable $e) {
+            flash('danger', 'No se pudo actualizar el estado del plan.');
+        }
 
-        flash('success', 'Estado del plan actualizado.');
+        $this->redirigir('/admin/planes');
+    }
+
+    public function eliminar(int $id): void
+    {
+        validar_csrf();
+        $plan = (new Plan())->buscar($id);
+        if (!$plan) {
+            flash('danger', 'Plan no encontrado.');
+            $this->redirigir('/admin/planes');
+        }
+
+        try {
+            (new Plan())->eliminar($id);
+            (new LogAdministracion())->registrar('planes', 'eliminar', "Eliminación lógica de plan ID {$id}");
+            flash('success', 'Plan eliminado correctamente.');
+        } catch (Throwable $e) {
+            flash('danger', 'No se pudo eliminar el plan.');
+        }
+
         $this->redirigir('/admin/planes');
     }
 
@@ -99,6 +123,30 @@ class PlanesControlador extends Controlador
             'usuarios_ilimitados' => isset($_POST['usuarios_ilimitados']) ? 1 : 0,
             'observaciones_internas' => trim($_POST['observaciones_internas'] ?? ''),
             'estado' => $_POST['estado'] ?? 'activo',
+        ];
+    }
+
+    private function normalizarDatosPlan(array $plan): array
+    {
+        return [
+            'nombre' => trim((string) ($plan['nombre'] ?? '')),
+            'slug' => trim((string) ($plan['slug'] ?? '')),
+            'descripcion_comercial' => trim((string) ($plan['descripcion_comercial'] ?? '')),
+            'precio_mensual' => (float) ($plan['precio_mensual'] ?? 0),
+            'descuento_anual_pct' => (float) ($plan['descuento_anual_pct'] ?? 0),
+            'precio_anual' => (float) ($plan['precio_anual'] ?? 0),
+            'duracion_dias' => (int) ($plan['duracion_dias'] ?? 30),
+            'visible' => (int) ($plan['visible'] ?? 0),
+            'destacado' => (int) ($plan['destacado'] ?? 0),
+            'recomendado' => (int) ($plan['recomendado'] ?? 0),
+            'orden_visualizacion' => (int) ($plan['orden_visualizacion'] ?? 0),
+            'insignia' => trim((string) ($plan['insignia'] ?? '')),
+            'resumen_comercial' => trim((string) ($plan['resumen_comercial'] ?? '')),
+            'color_visual' => trim((string) ($plan['color_visual'] ?? '#0d6efd')),
+            'maximo_usuarios' => (int) ($plan['maximo_usuarios'] ?? 0),
+            'usuarios_ilimitados' => (int) ($plan['usuarios_ilimitados'] ?? 0),
+            'observaciones_internas' => trim((string) ($plan['observaciones_internas'] ?? '')),
+            'estado' => (string) ($plan['estado'] ?? 'activo'),
         ];
     }
 }
