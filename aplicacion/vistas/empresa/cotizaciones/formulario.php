@@ -130,8 +130,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
                 <table class="table table-sm align-middle" id="tabla-items">
                     <thead>
                     <tr>
-                        <th style="width: 15%;">Producto / Servicio</th>
-                        <th style="width: 14%;">Descripción</th>
+                        <th style="width: 20%;">Producto / Servicio</th>
                         <th>Cantidad</th>
                         <th>Precio</th>
                         <th style="width: 18%;">Lista / ajuste</th>
@@ -199,9 +198,11 @@ $puedeGuardar = $hayClientes && $hayProductos;
                     <?php endforeach; ?>
                 </select>
                 <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalProducto">+</button>
+                <button class="btn btn-outline-secondary js-editar-descripcion" type="button" title="Descripción">+</button>
             </div>
+            <input type="hidden" class="js-descripcion" name="descripcion_item[]" value="">
+            <div class="small text-muted js-resumen-descripcion">Sin descripción</div>
         </td>
-        <td><input class="form-control form-control-sm" name="descripcion_item[]" placeholder="Detalle del producto o servicio"></td>
         <td><input class="form-control form-control-sm js-cantidad" type="number" step="0.01" min="0" name="cantidad[]" value="1"></td>
         <td><input class="form-control form-control-sm js-precio" type="number" step="0.01" min="0" name="precio_unitario[]" value="0"></td>
         <td class="small text-muted js-lista-ajuste">Sin validar lista</td>
@@ -221,6 +222,25 @@ $puedeGuardar = $hayClientes && $hayProductos;
         <td><button type="button" class="btn btn-outline-danger btn-sm js-eliminar">×</button></td>
     </tr>
 </template>
+
+<div class="modal fade" id="modalDescripcionItem" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Descripción del ítem</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <label class="small mb-1">Detalle para cotización</label>
+                <textarea class="form-control" id="descripcion_item_modal" rows="4" placeholder="Escribe el detalle del producto o servicio"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary btn-sm" id="guardar_descripcion_item">Guardar descripción</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="modal fade" id="modalCliente" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -291,6 +311,11 @@ $puedeGuardar = $hayClientes && $hayProductos;
     const todasLasListas = <?= json_encode($listasPrecios ?? [], JSON_UNESCAPED_UNICODE) ?>;
     const btnCopiarLink = document.getElementById('copiar_link_aprobacion');
     const inputLinkAprobacion = document.getElementById('link_aprobacion');
+    const modalDescripcionEl = document.getElementById('modalDescripcionItem');
+    const inputDescripcionModal = document.getElementById('descripcion_item_modal');
+    const btnGuardarDescripcion = document.getElementById('guardar_descripcion_item');
+    const modalDescripcion = (modalDescripcionEl && window.bootstrap) ? new bootstrap.Modal(modalDescripcionEl) : null;
+    let filaDescripcionActiva = null;
 
     if (btnCopiarLink && inputLinkAprobacion) {
         btnCopiarLink.addEventListener('click', async function () {
@@ -319,6 +344,18 @@ $puedeGuardar = $hayClientes && $hayProductos;
             '"': '&quot;',
             "'": '&#039;'
         }[c] || c));
+    }
+
+    function actualizarResumenDescripcion(fila) {
+        const inputDescripcion = fila.querySelector('.js-descripcion');
+        const resumenDescripcion = fila.querySelector('.js-resumen-descripcion');
+        if (!inputDescripcion || !resumenDescripcion) { return; }
+        const texto = String(inputDescripcion.value || '').trim();
+        if (texto === '') {
+            resumenDescripcion.textContent = 'Sin descripción';
+            return;
+        }
+        resumenDescripcion.textContent = texto.length > 45 ? (texto.slice(0, 45) + '…') : texto;
     }
 
     function actualizarIndicadorLista() {
@@ -490,19 +527,43 @@ $puedeGuardar = $hayClientes && $hayProductos;
         });
 
         const selectProducto = fila.querySelector('.js-producto');
-        const inputDescripcion = fila.querySelector('[name="descripcion_item[]"]');
+        const inputDescripcion = fila.querySelector('.js-descripcion');
+        const btnEditarDescripcion = fila.querySelector('.js-editar-descripcion');
         if (selectProducto) {
             selectProducto.addEventListener('change', async () => {
                 const opcion = selectProducto.options[selectProducto.selectedIndex];
                 const detalleProducto = opcion?.dataset?.descripcion || opcion?.dataset?.nombre || '';
                 if (inputDescripcion && inputDescripcion.value.trim() === '') {
                     inputDescripcion.value = detalleProducto;
+                    actualizarResumenDescripcion(fila);
                 }
                 await autocompletarPrecioDesdeLista(fila, true);
                 recalcular();
             });
         }
+        if (btnEditarDescripcion && inputDescripcionModal && modalDescripcion) {
+            btnEditarDescripcion.addEventListener('click', () => {
+                filaDescripcionActiva = fila;
+                inputDescripcionModal.value = inputDescripcion ? String(inputDescripcion.value || '') : '';
+                modalDescripcion.show();
+            });
+        }
+        actualizarResumenDescripcion(fila);
         cuerpo.appendChild(fila);
+    }
+
+    if (btnGuardarDescripcion && inputDescripcionModal) {
+        btnGuardarDescripcion.addEventListener('click', () => {
+            if (!filaDescripcionActiva) { return; }
+            const inputDescripcion = filaDescripcionActiva.querySelector('.js-descripcion');
+            if (inputDescripcion) {
+                inputDescripcion.value = inputDescripcionModal.value.trim();
+                actualizarResumenDescripcion(filaDescripcionActiva);
+            }
+            if (modalDescripcion) {
+                modalDescripcion.hide();
+            }
+        });
     }
 
     function renderResumenCliente() {
