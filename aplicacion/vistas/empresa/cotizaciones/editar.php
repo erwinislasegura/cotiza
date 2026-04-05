@@ -124,11 +124,9 @@ if ($listaPrecioCotizacionId > 0) {
                                             <option value="<?= $p['id'] ?>" data-nombre="<?= e($p['nombre']) ?>" data-descripcion="<?= e($p['descripcion'] ?? '') ?>" <?= (int) ($item['producto_id'] ?? 0) === (int) $p['id'] ? 'selected' : '' ?>><?= e($p['nombre']) ?></option>
                                         <?php endforeach; ?>
                                     </select>
-                                    <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalProducto">+</button>
                                     <button class="btn btn-outline-secondary js-editar-descripcion" type="button" title="Descripción">+</button>
                                 </div>
                                 <input type="hidden" class="js-descripcion" name="descripcion_item[]" value="<?= e($item['descripcion'] ?? '') ?>">
-                                <div class="small text-muted js-resumen-descripcion"><?= e(trim((string) ($item['descripcion'] ?? '')) !== '' ? mb_strimwidth((string) $item['descripcion'], 0, 45, '…') : 'Sin descripción') ?></div>
                             </td>
                             <td><input class="form-control form-control-sm js-cantidad" type="number" step="0.01" min="0" name="cantidad[]" value="<?= e((string) ($item['cantidad'] ?? 1)) ?>"></td>
                             <td><input class="form-control form-control-sm js-precio" type="number" step="0.01" min="0" name="precio_unitario[]" value="<?= e((string) ($item['precio_unitario'] ?? 0)) ?>"></td>
@@ -205,11 +203,9 @@ if ($listaPrecioCotizacionId > 0) {
                         <option value="<?= $p['id'] ?>" data-nombre="<?= e($p['nombre']) ?>" data-descripcion="<?= e($p['descripcion'] ?? '') ?>"><?= e($p['nombre']) ?></option>
                     <?php endforeach; ?>
                 </select>
-                <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalProducto">+</button>
                 <button class="btn btn-outline-secondary js-editar-descripcion" type="button" title="Descripción">+</button>
             </div>
             <input type="hidden" class="js-descripcion" name="descripcion_item[]" value="">
-            <div class="small text-muted js-resumen-descripcion">Sin descripción</div>
         </td>
         <td><input class="form-control form-control-sm js-cantidad" type="number" step="0.01" min="0" name="cantidad[]" value="1"></td>
         <td><input class="form-control form-control-sm js-precio" type="number" step="0.01" min="0" name="precio_unitario[]" value="0"></td>
@@ -416,7 +412,6 @@ if ($listaPrecioCotizacionId > 0) {
                 modalDescripcion.show();
             });
         }
-        actualizarResumenDescripcion(fila);
     }
     function recalcular() {
         let subtotal = 0; let iva = 0;
@@ -514,7 +509,6 @@ if ($listaPrecioCotizacionId > 0) {
             const inputDescripcion = filaDescripcionActiva.querySelector('.js-descripcion');
             if (inputDescripcion) {
                 inputDescripcion.value = inputDescripcionModal.value.trim();
-                actualizarResumenDescripcion(filaDescripcionActiva);
             }
             if (modalDescripcion) {
                 modalDescripcion.hide();
