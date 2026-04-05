@@ -76,26 +76,31 @@ class EmpresasControlador extends Controlador
         validar_csrf();
         $dias = max(1, (int) ($_POST['dias'] ?? 30));
         $suscripcionModelo = new Suscripcion();
-        $suscripciones = $suscripcionModelo->listar(['empresa_id' => $id]);
-        if (empty($suscripciones)) {
+        $actual = $suscripcionModelo->obtenerUltimaPorEmpresa($id);
+        if (!$actual) {
             flash('danger', 'La empresa no tiene suscripción para extender.');
             $this->redirigir('/admin/empresas/ver/' . $id);
         }
 
-        $actual = $suscripciones[0];
-        $base = $actual['fecha_vencimiento'] > date('Y-m-d') ? $actual['fecha_vencimiento'] : date('Y-m-d');
-        $nuevaFecha = date('Y-m-d', strtotime($base . ' +' . $dias . ' day'));
+        try {
+            $hoy = date('Y-m-d');
+            $base = ((string) ($actual['fecha_vencimiento'] ?? '') > $hoy) ? (string) $actual['fecha_vencimiento'] : $hoy;
+            $nuevaFecha = date('Y-m-d', strtotime($base . ' +' . $dias . ' day'));
 
-        $suscripcionModelo->actualizar((int) $actual['id'], [
-            'empresa_id' => (int) $actual['empresa_id'],
-            'plan_id' => (int) $actual['plan_id'],
-            'estado' => 'activa',
-            'fecha_inicio' => $actual['fecha_inicio'],
-            'fecha_vencimiento' => $nuevaFecha,
-            'observaciones' => trim(($actual['observaciones'] ?? '') . ' | Extensión admin: +' . $dias . ' días'),
-        ]);
-        (new LogAdministracion())->registrar('suscripciones', 'extender_vigencia', 'Extensión de ' . $dias . ' días', $id);
-        flash('success', 'Vigencia extendida hasta ' . $nuevaFecha . '.');
+            $suscripcionModelo->actualizar((int) $actual['id'], [
+                'empresa_id' => (int) ($actual['empresa_id'] ?? $id),
+                'plan_id' => (int) $actual['plan_id'],
+                'estado' => 'activa',
+                'fecha_inicio' => $actual['fecha_inicio'],
+                'fecha_vencimiento' => $nuevaFecha,
+                'observaciones' => trim((string) (($actual['observaciones'] ?? '') . ' | Extensión admin: +' . $dias . ' días')),
+            ]);
+            (new LogAdministracion())->registrar('suscripciones', 'extender_vigencia', 'Extensión de ' . $dias . ' días', $id);
+            flash('success', 'Vigencia extendida hasta ' . $nuevaFecha . '.');
+        } catch (\Throwable $e) {
+            flash('danger', 'No se pudo extender la vigencia de la suscripción.');
+        }
+
         $this->redirigir('/admin/empresas/ver/' . $id);
     }
 }
