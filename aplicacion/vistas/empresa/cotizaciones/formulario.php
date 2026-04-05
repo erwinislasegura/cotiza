@@ -344,6 +344,18 @@ $puedeGuardar = $hayClientes && $hayProductos;
         }[c] || c));
     }
 
+    function actualizarResumenDescripcion(fila) {
+        const inputDescripcion = fila.querySelector('.js-descripcion');
+        const resumenDescripcion = fila.querySelector('.js-resumen-descripcion');
+        if (!inputDescripcion || !resumenDescripcion) { return; }
+        const texto = String(inputDescripcion.value || '').trim();
+        if (texto === '') {
+            resumenDescripcion.textContent = 'Sin descripción';
+            return;
+        }
+        resumenDescripcion.textContent = texto.length > 45 ? (texto.slice(0, 45) + '…') : texto;
+    }
+
     function actualizarIndicadorLista() {
         const indicador = document.getElementById('indicador_lista_estado');
         if (!indicador) { return; }
@@ -521,6 +533,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
                 const detalleProducto = opcion?.dataset?.descripcion || opcion?.dataset?.nombre || '';
                 if (inputDescripcion && inputDescripcion.value.trim() === '') {
                     inputDescripcion.value = detalleProducto;
+                    actualizarResumenDescripcion(fila);
                 }
                 await autocompletarPrecioDesdeLista(fila, true);
                 recalcular();

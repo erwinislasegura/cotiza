@@ -5,6 +5,7 @@ namespace Aplicacion\Controladores\Empresa;
 use Aplicacion\Nucleo\Controlador;
 use Aplicacion\Modelos\Producto;
 use Aplicacion\Modelos\GestionComercial;
+use Aplicacion\Modelos\Inventario;
 use Aplicacion\Servicios\ExcelExpoFormato;
 use Aplicacion\Servicios\ServicioPlan;
 
@@ -463,6 +464,31 @@ class ProductosControlador extends Controlador
         }
 
         return $rutaPredeterminada;
+    }
+
+    public function movimientos(int $id): void
+    {
+        $empresaId = (int) empresa_actual_id();
+        $producto = (new Producto())->obtenerPorId($empresaId, $id);
+
+        header('Content-Type: application/json; charset=UTF-8');
+
+        if (!$producto) {
+            http_response_code(404);
+            echo json_encode(['ok' => false, 'mensaje' => 'Producto no encontrado.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $movimientos = (new Inventario())->listarMovimientos($empresaId, $id);
+        echo json_encode([
+            'ok' => true,
+            'producto' => [
+                'id' => (int) $producto['id'],
+                'nombre' => (string) ($producto['nombre'] ?? ''),
+                'codigo' => (string) ($producto['codigo'] ?? ''),
+            ],
+            'movimientos' => $movimientos,
+        ], JSON_UNESCAPED_UNICODE);
     }
 
     public function ver(int $id): void
