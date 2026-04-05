@@ -5,6 +5,23 @@ $puedeGuardar = $hayClientes && $hayProductos;
 ?>
 <h1 class="h4 mb-3">Crear cotización</h1>
 
+<style>
+    #tabla-items {
+        min-width: 1700px;
+    }
+
+    #tabla-items th,
+    #tabla-items td {
+        white-space: nowrap;
+    }
+
+    #tabla-items .js-lista-ajuste {
+        display: block;
+        min-width: 360px;
+        overflow: visible;
+    }
+</style>
+
 <div class="alert alert-info info-modulo mb-3">
     <div class="fw-semibold mb-1">Guía rápida para crear cotizaciones</div>
     <ul class="mb-0 small ps-3">
@@ -106,7 +123,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
             <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-linea">Agregar línea</button>
         </div>
         <div class="card-body">
-            <div class="table-responsive">
+            <div class="table-responsive" style="overflow-x:auto; overflow-y:visible;">
                 <table class="table table-sm align-middle" id="tabla-items">
                     <thead>
                     <tr>
@@ -343,7 +360,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
 
         if (porcentaje <= 0) {
             fila.dataset.listaAplicada = 'si';
-            celda.innerHTML = `<span class="badge text-bg-success mb-1">${nombreLista}</span><div style="color:#3f8f62;">Lista detectada y aplicada (sin ajuste porcentual).</div>`;
+            celda.innerHTML = `<span class="badge text-bg-success">${nombreLista}</span> <span style="color:#3f8f62;">Lista detectada y aplicada (sin ajuste porcentual).</span>`;
             actualizarIndicadorLista();
             return;
         }
@@ -353,7 +370,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
         const signo = esDescuento ? '-' : '+';
         const etiqueta = esDescuento ? 'Descuento por lista' : 'Incremento por lista';
         fila.dataset.listaAplicada = 'si';
-        celda.innerHTML = `<span class="badge ${esDescuento ? 'text-bg-success' : 'text-bg-warning'} mb-1">${nombreLista}</span><div ${colorSuave}><strong>${etiqueta}</strong>: ${signo}${porcentaje.toFixed(2)}% (${signo}${fmt(montoAjuste)})</div><div>Base ${fmt(precioBase)} → Final ${fmt(precioFinal)}</div>`;
+        celda.innerHTML = `<span class="badge ${esDescuento ? 'text-bg-success' : 'text-bg-warning'}">${nombreLista}</span> <span ${colorSuave}><strong>${etiqueta}</strong>: ${signo}${porcentaje.toFixed(2)}% (${signo}${fmt(montoAjuste)}) | Base ${fmt(precioBase)} → Final ${fmt(precioFinal)}</span>`;
         actualizarIndicadorLista();
     }
 
