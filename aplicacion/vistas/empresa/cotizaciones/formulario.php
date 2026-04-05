@@ -5,6 +5,23 @@ $puedeGuardar = $hayClientes && $hayProductos;
 ?>
 <h1 class="h4 mb-3">Crear cotización</h1>
 
+<style>
+    #tabla-items {
+        min-width: 1700px;
+    }
+
+    #tabla-items th,
+    #tabla-items td {
+        white-space: nowrap;
+    }
+
+    #tabla-items .js-lista-ajuste {
+        display: block;
+        min-width: 360px;
+        overflow: visible;
+    }
+</style>
+
 <div class="alert alert-info info-modulo mb-3">
     <div class="fw-semibold mb-1">Guía rápida para crear cotizaciones</div>
     <ul class="mb-0 small ps-3">
@@ -106,7 +123,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
             <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-linea">Agregar línea</button>
         </div>
         <div class="card-body">
-            <div class="table-responsive">
+            <div class="table-responsive" style="overflow-x:auto; overflow-y:visible;">
                 <table class="table table-sm align-middle" id="tabla-items">
                     <thead>
                     <tr>
@@ -115,7 +132,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
                         <th>Cantidad</th>
                         <th>Precio</th>
                         <th style="min-width: 230px;">Lista / ajuste</th>
-                        <th>Descuento</th>
+                        <th style="min-width: 140px;">Descuento</th>
                         <th>IVA %</th>
                         <th class="text-end">Subtotal</th>
                         <th class="text-end">IVA</th>
@@ -128,10 +145,10 @@ $puedeGuardar = $hayClientes && $hayProductos;
             </div>
 
             <div class="row g-2 mt-2">
-                <div class="col-md-4 ms-auto">
+                <div class="col-md-5 ms-auto">
                     <label class="small">Descuento total</label>
                     <div class="input-group">
-                        <select class="form-select" name="descuento_tipo_total" id="descuento_tipo_total">
+                        <select class="form-select" style="max-width: 75px; flex: 0 0 75px;" name="descuento_tipo_total" id="descuento_tipo_total">
                             <option value="valor">$</option>
                             <option value="porcentaje">%</option>
                         </select>
@@ -187,11 +204,11 @@ $puedeGuardar = $hayClientes && $hayProductos;
         <td class="small text-muted js-lista-ajuste">Sin validar lista</td>
         <td>
             <div class="input-group input-group-sm">
-                <select class="form-select js-descuento-tipo" name="descuento_tipo_item[]">
+                <select class="form-select js-descuento-tipo" style="max-width: 70px; flex: 0 0 70px;" name="descuento_tipo_item[]">
                     <option value="valor">$</option>
                     <option value="porcentaje">%</option>
                 </select>
-                <input class="form-control js-descuento-valor" type="number" step="0.01" min="0" name="descuento_item[]" value="0">
+                <input class="form-control js-descuento-valor" style="min-width: 78px;" type="number" step="0.01" min="0" name="descuento_item[]" value="0">
             </div>
         </td>
         <td><input class="form-control form-control-sm js-iva" type="number" step="0.01" min="0" name="impuesto_item[]" value="19"></td>
@@ -343,7 +360,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
 
         if (porcentaje <= 0) {
             fila.dataset.listaAplicada = 'si';
-            celda.innerHTML = `<span class="badge text-bg-success mb-1">${nombreLista}</span><div style="color:#3f8f62;">Lista detectada y aplicada (sin ajuste porcentual).</div>`;
+            celda.innerHTML = `<span class="badge text-bg-success">${nombreLista}</span> <span style="color:#3f8f62;">Lista detectada y aplicada (sin ajuste porcentual).</span>`;
             actualizarIndicadorLista();
             return;
         }
@@ -353,7 +370,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
         const signo = esDescuento ? '-' : '+';
         const etiqueta = esDescuento ? 'Descuento por lista' : 'Incremento por lista';
         fila.dataset.listaAplicada = 'si';
-        celda.innerHTML = `<span class="badge ${esDescuento ? 'text-bg-success' : 'text-bg-warning'} mb-1">${nombreLista}</span><div ${colorSuave}><strong>${etiqueta}</strong>: ${signo}${porcentaje.toFixed(2)}% (${signo}${fmt(montoAjuste)})</div><div>Base ${fmt(precioBase)} → Final ${fmt(precioFinal)}</div>`;
+        celda.innerHTML = `<span class="badge ${esDescuento ? 'text-bg-success' : 'text-bg-warning'}">${nombreLista}</span> <span ${colorSuave}><strong>${etiqueta}</strong>: ${signo}${porcentaje.toFixed(2)}% (${signo}${fmt(montoAjuste)}) | Base ${fmt(precioBase)} → Final ${fmt(precioFinal)}</span>`;
         actualizarIndicadorLista();
     }
 
@@ -413,6 +430,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
     function recalcular() {
         let subtotal = 0;
         let iva = 0;
+        let descuentoLineas = 0;
 
         cuerpo.querySelectorAll('tr').forEach((fila) => {
             const cantidad = parseFloat(fila.querySelector('.js-cantidad').value || '0');
@@ -436,6 +454,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
 
             subtotal += subtotalLinea;
             iva += ivaLinea;
+            descuentoLineas += descuento;
         });
 
         const tipoTotal = document.getElementById('descuento_tipo_total').value;
@@ -447,7 +466,9 @@ $puedeGuardar = $hayClientes && $hayProductos;
 
         document.getElementById('resumen_subtotal').textContent = fmt(subtotal);
         document.getElementById('resumen_iva').textContent = fmt(iva);
-        document.getElementById('resumen_descuento').textContent = fmt(descuentoTotal);
+        const descuentoGlobal = descuentoTotal;
+        const descuentoAcumulado = descuentoLineas + descuentoGlobal;
+        document.getElementById('resumen_descuento').textContent = fmt(descuentoAcumulado);
         document.getElementById('resumen_total').textContent = fmt(Math.max(0, baseTotal - descuentoTotal));
         actualizarIndicadorLista();
     }
