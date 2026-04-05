@@ -63,6 +63,8 @@
                   class="badge border-0 js-ver-trazabilidad <?= e($badgeStock) ?>"
                   data-url="<?= e(url('/app/productos/movimientos/' . $p['id'])) ?>"
                   data-producto="<?= e(($p['codigo'] ?? '') . ' · ' . ($p['nombre'] ?? '')) ?>"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalTrazabilidadProducto"
                   style="cursor:pointer;"
                 >
                   <?= e($estadoStock) ?>
@@ -119,9 +121,7 @@
   const modalEl = document.getElementById('modalTrazabilidadProducto');
   const productoEl = document.getElementById('trazabilidad_producto');
   const bodyEl = document.getElementById('trazabilidad_body');
-  if (!modalEl || !productoEl || !bodyEl || typeof bootstrap === 'undefined') return;
-
-  const modal = new bootstrap.Modal(modalEl);
+  if (!modalEl || !productoEl || !bodyEl) return;
 
   const formatearNumero = (valor) => {
     const numero = Number(valor || 0);
@@ -129,11 +129,11 @@
   };
 
   const escapeHtml = (valor) => String(valor ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 
   const setCargando = () => {
     bodyEl.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-3">Cargando movimientos...</td></tr>';
@@ -151,7 +151,6 @@
     btn.addEventListener('click', async () => {
       const endpoint = btn.dataset.url || '';
       productoEl.textContent = `Producto: ${btn.dataset.producto || '-'}`;
-      modal.show();
       setCargando();
 
       if (!endpoint) {
