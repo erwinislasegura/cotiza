@@ -7,17 +7,20 @@ $puedeGuardar = $hayClientes && $hayProductos;
 
 <style>
     #tabla-items {
-        min-width: 1700px;
+        width: 100%;
+        table-layout: fixed;
+        font-size: 0.78rem;
     }
 
     #tabla-items th,
     #tabla-items td {
-        white-space: nowrap;
+        white-space: normal;
+        word-break: break-word;
     }
 
     #tabla-items .js-lista-ajuste {
         display: block;
-        min-width: 360px;
+        min-width: 0;
         overflow: visible;
     }
 </style>
@@ -123,16 +126,16 @@ $puedeGuardar = $hayClientes && $hayProductos;
             <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-linea">Agregar línea</button>
         </div>
         <div class="card-body">
-            <div class="table-responsive" style="overflow-x:auto; overflow-y:visible;">
+            <div class="table-responsive" style="overflow-x:hidden; overflow-y:visible;">
                 <table class="table table-sm align-middle" id="tabla-items">
                     <thead>
                     <tr>
-                        <th style="min-width: 220px;">Producto / Servicio</th>
-                        <th style="min-width: 180px;">Descripción</th>
+                        <th style="width: 15%;">Producto / Servicio</th>
+                        <th style="width: 14%;">Descripción</th>
                         <th>Cantidad</th>
                         <th>Precio</th>
-                        <th style="min-width: 230px;">Lista / ajuste</th>
-                        <th style="min-width: 140px;">Descuento</th>
+                        <th style="width: 18%;">Lista / ajuste</th>
+                        <th style="width: 11%;">Descuento</th>
                         <th>IVA %</th>
                         <th class="text-end">Subtotal</th>
                         <th class="text-end">IVA</th>
@@ -204,11 +207,11 @@ $puedeGuardar = $hayClientes && $hayProductos;
         <td class="small text-muted js-lista-ajuste">Sin validar lista</td>
         <td>
             <div class="input-group input-group-sm">
-                <select class="form-select js-descuento-tipo" style="max-width: 70px; flex: 0 0 70px;" name="descuento_tipo_item[]">
+                <select class="form-select js-descuento-tipo" style="max-width: 54px; flex: 0 0 54px;" name="descuento_tipo_item[]">
                     <option value="valor">$</option>
                     <option value="porcentaje">%</option>
                 </select>
-                <input class="form-control js-descuento-valor" style="min-width: 78px;" type="number" step="0.01" min="0" name="descuento_item[]" value="0">
+                <input class="form-control js-descuento-valor" style="min-width: 0;" type="number" step="0.01" min="0" name="descuento_item[]" value="0">
             </div>
         </td>
         <td><input class="form-control form-control-sm js-iva" type="number" step="0.01" min="0" name="impuesto_item[]" value="19"></td>
