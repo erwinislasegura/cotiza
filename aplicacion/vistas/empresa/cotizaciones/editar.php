@@ -124,7 +124,7 @@ if ($listaPrecioCotizacionId > 0) {
                                             <option value="<?= $p['id'] ?>" data-nombre="<?= e($p['nombre']) ?>" data-descripcion="<?= e($p['descripcion'] ?? '') ?>" data-precio="<?= e((string) ($p['precio'] ?? 0)) ?>" data-impuesto="<?= e((string) ($p['impuesto'] ?? 0)) ?>" <?= (int) ($item['producto_id'] ?? 0) === (int) $p['id'] ? 'selected' : '' ?>><?= e($p['nombre']) ?></option>
                                         <?php endforeach; ?>
                                     </select>
-                                    <button class="btn btn-outline-secondary js-editar-descripcion" type="button" title="Descripción">+</button>
+                                    <button class="btn btn-outline-secondary js-editar-descripcion" type="button" title="Descripción" data-bs-toggle="modal" data-bs-target="#modalDescripcionItem">+</button>
                                 </div>
                                 <input type="hidden" class="js-descripcion" name="descripcion_item[]" value="<?= e($item['descripcion'] ?? '') ?>">
                             </td>
@@ -203,7 +203,7 @@ if ($listaPrecioCotizacionId > 0) {
                         <option value="<?= $p['id'] ?>" data-nombre="<?= e($p['nombre']) ?>" data-descripcion="<?= e($p['descripcion'] ?? '') ?>" data-precio="<?= e((string) ($p['precio'] ?? 0)) ?>" data-impuesto="<?= e((string) ($p['impuesto'] ?? 0)) ?>"><?= e($p['nombre']) ?></option>
                     <?php endforeach; ?>
                 </select>
-                <button class="btn btn-outline-secondary js-editar-descripcion" type="button" title="Descripción">+</button>
+                <button class="btn btn-outline-secondary js-editar-descripcion" type="button" title="Descripción" data-bs-toggle="modal" data-bs-target="#modalDescripcionItem">+</button>
             </div>
             <input type="hidden" class="js-descripcion" name="descripcion_item[]" value="">
         </td>
@@ -262,8 +262,6 @@ if ($listaPrecioCotizacionId > 0) {
     const todasLasListas = <?= json_encode($listasPrecios ?? [], JSON_UNESCAPED_UNICODE) ?>;
     const listasPorCliente = <?= json_encode($listasPreciosPorCliente ?? [], JSON_UNESCAPED_UNICODE) ?>;
     const clientes = <?= json_encode($clientes ?? [], JSON_UNESCAPED_UNICODE) ?>;
-    const modalDescripcionEl = document.getElementById('modalDescripcionItem');
-    const modalDescripcion = (modalDescripcionEl && window.bootstrap) ? new bootstrap.Modal(modalDescripcionEl) : null;
     const infoProductoNombre = document.getElementById('info_producto_nombre');
     const infoProductoDescripcion = document.getElementById('info_producto_descripcion');
     const infoProductoPrecio = document.getElementById('info_producto_precio');
@@ -409,10 +407,12 @@ if ($listaPrecioCotizacionId > 0) {
                 recalcular();
             });
         }
-        if (btnEditarDescripcion && modalDescripcion) {
-            btnEditarDescripcion.addEventListener('click', () => {
+        if (btnEditarDescripcion) {
+            btnEditarDescripcion.addEventListener('click', (event) => {
                 const opcion = selectProducto ? selectProducto.options[selectProducto.selectedIndex] : null;
                 if (!opcion || !opcion.value) {
+                    event.preventDefault();
+                    event.stopPropagation();
                     alert('Selecciona un producto para ver su información.');
                     return;
                 }
@@ -420,7 +420,6 @@ if ($listaPrecioCotizacionId > 0) {
                 if (infoProductoDescripcion) { infoProductoDescripcion.textContent = opcion.dataset.descripcion || '—'; }
                 if (infoProductoPrecio) { infoProductoPrecio.textContent = fmt(parseFloat(opcion.dataset.precio || '0')); }
                 if (infoProductoImpuesto) { infoProductoImpuesto.textContent = (opcion.dataset.impuesto || '0') + '%'; }
-                modalDescripcion.show();
             });
         }
     }

@@ -197,7 +197,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
                         <option value="<?= $p['id'] ?>" data-nombre="<?= e($p['nombre']) ?>" data-descripcion="<?= e($p['descripcion'] ?? '') ?>" data-precio="<?= e((string) ($p['precio'] ?? 0)) ?>" data-impuesto="<?= e((string) ($p['impuesto'] ?? 0)) ?>"><?= e($p['nombre']) ?></option>
                     <?php endforeach; ?>
                 </select>
-                <button class="btn btn-outline-secondary js-editar-descripcion" type="button" title="Descripción">+</button>
+                <button class="btn btn-outline-secondary js-editar-descripcion" type="button" title="Descripción" data-bs-toggle="modal" data-bs-target="#modalDescripcionItem">+</button>
             </div>
             <input type="hidden" class="js-descripcion" name="descripcion_item[]" value="">
         </td>
@@ -312,8 +312,6 @@ $puedeGuardar = $hayClientes && $hayProductos;
     const todasLasListas = <?= json_encode($listasPrecios ?? [], JSON_UNESCAPED_UNICODE) ?>;
     const btnCopiarLink = document.getElementById('copiar_link_aprobacion');
     const inputLinkAprobacion = document.getElementById('link_aprobacion');
-    const modalDescripcionEl = document.getElementById('modalDescripcionItem');
-    const modalDescripcion = (modalDescripcionEl && window.bootstrap) ? new bootstrap.Modal(modalDescripcionEl) : null;
     const infoProductoNombre = document.getElementById('info_producto_nombre');
     const infoProductoDescripcion = document.getElementById('info_producto_descripcion');
     const infoProductoPrecio = document.getElementById('info_producto_precio');
@@ -543,10 +541,12 @@ $puedeGuardar = $hayClientes && $hayProductos;
                 recalcular();
             });
         }
-        if (btnEditarDescripcion && modalDescripcion) {
-            btnEditarDescripcion.addEventListener('click', () => {
+        if (btnEditarDescripcion) {
+            btnEditarDescripcion.addEventListener('click', (event) => {
                 const opcion = selectProducto ? selectProducto.options[selectProducto.selectedIndex] : null;
                 if (!opcion || !opcion.value) {
+                    event.preventDefault();
+                    event.stopPropagation();
                     alert('Selecciona un producto para ver su información.');
                     return;
                 }
@@ -554,7 +554,6 @@ $puedeGuardar = $hayClientes && $hayProductos;
                 if (infoProductoDescripcion) { infoProductoDescripcion.textContent = opcion.dataset.descripcion || '—'; }
                 if (infoProductoPrecio) { infoProductoPrecio.textContent = fmt(parseFloat(opcion.dataset.precio || '0')); }
                 if (infoProductoImpuesto) { infoProductoImpuesto.textContent = (opcion.dataset.impuesto || '0') + '%'; }
-                modalDescripcion.show();
             });
         }
         cuerpo.appendChild(fila);
