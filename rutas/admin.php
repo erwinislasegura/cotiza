@@ -34,6 +34,7 @@ $enrutador->agregar('POST', '/admin/planes/crear', [PlanesControlador::class, 'g
 $enrutador->agregar('GET', '/admin/planes/editar/{id}', [PlanesControlador::class, 'editar'], $mw);
 $enrutador->agregar('POST', '/admin/planes/editar/{id}', [PlanesControlador::class, 'actualizar'], $mw);
 $enrutador->agregar('POST', '/admin/planes/estado/{id}', [PlanesControlador::class, 'cambiarEstado'], $mw);
+$enrutador->agregar('POST', '/admin/planes/eliminar/{id}', [PlanesControlador::class, 'eliminar'], $mw);
 
 $enrutador->agregar('GET', '/admin/funcionalidades', [FuncionalidadesControlador::class, 'index'], $mw);
 $enrutador->agregar('GET', '/admin/funcionalidades/crear', [FuncionalidadesControlador::class, 'crear'], $mw);
