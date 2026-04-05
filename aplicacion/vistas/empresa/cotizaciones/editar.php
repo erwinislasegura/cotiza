@@ -102,7 +102,6 @@ if ($listaPrecioCotizacionId > 0) {
                     <thead>
                     <tr>
                         <th style="min-width: 220px;">Producto / Servicio</th>
-                        <th style="min-width: 180px;">Detalle</th>
                         <th>Cantidad</th>
                         <th>Precio</th>
                         <th style="min-width: 230px;">Lista / ajuste</th>
@@ -122,13 +121,13 @@ if ($listaPrecioCotizacionId > 0) {
                                     <select class="form-select js-producto" name="producto_id[]">
                                         <option value="">Seleccionar</option>
                                         <?php foreach ($productos as $p): ?>
-                                            <option value="<?= $p['id'] ?>" data-nombre="<?= e($p['nombre']) ?>" data-descripcion="<?= e($p['descripcion'] ?? '') ?>" <?= (int) ($item['producto_id'] ?? 0) === (int) $p['id'] ? 'selected' : '' ?>><?= e($p['nombre']) ?></option>
+                                            <option value="<?= $p['id'] ?>" data-nombre="<?= e($p['nombre']) ?>" data-descripcion="<?= e($p['descripcion'] ?? '') ?>" data-precio="<?= e((string) ($p['precio'] ?? 0)) ?>" data-impuesto="<?= e((string) ($p['impuesto'] ?? 0)) ?>" <?= (int) ($item['producto_id'] ?? 0) === (int) $p['id'] ? 'selected' : '' ?>><?= e($p['nombre']) ?></option>
                                         <?php endforeach; ?>
                                     </select>
-                                    <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalProducto">+</button>
+                                    <button class="btn btn-outline-secondary js-editar-descripcion" type="button" title="Descripción" data-bs-toggle="modal" data-bs-target="#modalDescripcionItem">+</button>
                                 </div>
+                                <input type="hidden" class="js-descripcion" name="descripcion_item[]" value="<?= e($item['descripcion'] ?? '') ?>">
                             </td>
-                            <td><input class="form-control form-control-sm" name="descripcion_item[]" value="<?= e($item['descripcion'] ?? '') ?>"></td>
                             <td><input class="form-control form-control-sm js-cantidad" type="number" step="0.01" min="0" name="cantidad[]" value="<?= e((string) ($item['cantidad'] ?? 1)) ?>"></td>
                             <td><input class="form-control form-control-sm js-precio" type="number" step="0.01" min="0" name="precio_unitario[]" value="<?= e((string) ($item['precio_unitario'] ?? 0)) ?>"></td>
                             <td class="small text-muted js-lista-ajuste">Sin validar lista</td>
@@ -201,13 +200,13 @@ if ($listaPrecioCotizacionId > 0) {
                 <select class="form-select js-producto" name="producto_id[]">
                     <option value="">Seleccionar</option>
                     <?php foreach ($productos as $p): ?>
-                        <option value="<?= $p['id'] ?>" data-nombre="<?= e($p['nombre']) ?>" data-descripcion="<?= e($p['descripcion'] ?? '') ?>"><?= e($p['nombre']) ?></option>
+                        <option value="<?= $p['id'] ?>" data-nombre="<?= e($p['nombre']) ?>" data-descripcion="<?= e($p['descripcion'] ?? '') ?>" data-precio="<?= e((string) ($p['precio'] ?? 0)) ?>" data-impuesto="<?= e((string) ($p['impuesto'] ?? 0)) ?>"><?= e($p['nombre']) ?></option>
                     <?php endforeach; ?>
                 </select>
-                <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalProducto">+</button>
+                <button class="btn btn-outline-secondary js-editar-descripcion" type="button" title="Descripción" data-bs-toggle="modal" data-bs-target="#modalDescripcionItem">+</button>
             </div>
+            <input type="hidden" class="js-descripcion" name="descripcion_item[]" value="">
         </td>
-        <td><input class="form-control form-control-sm" name="descripcion_item[]" placeholder="Detalle del producto o servicio"></td>
         <td><input class="form-control form-control-sm js-cantidad" type="number" step="0.01" min="0" name="cantidad[]" value="1"></td>
         <td><input class="form-control form-control-sm js-precio" type="number" step="0.01" min="0" name="precio_unitario[]" value="0"></td>
         <td class="small text-muted js-lista-ajuste">Sin validar lista</td>
@@ -228,6 +227,28 @@ if ($listaPrecioCotizacionId > 0) {
     </tr>
 </template>
 
+<div class="modal fade" id="modalDescripcionItem" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Información del producto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-2"><span class="small text-muted">Nombre</span><div class="fw-semibold" id="info_producto_nombre">—</div></div>
+                <div class="mb-2"><span class="small text-muted">Descripción</span><div id="info_producto_descripcion">—</div></div>
+                <div class="row g-2">
+                    <div class="col-6"><span class="small text-muted">Precio</span><div id="info_producto_precio">—</div></div>
+                    <div class="col-6"><span class="small text-muted">Impuesto (%)</span><div id="info_producto_impuesto">—</div></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="modalCliente" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Crear cliente (dato fijo)</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div><form method="POST" action="<?= e(url('/app/clientes/crear')) ?>"><?= csrf_campo() ?><input type="hidden" name="redirect_to" value="/app/cotizaciones/editar/<?= e((string) $cotizacion['id']) ?>"><div class="modal-body row g-2"><div class="col-md-4"><input class="form-control" name="nombre" placeholder="Nombre" required></div><div class="col-md-4"><input class="form-control" name="correo" placeholder="Correo"></div><div class="col-md-4"><input class="form-control" name="telefono" placeholder="Teléfono"></div><div class="col-md-6"><input class="form-control" name="direccion" placeholder="Dirección"></div><div class="col-md-6"><input class="form-control" name="notas" placeholder="Notas"></div></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button><button class="btn btn-primary btn-sm">Guardar cliente</button></div></form></div></div></div>
 <div class="modal fade" id="modalProducto" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Crear producto (dato fijo)</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div><form method="POST" action="<?= e(url('/app/productos/crear')) ?>"><?= csrf_campo() ?><input type="hidden" name="redirect_to" value="/app/cotizaciones/editar/<?= e((string) $cotizacion['id']) ?>"><div class="modal-body row g-2"><div class="col-md-3"><input class="form-control" name="codigo" placeholder="Código" required></div><div class="col-md-4"><input class="form-control" name="nombre" placeholder="Nombre" required></div><div class="col-md-5"><input class="form-control" name="descripcion" placeholder="Descripción"></div><div class="col-md-3"><input class="form-control" name="unidad" value="unidad"></div><div class="col-md-3"><input class="form-control" type="number" step="0.01" name="precio" placeholder="Precio"></div><div class="col-md-3"><input class="form-control" type="number" step="0.01" name="impuesto" value="19"></div><div class="col-md-3"><select name="estado" class="form-select"><option value="activo">Activo</option><option value="inactivo">Inactivo</option></select></div></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button><button class="btn btn-primary btn-sm">Guardar producto</button></div></form></div></div></div>
 
@@ -241,6 +262,10 @@ if ($listaPrecioCotizacionId > 0) {
     const todasLasListas = <?= json_encode($listasPrecios ?? [], JSON_UNESCAPED_UNICODE) ?>;
     const listasPorCliente = <?= json_encode($listasPreciosPorCliente ?? [], JSON_UNESCAPED_UNICODE) ?>;
     const clientes = <?= json_encode($clientes ?? [], JSON_UNESCAPED_UNICODE) ?>;
+    const infoProductoNombre = document.getElementById('info_producto_nombre');
+    const infoProductoDescripcion = document.getElementById('info_producto_descripcion');
+    const infoProductoPrecio = document.getElementById('info_producto_precio');
+    const infoProductoImpuesto = document.getElementById('info_producto_impuesto');
 
     function fmt(v) { return '$' + (Math.round((v + Number.EPSILON) * 100) / 100).toFixed(2); }
     function esc(valor) {
@@ -357,7 +382,8 @@ if ($listaPrecioCotizacionId > 0) {
         });
         fila.querySelectorAll('input, select').forEach((c) => { c.addEventListener('input', recalcular); c.addEventListener('change', recalcular); });
         const selectProducto = fila.querySelector('.js-producto');
-        const inputDescripcion = fila.querySelector('[name="descripcion_item[]"]');
+        const inputDescripcion = fila.querySelector('.js-descripcion');
+        const btnEditarDescripcion = fila.querySelector('.js-editar-descripcion');
         if (selectProducto) {
             selectProducto.addEventListener('change', async () => {
                 const opcion = selectProducto.options[selectProducto.selectedIndex];
@@ -367,6 +393,21 @@ if ($listaPrecioCotizacionId > 0) {
                 }
                 await autocompletarPrecioDesdeLista(fila, true);
                 recalcular();
+            });
+        }
+        if (btnEditarDescripcion) {
+            btnEditarDescripcion.addEventListener('click', (event) => {
+                const opcion = selectProducto ? selectProducto.options[selectProducto.selectedIndex] : null;
+                if (!opcion || !opcion.value) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    alert('Selecciona un producto para ver su información.');
+                    return;
+                }
+                if (infoProductoNombre) { infoProductoNombre.textContent = opcion.dataset.nombre || '—'; }
+                if (infoProductoDescripcion) { infoProductoDescripcion.textContent = opcion.dataset.descripcion || '—'; }
+                if (infoProductoPrecio) { infoProductoPrecio.textContent = fmt(parseFloat(opcion.dataset.precio || '0')); }
+                if (infoProductoImpuesto) { infoProductoImpuesto.textContent = (opcion.dataset.impuesto || '0') + '%'; }
             });
         }
     }

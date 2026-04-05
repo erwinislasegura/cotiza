@@ -5,6 +5,26 @@ $puedeGuardar = $hayClientes && $hayProductos;
 ?>
 <h1 class="h4 mb-3">Crear cotización</h1>
 
+<style>
+    #tabla-items {
+        width: 100%;
+        table-layout: fixed;
+        font-size: 0.78rem;
+    }
+
+    #tabla-items th,
+    #tabla-items td {
+        white-space: normal;
+        word-break: break-word;
+    }
+
+    #tabla-items .js-lista-ajuste {
+        display: block;
+        min-width: 0;
+        overflow: visible;
+    }
+</style>
+
 <div class="alert alert-info info-modulo mb-3">
     <div class="fw-semibold mb-1">Guía rápida para crear cotizaciones</div>
     <ul class="mb-0 small ps-3">
@@ -106,16 +126,15 @@ $puedeGuardar = $hayClientes && $hayProductos;
             <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-linea">Agregar línea</button>
         </div>
         <div class="card-body">
-            <div class="table-responsive">
+            <div class="table-responsive" style="overflow-x:hidden; overflow-y:visible;">
                 <table class="table table-sm align-middle" id="tabla-items">
                     <thead>
                     <tr>
-                        <th style="min-width: 220px;">Producto / Servicio</th>
-                        <th style="min-width: 180px;">Descripción</th>
+                        <th style="width: 20%;">Producto / Servicio</th>
                         <th>Cantidad</th>
                         <th>Precio</th>
-                        <th style="min-width: 230px;">Lista / ajuste</th>
-                        <th>Descuento</th>
+                        <th style="width: 18%;">Lista / ajuste</th>
+                        <th style="width: 11%;">Descuento</th>
                         <th>IVA %</th>
                         <th class="text-end">Subtotal</th>
                         <th class="text-end">IVA</th>
@@ -128,10 +147,10 @@ $puedeGuardar = $hayClientes && $hayProductos;
             </div>
 
             <div class="row g-2 mt-2">
-                <div class="col-md-4 ms-auto">
+                <div class="col-md-5 ms-auto">
                     <label class="small">Descuento total</label>
                     <div class="input-group">
-                        <select class="form-select" name="descuento_tipo_total" id="descuento_tipo_total">
+                        <select class="form-select" style="max-width: 75px; flex: 0 0 75px;" name="descuento_tipo_total" id="descuento_tipo_total">
                             <option value="valor">$</option>
                             <option value="porcentaje">%</option>
                         </select>
@@ -175,23 +194,23 @@ $puedeGuardar = $hayClientes && $hayProductos;
                 <select class="form-select js-producto" name="producto_id[]">
                     <option value="">Seleccionar</option>
                     <?php foreach ($productos as $p): ?>
-                        <option value="<?= $p['id'] ?>" data-nombre="<?= e($p['nombre']) ?>" data-descripcion="<?= e($p['descripcion'] ?? '') ?>"><?= e($p['nombre']) ?></option>
+                        <option value="<?= $p['id'] ?>" data-nombre="<?= e($p['nombre']) ?>" data-descripcion="<?= e($p['descripcion'] ?? '') ?>" data-precio="<?= e((string) ($p['precio'] ?? 0)) ?>" data-impuesto="<?= e((string) ($p['impuesto'] ?? 0)) ?>"><?= e($p['nombre']) ?></option>
                     <?php endforeach; ?>
                 </select>
-                <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalProducto">+</button>
+                <button class="btn btn-outline-secondary js-editar-descripcion" type="button" title="Descripción" data-bs-toggle="modal" data-bs-target="#modalDescripcionItem">+</button>
             </div>
+            <input type="hidden" class="js-descripcion" name="descripcion_item[]" value="">
         </td>
-        <td><input class="form-control form-control-sm" name="descripcion_item[]" placeholder="Detalle del producto o servicio"></td>
         <td><input class="form-control form-control-sm js-cantidad" type="number" step="0.01" min="0" name="cantidad[]" value="1"></td>
         <td><input class="form-control form-control-sm js-precio" type="number" step="0.01" min="0" name="precio_unitario[]" value="0"></td>
         <td class="small text-muted js-lista-ajuste">Sin validar lista</td>
         <td>
             <div class="input-group input-group-sm">
-                <select class="form-select js-descuento-tipo" name="descuento_tipo_item[]">
+                <select class="form-select js-descuento-tipo" style="max-width: 54px; flex: 0 0 54px;" name="descuento_tipo_item[]">
                     <option value="valor">$</option>
                     <option value="porcentaje">%</option>
                 </select>
-                <input class="form-control js-descuento-valor" type="number" step="0.01" min="0" name="descuento_item[]" value="0">
+                <input class="form-control js-descuento-valor" style="min-width: 0;" type="number" step="0.01" min="0" name="descuento_item[]" value="0">
             </div>
         </td>
         <td><input class="form-control form-control-sm js-iva" type="number" step="0.01" min="0" name="impuesto_item[]" value="19"></td>
@@ -201,6 +220,28 @@ $puedeGuardar = $hayClientes && $hayProductos;
         <td><button type="button" class="btn btn-outline-danger btn-sm js-eliminar">×</button></td>
     </tr>
 </template>
+
+<div class="modal fade" id="modalDescripcionItem" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Información del producto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-2"><span class="small text-muted">Nombre</span><div class="fw-semibold" id="info_producto_nombre">—</div></div>
+                <div class="mb-2"><span class="small text-muted">Descripción</span><div id="info_producto_descripcion">—</div></div>
+                <div class="row g-2">
+                    <div class="col-6"><span class="small text-muted">Precio</span><div id="info_producto_precio">—</div></div>
+                    <div class="col-6"><span class="small text-muted">Impuesto (%)</span><div id="info_producto_impuesto">—</div></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="modal fade" id="modalCliente" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -271,6 +312,10 @@ $puedeGuardar = $hayClientes && $hayProductos;
     const todasLasListas = <?= json_encode($listasPrecios ?? [], JSON_UNESCAPED_UNICODE) ?>;
     const btnCopiarLink = document.getElementById('copiar_link_aprobacion');
     const inputLinkAprobacion = document.getElementById('link_aprobacion');
+    const infoProductoNombre = document.getElementById('info_producto_nombre');
+    const infoProductoDescripcion = document.getElementById('info_producto_descripcion');
+    const infoProductoPrecio = document.getElementById('info_producto_precio');
+    const infoProductoImpuesto = document.getElementById('info_producto_impuesto');
 
     if (btnCopiarLink && inputLinkAprobacion) {
         btnCopiarLink.addEventListener('click', async function () {
@@ -343,7 +388,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
 
         if (porcentaje <= 0) {
             fila.dataset.listaAplicada = 'si';
-            celda.innerHTML = `<span class="badge text-bg-success mb-1">${nombreLista}</span><div style="color:#3f8f62;">Lista detectada y aplicada (sin ajuste porcentual).</div>`;
+            celda.innerHTML = `<span class="badge text-bg-success">${nombreLista}</span> <span style="color:#3f8f62;">Lista detectada y aplicada (sin ajuste porcentual).</span>`;
             actualizarIndicadorLista();
             return;
         }
@@ -353,7 +398,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
         const signo = esDescuento ? '-' : '+';
         const etiqueta = esDescuento ? 'Descuento por lista' : 'Incremento por lista';
         fila.dataset.listaAplicada = 'si';
-        celda.innerHTML = `<span class="badge ${esDescuento ? 'text-bg-success' : 'text-bg-warning'} mb-1">${nombreLista}</span><div ${colorSuave}><strong>${etiqueta}</strong>: ${signo}${porcentaje.toFixed(2)}% (${signo}${fmt(montoAjuste)})</div><div>Base ${fmt(precioBase)} → Final ${fmt(precioFinal)}</div>`;
+        celda.innerHTML = `<span class="badge ${esDescuento ? 'text-bg-success' : 'text-bg-warning'}">${nombreLista}</span> <span ${colorSuave}><strong>${etiqueta}</strong>: ${signo}${porcentaje.toFixed(2)}% (${signo}${fmt(montoAjuste)}) | Base ${fmt(precioBase)} → Final ${fmt(precioFinal)}</span>`;
         actualizarIndicadorLista();
     }
 
@@ -413,6 +458,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
     function recalcular() {
         let subtotal = 0;
         let iva = 0;
+        let descuentoLineas = 0;
 
         cuerpo.querySelectorAll('tr').forEach((fila) => {
             const cantidad = parseFloat(fila.querySelector('.js-cantidad').value || '0');
@@ -436,6 +482,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
 
             subtotal += subtotalLinea;
             iva += ivaLinea;
+            descuentoLineas += descuento;
         });
 
         const tipoTotal = document.getElementById('descuento_tipo_total').value;
@@ -447,7 +494,9 @@ $puedeGuardar = $hayClientes && $hayProductos;
 
         document.getElementById('resumen_subtotal').textContent = fmt(subtotal);
         document.getElementById('resumen_iva').textContent = fmt(iva);
-        document.getElementById('resumen_descuento').textContent = fmt(descuentoTotal);
+        const descuentoGlobal = descuentoTotal;
+        const descuentoAcumulado = descuentoLineas + descuentoGlobal;
+        document.getElementById('resumen_descuento').textContent = fmt(descuentoAcumulado);
         document.getElementById('resumen_total').textContent = fmt(Math.max(0, baseTotal - descuentoTotal));
         actualizarIndicadorLista();
     }
@@ -466,7 +515,8 @@ $puedeGuardar = $hayClientes && $hayProductos;
         });
 
         const selectProducto = fila.querySelector('.js-producto');
-        const inputDescripcion = fila.querySelector('[name="descripcion_item[]"]');
+        const inputDescripcion = fila.querySelector('.js-descripcion');
+        const btnEditarDescripcion = fila.querySelector('.js-editar-descripcion');
         if (selectProducto) {
             selectProducto.addEventListener('change', async () => {
                 const opcion = selectProducto.options[selectProducto.selectedIndex];
@@ -476,6 +526,21 @@ $puedeGuardar = $hayClientes && $hayProductos;
                 }
                 await autocompletarPrecioDesdeLista(fila, true);
                 recalcular();
+            });
+        }
+        if (btnEditarDescripcion) {
+            btnEditarDescripcion.addEventListener('click', (event) => {
+                const opcion = selectProducto ? selectProducto.options[selectProducto.selectedIndex] : null;
+                if (!opcion || !opcion.value) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    alert('Selecciona un producto para ver su información.');
+                    return;
+                }
+                if (infoProductoNombre) { infoProductoNombre.textContent = opcion.dataset.nombre || '—'; }
+                if (infoProductoDescripcion) { infoProductoDescripcion.textContent = opcion.dataset.descripcion || '—'; }
+                if (infoProductoPrecio) { infoProductoPrecio.textContent = fmt(parseFloat(opcion.dataset.precio || '0')); }
+                if (infoProductoImpuesto) { infoProductoImpuesto.textContent = (opcion.dataset.impuesto || '0') + '%'; }
             });
         }
         cuerpo.appendChild(fila);
