@@ -32,6 +32,7 @@ $enrutador->agregar('POST', '/app/productos', [ProductosControlador::class, 'gua
 $enrutador->agregar('GET', '/app/productos/crear', [ProductosControlador::class, 'crear'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/productos/crear', [ProductosControlador::class, 'guardar'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/productos/ver/{id}', [ProductosControlador::class, 'ver'], $mwEmpresa);
+$enrutador->agregar('GET', '/app/productos/movimientos/{id}', [ProductosControlador::class, 'movimientos'], $mwEmpresa);
 $enrutador->agregar('GET', '/app/productos/editar/{id}', [ProductosControlador::class, 'editar'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/productos/editar/{id}', [ProductosControlador::class, 'actualizar'], $mwEmpresa);
 $enrutador->agregar('POST', '/app/productos/eliminar/{id}', [ProductosControlador::class, 'eliminar'], $mwEmpresa);

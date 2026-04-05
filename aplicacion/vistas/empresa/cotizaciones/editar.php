@@ -277,6 +277,17 @@ if ($listaPrecioCotizacionId > 0) {
             "'": '&#039;'
         }[c] || c));
     }
+    function actualizarResumenDescripcion(fila) {
+        const inputDescripcion = fila.querySelector('.js-descripcion');
+        const resumenDescripcion = fila.querySelector('.js-resumen-descripcion');
+        if (!inputDescripcion || !resumenDescripcion) { return; }
+        const texto = String(inputDescripcion.value || '').trim();
+        if (texto === '') {
+            resumenDescripcion.textContent = 'Sin descripción';
+            return;
+        }
+        resumenDescripcion.textContent = texto.length > 45 ? (texto.slice(0, 45) + '…') : texto;
+    }
     function actualizarIndicadorLista() {
         const indicador = document.getElementById('indicador_lista_estado');
         if (!indicador) { return; }
@@ -390,6 +401,7 @@ if ($listaPrecioCotizacionId > 0) {
                 const detalleProducto = opcion?.dataset?.descripcion || opcion?.dataset?.nombre || '';
                 if (inputDescripcion && inputDescripcion.value.trim() === '') {
                     inputDescripcion.value = detalleProducto;
+                    actualizarResumenDescripcion(fila);
                 }
                 await autocompletarPrecioDesdeLista(fila, true);
                 recalcular();
@@ -500,6 +512,18 @@ if ($listaPrecioCotizacionId > 0) {
         await Promise.all(filas.map((fila) => autocompletarPrecioDesdeLista(fila, forzar)));
         recalcular();
         actualizarIndicadorLista();
+    }
+    if (btnGuardarDescripcion && inputDescripcionModal) {
+        btnGuardarDescripcion.addEventListener('click', () => {
+            if (!filaDescripcionActiva) { return; }
+            const inputDescripcion = filaDescripcionActiva.querySelector('.js-descripcion');
+            if (inputDescripcion) {
+                inputDescripcion.value = inputDescripcionModal.value.trim();
+            }
+            if (modalDescripcion) {
+                modalDescripcion.hide();
+            }
+        });
     }
     if (cuerpo.querySelectorAll('tr').length === 0) { agregarFila(); }
     cuerpo.querySelectorAll('tr').forEach((fila) => { bindFila(fila); });
