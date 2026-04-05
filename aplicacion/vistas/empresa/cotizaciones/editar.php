@@ -102,7 +102,6 @@ if ($listaPrecioCotizacionId > 0) {
                     <thead>
                     <tr>
                         <th style="min-width: 220px;">Producto / Servicio</th>
-                        <th style="min-width: 180px;">Detalle</th>
                         <th>Cantidad</th>
                         <th>Precio</th>
                         <th style="min-width: 230px;">Lista / ajuste</th>
@@ -126,9 +125,11 @@ if ($listaPrecioCotizacionId > 0) {
                                         <?php endforeach; ?>
                                     </select>
                                     <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalProducto">+</button>
+                                    <button class="btn btn-outline-secondary js-editar-descripcion" type="button" title="Descripción">+</button>
                                 </div>
+                                <input type="hidden" class="js-descripcion" name="descripcion_item[]" value="<?= e($item['descripcion'] ?? '') ?>">
+                                <div class="small text-muted js-resumen-descripcion"><?= e(trim((string) ($item['descripcion'] ?? '')) !== '' ? mb_strimwidth((string) $item['descripcion'], 0, 45, '…') : 'Sin descripción') ?></div>
                             </td>
-                            <td><input class="form-control form-control-sm" name="descripcion_item[]" value="<?= e($item['descripcion'] ?? '') ?>"></td>
                             <td><input class="form-control form-control-sm js-cantidad" type="number" step="0.01" min="0" name="cantidad[]" value="<?= e((string) ($item['cantidad'] ?? 1)) ?>"></td>
                             <td><input class="form-control form-control-sm js-precio" type="number" step="0.01" min="0" name="precio_unitario[]" value="<?= e((string) ($item['precio_unitario'] ?? 0)) ?>"></td>
                             <td class="small text-muted js-lista-ajuste">Sin validar lista</td>
@@ -205,9 +206,11 @@ if ($listaPrecioCotizacionId > 0) {
                     <?php endforeach; ?>
                 </select>
                 <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalProducto">+</button>
+                <button class="btn btn-outline-secondary js-editar-descripcion" type="button" title="Descripción">+</button>
             </div>
+            <input type="hidden" class="js-descripcion" name="descripcion_item[]" value="">
+            <div class="small text-muted js-resumen-descripcion">Sin descripción</div>
         </td>
-        <td><input class="form-control form-control-sm" name="descripcion_item[]" placeholder="Detalle del producto o servicio"></td>
         <td><input class="form-control form-control-sm js-cantidad" type="number" step="0.01" min="0" name="cantidad[]" value="1"></td>
         <td><input class="form-control form-control-sm js-precio" type="number" step="0.01" min="0" name="precio_unitario[]" value="0"></td>
         <td class="small text-muted js-lista-ajuste">Sin validar lista</td>
@@ -228,6 +231,25 @@ if ($listaPrecioCotizacionId > 0) {
     </tr>
 </template>
 
+<div class="modal fade" id="modalDescripcionItem" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Descripción del ítem</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <label class="small mb-1">Detalle para cotización</label>
+                <textarea class="form-control" id="descripcion_item_modal" rows="4" placeholder="Escribe el detalle del producto o servicio"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary btn-sm" id="guardar_descripcion_item">Guardar descripción</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="modalCliente" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Crear cliente (dato fijo)</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div><form method="POST" action="<?= e(url('/app/clientes/crear')) ?>"><?= csrf_campo() ?><input type="hidden" name="redirect_to" value="/app/cotizaciones/editar/<?= e((string) $cotizacion['id']) ?>"><div class="modal-body row g-2"><div class="col-md-4"><input class="form-control" name="nombre" placeholder="Nombre" required></div><div class="col-md-4"><input class="form-control" name="correo" placeholder="Correo"></div><div class="col-md-4"><input class="form-control" name="telefono" placeholder="Teléfono"></div><div class="col-md-6"><input class="form-control" name="direccion" placeholder="Dirección"></div><div class="col-md-6"><input class="form-control" name="notas" placeholder="Notas"></div></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button><button class="btn btn-primary btn-sm">Guardar cliente</button></div></form></div></div></div>
 <div class="modal fade" id="modalProducto" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Crear producto (dato fijo)</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div><form method="POST" action="<?= e(url('/app/productos/crear')) ?>"><?= csrf_campo() ?><input type="hidden" name="redirect_to" value="/app/cotizaciones/editar/<?= e((string) $cotizacion['id']) ?>"><div class="modal-body row g-2"><div class="col-md-3"><input class="form-control" name="codigo" placeholder="Código" required></div><div class="col-md-4"><input class="form-control" name="nombre" placeholder="Nombre" required></div><div class="col-md-5"><input class="form-control" name="descripcion" placeholder="Descripción"></div><div class="col-md-3"><input class="form-control" name="unidad" value="unidad"></div><div class="col-md-3"><input class="form-control" type="number" step="0.01" name="precio" placeholder="Precio"></div><div class="col-md-3"><input class="form-control" type="number" step="0.01" name="impuesto" value="19"></div><div class="col-md-3"><select name="estado" class="form-select"><option value="activo">Activo</option><option value="inactivo">Inactivo</option></select></div></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button><button class="btn btn-primary btn-sm">Guardar producto</button></div></form></div></div></div>
 
@@ -241,6 +263,11 @@ if ($listaPrecioCotizacionId > 0) {
     const todasLasListas = <?= json_encode($listasPrecios ?? [], JSON_UNESCAPED_UNICODE) ?>;
     const listasPorCliente = <?= json_encode($listasPreciosPorCliente ?? [], JSON_UNESCAPED_UNICODE) ?>;
     const clientes = <?= json_encode($clientes ?? [], JSON_UNESCAPED_UNICODE) ?>;
+    const modalDescripcionEl = document.getElementById('modalDescripcionItem');
+    const inputDescripcionModal = document.getElementById('descripcion_item_modal');
+    const btnGuardarDescripcion = document.getElementById('guardar_descripcion_item');
+    const modalDescripcion = (modalDescripcionEl && window.bootstrap) ? new bootstrap.Modal(modalDescripcionEl) : null;
+    let filaDescripcionActiva = null;
 
     function fmt(v) { return '$' + (Math.round((v + Number.EPSILON) * 100) / 100).toFixed(2); }
     function esc(valor) {
@@ -251,6 +278,17 @@ if ($listaPrecioCotizacionId > 0) {
             '"': '&quot;',
             "'": '&#039;'
         }[c] || c));
+    }
+    function actualizarResumenDescripcion(fila) {
+        const inputDescripcion = fila.querySelector('.js-descripcion');
+        const resumenDescripcion = fila.querySelector('.js-resumen-descripcion');
+        if (!inputDescripcion || !resumenDescripcion) { return; }
+        const texto = String(inputDescripcion.value || '').trim();
+        if (texto === '') {
+            resumenDescripcion.textContent = 'Sin descripción';
+            return;
+        }
+        resumenDescripcion.textContent = texto.length > 45 ? (texto.slice(0, 45) + '…') : texto;
     }
     function actualizarIndicadorLista() {
         const indicador = document.getElementById('indicador_lista_estado');
@@ -357,18 +395,28 @@ if ($listaPrecioCotizacionId > 0) {
         });
         fila.querySelectorAll('input, select').forEach((c) => { c.addEventListener('input', recalcular); c.addEventListener('change', recalcular); });
         const selectProducto = fila.querySelector('.js-producto');
-        const inputDescripcion = fila.querySelector('[name="descripcion_item[]"]');
+        const inputDescripcion = fila.querySelector('.js-descripcion');
+        const btnEditarDescripcion = fila.querySelector('.js-editar-descripcion');
         if (selectProducto) {
             selectProducto.addEventListener('change', async () => {
                 const opcion = selectProducto.options[selectProducto.selectedIndex];
                 const detalleProducto = opcion?.dataset?.descripcion || opcion?.dataset?.nombre || '';
                 if (inputDescripcion && inputDescripcion.value.trim() === '') {
                     inputDescripcion.value = detalleProducto;
+                    actualizarResumenDescripcion(fila);
                 }
                 await autocompletarPrecioDesdeLista(fila, true);
                 recalcular();
             });
         }
+        if (btnEditarDescripcion && inputDescripcionModal && modalDescripcion) {
+            btnEditarDescripcion.addEventListener('click', () => {
+                filaDescripcionActiva = fila;
+                inputDescripcionModal.value = inputDescripcion ? String(inputDescripcion.value || '') : '';
+                modalDescripcion.show();
+            });
+        }
+        actualizarResumenDescripcion(fila);
     }
     function recalcular() {
         let subtotal = 0; let iva = 0;
@@ -459,6 +507,19 @@ if ($listaPrecioCotizacionId > 0) {
         await Promise.all(filas.map((fila) => autocompletarPrecioDesdeLista(fila, forzar)));
         recalcular();
         actualizarIndicadorLista();
+    }
+    if (btnGuardarDescripcion && inputDescripcionModal) {
+        btnGuardarDescripcion.addEventListener('click', () => {
+            if (!filaDescripcionActiva) { return; }
+            const inputDescripcion = filaDescripcionActiva.querySelector('.js-descripcion');
+            if (inputDescripcion) {
+                inputDescripcion.value = inputDescripcionModal.value.trim();
+                actualizarResumenDescripcion(filaDescripcionActiva);
+            }
+            if (modalDescripcion) {
+                modalDescripcion.hide();
+            }
+        });
     }
     if (cuerpo.querySelectorAll('tr').length === 0) { agregarFila(); }
     cuerpo.querySelectorAll('tr').forEach((fila) => { bindFila(fila); });

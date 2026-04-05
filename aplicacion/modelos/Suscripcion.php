@@ -63,13 +63,33 @@ class Suscripcion extends Modelo
 
     public function actualizar(int $id, array $data): void
     {
-        $data['id'] = $id;
-        $this->db->prepare('UPDATE suscripciones SET plan_id = :plan_id, estado = :estado, fecha_inicio = :fecha_inicio, fecha_vencimiento = :fecha_vencimiento, observaciones = :observaciones, fecha_actualizacion = NOW() WHERE id = :id')->execute($data);
+        $payloadActualizacion = [
+            'id' => $id,
+            'plan_id' => (int) ($data['plan_id'] ?? 0),
+            'estado' => (string) ($data['estado'] ?? 'activa'),
+            'fecha_inicio' => $data['fecha_inicio'] ?? date('Y-m-d'),
+            'fecha_vencimiento' => $data['fecha_vencimiento'] ?? date('Y-m-d'),
+            'observaciones' => (string) ($data['observaciones'] ?? ''),
+        ];
+        $this->db->prepare('UPDATE suscripciones SET plan_id = :plan_id, estado = :estado, fecha_inicio = :fecha_inicio, fecha_vencimiento = :fecha_vencimiento, observaciones = :observaciones, fecha_actualizacion = NOW() WHERE id = :id')->execute($payloadActualizacion);
+
+        $empresaId = (int) ($data['empresa_id'] ?? 0);
+        if ($empresaId <= 0) {
+            return;
+        }
+
         $this->db->prepare('UPDATE empresas SET plan_id = :plan_id, estado = :estado_empresa, fecha_actualizacion = NOW() WHERE id = :empresa_id')->execute([
-            'plan_id' => $data['plan_id'],
-            'estado_empresa' => in_array($data['estado'], ['cancelada', 'vencida', 'suspendida'], true) ? $data['estado'] : 'activa',
-            'empresa_id' => $data['empresa_id'],
+            'plan_id' => $payloadActualizacion['plan_id'],
+            'estado_empresa' => in_array($payloadActualizacion['estado'], ['cancelada', 'vencida', 'suspendida'], true) ? $payloadActualizacion['estado'] : 'activa',
+            'empresa_id' => $empresaId,
         ]);
+    }
+
+    public function obtenerUltimaPorEmpresa(int $empresaId): ?array
+    {
+        $stmt = $this->db->prepare('SELECT * FROM suscripciones WHERE empresa_id = :empresa_id AND fecha_eliminacion IS NULL ORDER BY id DESC LIMIT 1');
+        $stmt->execute(['empresa_id' => $empresaId]);
+        return $stmt->fetch() ?: null;
     }
 
     public function actualizarEstado(int $id, string $estado, string $observaciones): void
