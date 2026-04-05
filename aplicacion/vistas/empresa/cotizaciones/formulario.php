@@ -115,7 +115,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
                         <th>Cantidad</th>
                         <th>Precio</th>
                         <th style="min-width: 230px;">Lista / ajuste</th>
-                        <th style="min-width: 180px;">Descuento</th>
+                        <th style="min-width: 140px;">Descuento</th>
                         <th>IVA %</th>
                         <th class="text-end">Subtotal</th>
                         <th class="text-end">IVA</th>
@@ -128,10 +128,10 @@ $puedeGuardar = $hayClientes && $hayProductos;
             </div>
 
             <div class="row g-2 mt-2">
-                <div class="col-md-8 ms-auto">
+                <div class="col-md-5 ms-auto">
                     <label class="small">Descuento total</label>
                     <div class="input-group">
-                        <select class="form-select" style="max-width: 90px; flex: 0 0 90px;" name="descuento_tipo_total" id="descuento_tipo_total">
+                        <select class="form-select" style="max-width: 75px; flex: 0 0 75px;" name="descuento_tipo_total" id="descuento_tipo_total">
                             <option value="valor">$</option>
                             <option value="porcentaje">%</option>
                         </select>
@@ -191,7 +191,7 @@ $puedeGuardar = $hayClientes && $hayProductos;
                     <option value="valor">$</option>
                     <option value="porcentaje">%</option>
                 </select>
-                <input class="form-control js-descuento-valor" style="min-width: 130px;" type="number" step="0.01" min="0" name="descuento_item[]" value="0">
+                <input class="form-control js-descuento-valor" style="min-width: 78px;" type="number" step="0.01" min="0" name="descuento_item[]" value="0">
             </div>
         </td>
         <td><input class="form-control form-control-sm js-iva" type="number" step="0.01" min="0" name="impuesto_item[]" value="19"></td>
